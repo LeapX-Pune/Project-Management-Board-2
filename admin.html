@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Listing - Admin Dashboard</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <h1>Event Listing & Registration - Admin Panel</h1>
+        
+        <!-- Event Form Section (Create and Edit) -->
+        <div class="form-section">
+            <h2 id="form-title">Create New Event</h2>
+            <form id="event-form" novalidate>
+                <!-- Hidden input to store event ID when editing -->
+                <input type="hidden" id="event-id">
+
+                <div class="form-group">
+                    <label for="event-title">Event Title *</label>
+                    <input type="text" id="event-title" placeholder="Enter event title">
+                    <span class="error-msg" id="error-title"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="event-description">Description *</label>
+                    <textarea id="event-description" rows="3" placeholder="Enter event description"></textarea>
+                    <span class="error-msg" id="error-description"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="event-category">Category *</label>
+                    <select id="event-category">
+                        <option value="">Select Category</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Workshop">Workshop</option>
+                        <option value="Music">Music</option>
+                        <option value="Sports">Sports</option>
+                        <option value="Art">Art</option>
+                    </select>
+                    <span class="error-msg" id="error-category"></span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="event-date">Date *</label>
+                        <input type="date" id="event-date">
+                        <span class="error-msg" id="error-date"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event-time">Time *</label>
+                        <input type="time" id="event-time">
+                        <span class="error-msg" id="error-time"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="event-venue">Venue *</label>
+                    <input type="text" id="event-venue" placeholder="Enter venue / location">
+                    <span class="error-msg" id="error-venue"></span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="event-image">Banner Image URL</label>
+                        <input type="url" id="event-image" placeholder="https://example.com/banner.jpg">
+                        <span class="error-msg" id="error-image"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event-max-attendees">Maximum Attendees *</label>
+                        <input type="number" id="event-max-attendees" min="1" placeholder="e.g. 100">
+                        <span class="error-msg" id="error-max-attendees"></span>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="submit-btn" class="btn btn-primary">Create Event</button>
+                    <button type="button" id="cancel-btn" class="btn btn-secondary" style="display: none;">Cancel Edit</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Event List Table Section -->
+        <div class="list-section">
+            <h2>Current Events</h2>
+            <div class="table-responsive">
+                <table id="events-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Date / Time</th>
+                            <th>Venue</th>
+                            <th>Attendees (Max)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="events-list">
+                        <!-- Dynamic content injected by admin.js -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="no-events-msg" style="display: none; text-align: center; margin: 20px 0; color: #777;">
+                No events found. Create one using the form above.
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>
