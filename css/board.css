@@ -37,6 +37,26 @@
   flex-shrink: 0;
 }
 
+.column[data-column-id="col-backlog"] {
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.column[data-column-id="col-todo"] {
+  background: rgba(249, 115, 22, 0.06);
+}
+
+.column[data-column-id="col-in-progress"] {
+  background: rgba(139, 92, 246, 0.06);
+}
+
+.column[data-column-id="col-review"] {
+  background: rgba(236, 72, 153, 0.06);
+}
+
+.column[data-column-id="col-done"] {
+  background: rgba(16, 185, 129, 0.06);
+}
+
 .column-header {
   display: flex;
   align-items: center;
@@ -53,12 +73,14 @@
 }
 
 .column-title {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--color-foreground);
+  color: var(--text-main);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .column-count {
