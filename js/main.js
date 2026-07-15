@@ -47,6 +47,41 @@ function wireEventListeners() {
     document.getElementById('sidebar').classList.toggle('collapsed');
   });
 
+  // Sidebar navigation toggling between sections
+  document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      
+      document.querySelectorAll('.sidebar-nav .nav-item').forEach(b => {
+        b.classList.remove('active-view');
+      });
+      item.classList.add('active-view');
+      
+      const section = item.dataset.section;
+      const viewToggle = document.querySelector('.view-toggle');
+      
+      // Hide all main area view containers
+      document.querySelectorAll('.view-container').forEach(v => {
+        v.classList.remove('active');
+      });
+      
+      if (section === 'board') {
+        if (viewToggle) viewToggle.style.display = '';
+        
+        // Show the active sub-view based on the active header view tab
+        const activeSubViewBtn = document.querySelector('.view-btn.active');
+        const activeSubView = activeSubViewBtn ? activeSubViewBtn.dataset.view : 'board';
+        const subViewEl = document.getElementById(`${activeSubView}-view`);
+        if (subViewEl) subViewEl.classList.add('active');
+      } else {
+        if (viewToggle) viewToggle.style.display = 'none';
+        
+        const viewEl = document.getElementById(`${section}-view`);
+        if (viewEl) viewEl.classList.add('active');
+      }
+    });
+  });
+
   document.querySelectorAll('[data-action="add-task"]').forEach(el => {
     el.addEventListener('click', () => {
       document.getElementById('command-palette').classList.remove('open');
