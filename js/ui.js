@@ -21,6 +21,25 @@ function formatTimestamp(iso) {
   return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
+function getSubtaskProgress(subtasks) {
+  if (!subtasks || subtasks.length === 0) return null;
+  const completed = subtasks.filter(s => s.completed).length;
+  const total = subtasks.length;
+  const pct = Math.round((completed / total) * 100);
+  return { completed, total, pct };
+}
+
+function createSubtaskBar(subtasks) {
+  const progress = getSubtaskProgress(subtasks);
+  if (!progress) return '';
+  return `
+    <div class="task-subtask-bar" title="${progress.completed}/${progress.total} subtasks">
+      <div class="task-subtask-bar-fill" style="width:${progress.pct}%"></div>
+      <span class="task-subtask-text">${progress.completed}/${progress.total}</span>
+    </div>
+  `;
+}
+
 function createTaskCard(task, members) {
   const li = document.createElement('li');
   li.className = 'task-card';
@@ -31,11 +50,13 @@ function createTaskCard(task, members) {
   const initials = member ? getInitials(member.name) : '??';
   const avatarColor = member ? member.color : '#71717A';
   const dueDateClass = getDueDateClass(task.dueDate);
+  const subtaskHtml = createSubtaskBar(task.subtasks);
 
   li.innerHTML = `
     <div class="task-priority ${getPriorityClass(task.priority)}">${task.priority}</div>
     <div class="task-title">${task.title}</div>
     <div class="task-description">${task.description}</div>
+    ${subtaskHtml}
     <div class="task-meta">
       <div class="task-meta-left">
         <span class="task-due-date ${dueDateClass}">
@@ -78,6 +99,7 @@ function createColumn(col, tasks, members) {
     <div class="column-header-left">
       <h2 class="column-title">${col.title}</h2>
       <span class="column-count" id="count-${col.id}">${col.taskIds.length}</span>
+      <input type="text" class="column-title-input hidden" value="${col.title}" aria-label="Rename column">
     </div>
     <div class="column-options">
       <button class="column-option-btn" data-action="rename" aria-label="Rename column">
@@ -111,6 +133,7 @@ function createColumn(col, tasks, members) {
 function createAddColumnPlaceholder() {
   const div = document.createElement('div');
   div.className = 'add-column-placeholder';
+  div.id = 'add-column-placeholder';
   div.innerHTML = `
     <button class="add-column-btn" id="add-column-btn" aria-label="Add new column">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -119,6 +142,13 @@ function createAddColumnPlaceholder() {
       </svg>
       Add Column
     </button>
+    <div class="add-column-input hidden">
+      <input type="text" class="column-name-input" placeholder="Column name..." id="new-column-input">
+      <div class="add-column-actions">
+        <button class="btn btn-primary btn-sm" id="confirm-add-column">Add</button>
+        <button class="btn btn-ghost btn-sm" id="cancel-add-column">Cancel</button>
+      </div>
+    </div>
   `;
   return div;
 }
@@ -141,6 +171,7 @@ export function renderActivity(entries) {
   entries.forEach(entry => {
     const div = document.createElement('div');
     div.className = 'activity-entry';
+    div.dataset.type = entry.type || 'all';
     div.innerHTML = `
       <div class="activity-avatar">${getInitials(entry.user)}</div>
       <div class="activity-body">
@@ -161,6 +192,8 @@ export function renderTable(data) {
       const task = data.tasks[id];
       if (!task) return;
       const member = data.members[task.assignee];
+      const progress = getSubtaskProgress(task.subtasks);
+      const subtaskDisplay = progress ? `${progress.completed}/${progress.total}` : '-';
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><strong>${task.title}</strong></td>
@@ -168,6 +201,7 @@ export function renderTable(data) {
         <td><span class="task-priority ${getPriorityClass(task.priority)}">${task.priority}</span></td>
         <td>${task.dueDate || '-'}</td>
         <td>${member ? member.name : '-'}</td>
+        <td>${subtaskDisplay}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -195,3 +229,5 @@ export function renderList(data) {
     });
   });
 }
+
+export { getInitials, formatTimestamp, getSubtaskProgress };
