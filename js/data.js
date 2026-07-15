@@ -1,4 +1,4 @@
-const MOCK_DATA = {
+export const MOCK_DATA = {
   columns: [
     { id: 'col-backlog', title: 'Backlog', taskIds: ['task-1', 'task-2'] },
     { id: 'col-todo', title: 'To Do', taskIds: ['task-3'] },

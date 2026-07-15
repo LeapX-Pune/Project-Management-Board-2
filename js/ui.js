@@ -123,7 +123,7 @@ function createAddColumnPlaceholder() {
   return div;
 }
 
-function renderBoard(data) {
+export function renderBoard(data) {
   const container = document.getElementById('board-container');
   container.innerHTML = '';
 
@@ -134,7 +134,7 @@ function renderBoard(data) {
   container.appendChild(createAddColumnPlaceholder());
 }
 
-function renderActivity(entries) {
+export function renderActivity(entries) {
   const list = document.getElementById('activity-list');
   list.innerHTML = '';
 
@@ -152,7 +152,7 @@ function renderActivity(entries) {
   });
 }
 
-function renderTable(data) {
+export function renderTable(data) {
   const tbody = document.getElementById('table-body');
   tbody.innerHTML = '';
 
@@ -174,7 +174,7 @@ function renderTable(data) {
   });
 }
 
-function renderList(data) {
+export function renderList(data) {
   const container = document.getElementById('list-container');
   container.innerHTML = '';
 
