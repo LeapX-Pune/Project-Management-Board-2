@@ -297,6 +297,162 @@
   border-color: var(--color-destructive);
 }
 
+.task-subtask-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  height: 6px;
+  background: var(--color-muted);
+  border-radius: 999px;
+  margin-bottom: var(--space-sm);
+  position: relative;
+  overflow: visible;
+}
+
+.task-subtask-bar-fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 999px;
+  transition: width var(--transition-base);
+}
+
+.task-subtask-text {
+  position: absolute;
+  right: 0;
+  top: -2px;
+  transform: translateY(-100%);
+  font-size: 0.625rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  background: var(--bg-surface);
+  padding: 0 0.25rem;
+}
+
+.peek-subtasks {
+  margin-top: var(--space-lg);
+}
+
+.peek-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+}
+
+.peek-section-header label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.peek-subtask-progress-text {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.peek-subtask-progress-bar {
+  height: 4px;
+  background: var(--color-muted);
+  border-radius: 999px;
+  margin-bottom: var(--space-md);
+  overflow: hidden;
+}
+
+.peek-subtask-progress-fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 999px;
+  transition: width var(--transition-base);
+}
+
+.peek-subtask-list {
+  list-style: none;
+  margin-bottom: var(--space-sm);
+}
+
+.peek-subtask-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 0.375rem 0;
+  transition: var(--transition-fast);
+}
+
+.peek-subtask-checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex: 1;
+  cursor: pointer;
+}
+
+.peek-subtask-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+.peek-subtask-text {
+  font-size: 0.875rem;
+  color: var(--color-foreground);
+}
+
+.peek-subtask-checkbox input[type="checkbox"]:checked + .peek-subtask-text {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.peek-subtask-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  transition: var(--transition-fast);
+  opacity: 0;
+}
+
+.peek-subtask-item:hover .peek-subtask-remove {
+  opacity: 1;
+}
+
+.peek-subtask-remove:hover {
+  color: var(--color-destructive);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.peek-add-subtask {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.peek-add-subtask input {
+  flex: 1;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-foreground);
+  font-size: 0.8125rem;
+}
+
+.peek-add-subtask input:focus {
+  outline: none;
+  border-color: var(--color-ring);
+}
+
+.btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+}
+
 .modal-footer {
   display: flex;
   justify-content: flex-end;
