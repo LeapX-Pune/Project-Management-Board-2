@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Management Board</title>
+    <title>SprintBoard - Project Management Dashboard</title>
     
     <!-- Core styles -->
     <link rel="stylesheet" href="css/style.css">
@@ -17,13 +17,115 @@
     <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
-    <header class="app-header">
-        <!-- Header content (title, search, filters) will go here -->
-    </header>
-    
-    <main class="app-main">
-        <!-- Board columns will be structured here -->
-    </main>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo-icon">S</div>
+                <h1 class="app-title">SprintBoard</h1>
+            </div>
+            
+            <div class="header-right">
+                <div class="search-container">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" id="search-input" placeholder="Search tasks...">
+                </div>
+                
+                <button class="btn btn-secondary" id="btn-theme-toggle" aria-label="Toggle theme">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                
+                <button class="btn btn-secondary" id="btn-activity-toggle" title="Toggle Activity Log">
+                    <span>📋</span>
+                    <span>Activity Log</span>
+                </button>
+                
+                <button class="btn btn-primary" id="btn-add-task">
+                    <span>➕</span>
+                    <span>Add Task</span>
+                </button>
+            </div>
+        </header>
+        
+        <!-- Main Application Area -->
+        <div class="app-content">
+            <!-- Sidebar (Optional Navigation / Project Info) -->
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3>Workspace</h3>
+                    <ul class="nav-list">
+                        <li class="active"><span>📊</span> Dashboard</li>
+                        <li><span>👥</span> Members</li>
+                        <li><span>⚙️</span> Settings</li>
+                    </ul>
+                </div>
+                <div class="sidebar-section">
+                    <h3>Team Members</h3>
+                    <div class="members-list" id="sidebar-members-list">
+                        <!-- Members will be loaded here -->
+                    </div>
+                </div>
+            </aside>
+            
+            <!-- Main Board -->
+            <main class="app-main" id="board-container">
+                <!-- Columns (Backlog, To Do, In Progress, Review, Done) -->
+                <div class="board-column" data-status="backlog">
+                    <div class="column-header">
+                        <h2>Backlog</h2>
+                        <span class="task-count">0</span>
+                    </div>
+                    <div class="task-list" id="list-backlog"></div>
+                </div>
+                <div class="board-column" data-status="todo">
+                    <div class="column-header">
+                        <h2>To Do</h2>
+                        <span class="task-count">0</span>
+                    </div>
+                    <div class="task-list" id="list-todo"></div>
+                </div>
+                <div class="board-column" data-status="progress">
+                    <div class="column-header">
+                        <h2>In Progress</h2>
+                        <span class="task-count">0</span>
+                    </div>
+                    <div class="task-list" id="list-progress"></div>
+                </div>
+                <div class="board-column" data-status="review">
+                    <div class="column-header">
+                        <h2>Review</h2>
+                        <span class="task-count">0</span>
+                    </div>
+                    <div class="task-list" id="list-review"></div>
+                </div>
+                <div class="board-column" data-status="done">
+                    <div class="column-header">
+                        <h2>Done</h2>
+                        <span class="task-count">0</span>
+                    </div>
+                    <div class="task-list" id="list-done"></div>
+                </div>
+            </main>
+            
+            <!-- Collapsible Activity Panel -->
+            <div id="activity-panel" class="activity-panel hidden">
+                <div class="activity-panel-header">
+                    <div class="header-info">
+                        <h2>Activity Log</h2>
+                        <span class="activity-count" id="activity-count">0 entries</span>
+                    </div>
+                    <div class="header-actions">
+                        <button id="btn-clear-activity" class="btn-icon" title="Clear log">🗑️</button>
+                        <button id="btn-activity-close" class="btn-icon" title="Close Panel">✕</button>
+                    </div>
+                </div>
+                
+                <div class="activity-list" id="activity-list">
+                    <!-- Dynamic Activity Log Entries Go Here -->
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="js/data.js" defer></script>
