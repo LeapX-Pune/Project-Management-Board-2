@@ -1,1 +1,75 @@
 /* Base variables, reset, and global typography */
+
+/* CSS Custom Properties */
+:root {
+  /* Typography */
+  --font-base: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-size-base: 14px;
+  --line-height-base: 1.5;
+
+  /* Colors */
+  --color-primary: #1E3A8A; /* Deep Knowledge Blue */
+  --color-on-primary: #FFFFFF; /* White */
+  --color-secondary: #3B82F6; /* Electric Blue */
+  --color-accent: #7C3AED; /* Link Purple */
+  --color-background: #F8FAFC; /* Light Gray/White */
+  --color-foreground: #0F172A; /* Charcoal Slate-900 */
+  --color-muted: #F1F5F9; /* Light Slate-100 */
+  --color-border: #E2E8F0; /* Slate-200 */
+  --color-destructive: #EF4444; /* Red for delete / alerts */
+  --color-ring: #7C3AED; /* Focus ring */
+
+  /* Spacing Grid */
+  --space-xs: 4px;   /* 0.25rem */
+  --space-sm: 8px;   /* 0.5rem */
+  --space-md: 16px;  /* 1rem */
+  --space-lg: 24px;  /* 1.5rem */
+  --space-xl: 32px;  /* 2rem */
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.1), 0 2px 4px -2px rgba(15, 23, 42, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -4px rgba(15, 23, 42, 0.1);
+}
+
+/* Reset / Normalize */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font-base);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--color-foreground);
+  background-color: var(--color-background);
+}
+
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  outline: none;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+ul {
+  list-style: none;
+}
