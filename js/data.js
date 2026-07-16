@@ -1,3 +1,12 @@
+export const TEAM_MEMBERS = [
+  { id: 'alice', name: 'Alice Chen', role: 'Frontend Lead', initials: 'AC', color: '#7C3AED', githubId: '', tasksCompleted: 3, tasksInProgress: 1 },
+  { id: 'bob', name: 'Bob Smith', role: 'Backend Engineer', initials: 'BS', color: '#3B82F6', githubId: 'bobsmith', tasksCompleted: 1, tasksInProgress: 0 },
+  { id: 'carol', name: 'Carol Davis', role: 'Full Stack Dev', initials: 'CD', color: '#10B981', githubId: '', tasksCompleted: 2, tasksInProgress: 1 },
+  { id: 'dave', name: 'Dave Wilson', role: 'DevOps Engineer', initials: 'DW', color: '#F59E0B', githubId: '', tasksCompleted: 0, tasksInProgress: 1 },
+  { id: 'eve', name: 'Eve Martin', role: 'UI/UX Designer', initials: 'EM', color: '#EC4899', githubId: 'evemartin', tasksCompleted: 2, tasksInProgress: 2 },
+  { id: 'frank', name: 'Frank Lee', role: 'QA Engineer', initials: 'FL', color: '#06B6D4', githubId: '', tasksCompleted: 1, tasksInProgress: 0 },
+];
+
 export const MOCK_DATA = {
   columns: [
     { id: 'col-backlog', title: 'Backlog', taskIds: ['task-1', 'task-2'] },

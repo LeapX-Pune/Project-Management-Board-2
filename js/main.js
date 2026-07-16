@@ -1,5 +1,5 @@
-import { MOCK_DATA } from './data.js';
-import { renderBoard, renderActivity, renderTable, renderList, getInitials, formatTimestamp, getSubtaskProgress } from './ui.js';
+import { MOCK_DATA, TEAM_MEMBERS } from './data.js';
+import { renderBoard, renderActivity, renderTable, renderList, renderTeam, getInitials, formatTimestamp, getSubtaskProgress } from './ui.js';
 import { initDragDrop } from './dragdrop.js';
 
 function init() {
@@ -7,6 +7,7 @@ function init() {
   renderActivity(MOCK_DATA.activityLog);
   renderTable(MOCK_DATA);
   renderList(MOCK_DATA);
+  renderTeam(TEAM_MEMBERS);
   initDragDrop();
   wireEventListeners();
 }
@@ -157,35 +158,14 @@ function wireEventListeners() {
     document.getElementById('side-peek').classList.remove('open');
   });
 
-  document.getElementById('activity-close')?.addEventListener('click', () => {
-    document.getElementById('activity-sidebar').classList.add('closed');
-  });
-
-  document.getElementById('activity-toggle')?.addEventListener('click', () => {
-    document.getElementById('activity-sidebar').classList.toggle('closed');
-  });
-
-  document.getElementById('theme-toggle')?.addEventListener('click', () => {
+  function toggleTheme() {
     document.body.classList.toggle('dark-theme');
     const label = document.querySelector('.theme-label');
     const isDark = document.body.classList.contains('dark-theme');
     if (label) label.textContent = isDark ? 'Dark' : 'Light';
-  });
+  }
 
-  document.querySelectorAll('.activity-filter-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      document.querySelectorAll('.activity-filter-pill').forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-      const filter = pill.dataset.filter;
-      document.querySelectorAll('.activity-entry').forEach(entry => {
-        if (filter === 'all' || entry.dataset.type === filter) {
-          entry.style.display = '';
-        } else {
-          entry.style.display = 'none';
-        }
-      });
-    });
-  });
+  document.getElementById('header-theme-toggle')?.addEventListener('click', toggleTheme);
 
   document.addEventListener('click', (e) => {
     const renameBtn = e.target.closest('[data-action="rename"]');
@@ -406,6 +386,51 @@ function wireEventListeners() {
     card.addEventListener('dblclick', () => {
       document.getElementById('side-peek').classList.add('open');
     });
+  });
+
+  let selectedMemberId = null;
+
+  document.getElementById('team-container')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.team-github-btn');
+    if (!btn) return;
+    selectedMemberId = btn.dataset.memberId;
+    const member = TEAM_MEMBERS.find(m => m.id === selectedMemberId);
+    if (!member) return;
+    document.getElementById('github-modal-member-name').textContent = member.name;
+    document.getElementById('github-modal-title').textContent = member.githubId ? 'Edit GitHub ID' : 'Add GitHub ID';
+    document.getElementById('github-id-input').value = member.githubId || '';
+    document.getElementById('github-modal').classList.add('open');
+  });
+
+  document.querySelectorAll('.github-modal-close').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('github-modal').classList.remove('open');
+    });
+  });
+
+  document.getElementById('github-modal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) {
+      document.getElementById('github-modal').classList.remove('open');
+    }
+  });
+
+  document.getElementById('github-save-btn')?.addEventListener('click', () => {
+    const input = document.getElementById('github-id-input');
+    const username = input.value.trim();
+    if (!username) return;
+
+    const member = TEAM_MEMBERS.find(m => m.id === selectedMemberId);
+    if (member) {
+      member.githubId = username;
+      renderTeam(TEAM_MEMBERS);
+    }
+    document.getElementById('github-modal').classList.remove('open');
+  });
+
+  document.getElementById('github-id-input')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      document.getElementById('github-save-btn')?.click();
+    }
   });
 }
 
