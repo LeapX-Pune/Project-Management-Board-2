@@ -1,70 +1,93 @@
-// Local state management for the Project Board
-const AppState = {
-    members: [
-        { id: '1', name: 'John Doe', initials: 'JD', color: '#4f46e5' },
-        { id: '2', name: 'Sarah Connor', initials: 'SC', color: '#10b981' },
-        { id: '3', name: 'Mike Ross', initials: 'MR', color: '#f59e0b' },
-        { id: '4', name: 'Rachel Zane', initials: 'RZ', color: '#ec4899' }
-    ],
-    
-    // Initial activity log data
-    activities: [
-        {
-            id: 'act-1',
-            user: { name: 'John Doe', initials: 'JD', color: '#4f46e5' },
-            actionText: "moved 'Landing Page Design' to Review",
-            timestamp: new Date(Date.now() - 1000 * 60 * 12) // 12 minutes ago
-        },
-        {
-            id: 'act-2',
-            user: { name: 'Sarah Connor', initials: 'SC', color: '#10b981' },
-            actionText: "assigned task 'Fix Navbar Bug' to Mike Ross",
-            timestamp: new Date(Date.now() - 1000 * 60 * 45) // 45 minutes ago
-        },
-        {
-            id: 'act-3',
-            user: { name: 'Mike Ross', initials: 'MR', color: '#f59e0b' },
-            actionText: "updated deadline for 'Client Dashboard'",
-            timestamp: new Date(Date.now() - 1000 * 60 * 120) // 2 hours ago
-        }
-    ],
-
-    // Add a new activity log entry
-    addActivity(memberName, actionText) {
-        const member = this.members.find(m => m.name === memberName) || {
-            name: memberName,
-            initials: memberName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2),
-            color: '#64748b' // default color
-        };
-
-        const newActivity = {
-            id: 'act-' + Math.random().toString(36).substr(2, 9),
-            user: {
-                name: member.name,
-                initials: member.initials,
-                color: member.color
-            },
-            actionText: actionText,
-            timestamp: new Date()
-        };
-
-        this.activities.push(newActivity);
-        
-        // Dispatch custom event to notify UI
-        const event = new CustomEvent('activityAdded', { detail: newActivity });
-        window.dispatchEvent(event);
-        
-        return newActivity;
+export const MOCK_DATA = {
+  columns: [
+    { id: 'col-backlog', title: 'Backlog', taskIds: ['task-1', 'task-2'] },
+    { id: 'col-todo', title: 'To Do', taskIds: ['task-3'] },
+    { id: 'col-in-progress', title: 'In Progress', taskIds: ['task-4'] },
+    { id: 'col-review', title: 'Review', taskIds: ['task-5'] },
+    { id: 'col-done', title: 'Done', taskIds: ['task-6'] },
+  ],
+  tasks: {
+    'task-1': {
+      id: 'task-1',
+      title: 'Design landing page mockup',
+      description: 'Create high-fidelity landing page designs and component style guides using CSS tokens.',
+      assignee: 'alice',
+      dueDate: '2026-08-15',
+      priority: 'high',
+      status: 'backlog',
+      subtasks: [
+        { id: 'sub-1', text: 'Draft wireframes', completed: true },
+        { id: 'sub-2', text: 'Select typography and colors', completed: false },
+      ],
     },
-
-    // Get activity log sorted (latest first)
-    getSortedActivities() {
-        return [...this.activities].sort((a, b) => b.timestamp - a.timestamp);
+    'task-2': {
+      id: 'task-2',
+      title: 'Evaluate API options',
+      description: 'Perform performance benchmarking between REST endpoints and GraphQL queries.',
+      assignee: 'bob',
+      dueDate: '2026-08-20',
+      priority: 'low',
+      status: 'backlog',
+      subtasks: [],
     },
-
-    // Clear all activity logs
-    clearActivities() {
-        this.activities = [];
-        window.dispatchEvent(new CustomEvent('activitiesCleared'));
-    }
+    'task-3': {
+      id: 'task-3',
+      title: 'Configure CI/CD workflow',
+      description: 'Configure GitHub Actions runner to build the app and trigger automated linting.',
+      assignee: 'carol',
+      dueDate: '2026-07-25',
+      priority: 'medium',
+      status: 'todo',
+      subtasks: [
+        { id: 'sub-3', text: 'Write build scripts', completed: false },
+      ],
+    },
+    'task-4': {
+      id: 'task-4',
+      title: 'Implement auth cookies',
+      description: 'Set up HTTP-only secure cookie storage for access and refresh JWTs.',
+      assignee: 'alice',
+      dueDate: '2026-07-20',
+      priority: 'high',
+      status: 'in-progress',
+      subtasks: [
+        { id: 'sub-4', text: 'Implement login validation', completed: true },
+        { id: 'sub-5', text: 'Write auth middleware', completed: true },
+      ],
+    },
+    'task-5': {
+      id: 'task-5',
+      title: 'Review billing integration PR',
+      description: 'Thoroughly review the Stripe webhook handling code and verify error alerts.',
+      assignee: 'dave',
+      dueDate: '2026-07-18',
+      priority: 'medium',
+      status: 'review',
+      subtasks: [],
+    },
+    'task-6': {
+      id: 'task-6',
+      title: 'Cover utility functions with tests',
+      description: 'Verify string manipulators, date parsers, and custom math helper coverages reach 90%.',
+      assignee: 'carol',
+      dueDate: '2026-07-10',
+      priority: 'low',
+      status: 'done',
+      subtasks: [
+        { id: 'sub-6', text: 'Write parser tests', completed: true },
+        { id: 'sub-7', text: 'Verify mock suite metrics', completed: true },
+      ],
+    },
+  },
+  members: {
+    alice: { name: 'Alice Chen', color: '#7C3AED' },
+    bob: { name: 'Bob Smith', color: '#3B82F6' },
+    carol: { name: 'Carol Davis', color: '#10B981' },
+    dave: { name: 'Dave Wilson', color: '#F59E0B' },
+  },
+  activityLog: [
+    { timestamp: '2026-07-15T09:30:00', user: 'Alice Chen', action: "moved 'Implement auth cookies' to In Progress", type: 'moved' },
+    { timestamp: '2026-07-15T08:15:00', user: 'Carol Davis', action: "created 'Configure CI/CD workflow'", type: 'created' },
+    { timestamp: '2026-07-14T16:45:00', user: 'Bob Smith', action: "updated deadline on 'Evaluate API options'", type: 'edited' },
+  ],
 };
