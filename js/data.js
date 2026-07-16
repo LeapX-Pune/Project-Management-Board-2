@@ -95,8 +95,13 @@ export const MOCK_DATA = {
     dave: { name: 'Dave Wilson', color: '#F59E0B' },
   },
   activityLog: [
-    { timestamp: '2026-07-15T09:30:00', user: 'Alice Chen', action: "moved 'Implement auth cookies' to In Progress", type: 'moved' },
-    { timestamp: '2026-07-15T08:15:00', user: 'Carol Davis', action: "created 'Configure CI/CD workflow'", type: 'created' },
-    { timestamp: '2026-07-14T16:45:00', user: 'Bob Smith', action: "updated deadline on 'Evaluate API options'", type: 'edited' },
+    { timestamp: '2026-07-15T09:30:00', user: 'Alice Chen', action: 'Moved task to In Progress', area: 'Board', type: 'moved' },
+    { timestamp: '2026-07-15T08:15:00', user: 'Carol Davis', action: 'Created new task', area: 'Board', type: 'created' },
+    { timestamp: '2026-07-14T16:45:00', user: 'Bob Smith', action: 'Updated deadline', area: 'Calendar', type: 'edited' },
+    { timestamp: '2026-07-14T14:20:00', user: 'Dave Wilson', action: 'Added comment to PR #42', area: 'Board', type: 'edited' },
+    { timestamp: '2026-07-13T11:00:00', user: 'Alice Chen', action: 'Completed auth module review', area: 'Review', type: 'moved' },
+    { timestamp: '2026-07-13T09:45:00', user: 'Carol Davis', action: 'Assigned task to Bob', area: 'Team', type: 'edited' },
+    { timestamp: '2026-07-12T16:30:00', user: 'Eve Martin', action: 'Uploaded new design mockups', area: 'Dashboard', type: 'created' },
+    { timestamp: '2026-07-12T10:15:00', user: 'Frank Lee', action: 'Ran regression test suite', area: 'Analytics', type: 'created' },
   ],
 };

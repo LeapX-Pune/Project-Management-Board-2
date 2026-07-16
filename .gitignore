@@ -10,3 +10,4 @@ test-results/
 tests/
 CLAUDE.md
 .playwright-cli/
+playwright.config.js

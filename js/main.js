@@ -111,6 +111,11 @@ function wireEventListeners() {
     });
   });
 
+  document.getElementById('activity-clear-btn')?.addEventListener('click', () => {
+    const list = document.getElementById('activity-list');
+    if (list) list.innerHTML = '';
+  });
+
   let commandPaletteOpen = false;
 
   document.addEventListener('keydown', (e) => {
@@ -127,6 +132,7 @@ function wireEventListeners() {
       document.getElementById('command-palette').classList.remove('open');
       document.getElementById('side-peek').classList.remove('open');
       document.getElementById('task-modal').classList.remove('open');
+      if (activityPanel?.classList.contains('open')) setPanelOpen(false);
       commandPaletteOpen = false;
     }
   });
@@ -166,6 +172,78 @@ function wireEventListeners() {
   }
 
   document.getElementById('header-theme-toggle')?.addEventListener('click', toggleTheme);
+
+  // Activity Log Panel
+  const activityBtn = document.getElementById('activity-log-btn');
+  const activityPanel = document.getElementById('activity-panel');
+  const activityClose = document.getElementById('activity-close');
+  const STORAGE_KEY = 'activity-log-open';
+
+  function setPanelOpen(open) {
+    if (!activityPanel) return;
+    if (open) {
+      activityPanel.style.height = '';
+      const list = document.getElementById('activity-list');
+      if (list) list.scrollTop = 0;
+    } else {
+      activityPanel.style.height = '';
+    }
+    activityPanel.classList.toggle('open', open);
+    if (activityBtn) activityBtn.setAttribute('aria-pressed', String(open));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(open));
+  }
+
+  activityBtn?.addEventListener('click', () => {
+    setPanelOpen(!activityPanel?.classList.contains('open'));
+  });
+
+  activityClose?.addEventListener('click', () => setPanelOpen(false));
+
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved === 'true') {
+    setPanelOpen(true);
+  }
+
+  // Resizer
+  const resizer = document.getElementById('activity-resizer');
+  let startY = undefined;
+  let startHeight = 0;
+
+  resizer?.addEventListener('mousedown', (e) => {
+    startY = e.clientY;
+    startHeight = activityPanel.getBoundingClientRect().height;
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'ns-resize';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (startY === undefined || !activityPanel) return;
+    const diff = startY - e.clientY;
+    let newHeight = Math.min(Math.max(startHeight + diff, 180), window.innerHeight * 0.65);
+    activityPanel.style.height = `${newHeight}px`;
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (startY === undefined) return;
+    startY = undefined;
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+  });
+
+  document.querySelectorAll('.activity-filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.activity-filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      const filter = pill.dataset.filter;
+      document.querySelectorAll('.activity-entry').forEach(entry => {
+        if (filter === 'all' || entry.dataset.type === filter) {
+          entry.style.display = '';
+        } else {
+          entry.style.display = 'none';
+        }
+      });
+    });
+  });
 
   document.addEventListener('click', (e) => {
     const renameBtn = e.target.closest('[data-action="rename"]');

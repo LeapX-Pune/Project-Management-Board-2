@@ -168,19 +168,58 @@ export function renderActivity(entries) {
   const list = document.getElementById('activity-list');
   list.innerHTML = '';
 
-  entries.forEach(entry => {
+  const header = document.createElement('div');
+  header.className = 'activity-log-header';
+  header.innerHTML = `
+    <div class="activity-log-col activity-log-col--member">Member</div>
+    <div class="activity-log-col activity-log-col--action">Activity</div>
+    <div class="activity-log-col activity-log-col--area">Area</div>
+    <div class="activity-log-col activity-log-col--date">Date</div>
+    <div class="activity-log-col activity-log-col--time">Time</div>
+  `;
+  list.appendChild(header);
+
+  entries.forEach((entry, idx) => {
+    const d = new Date(entry.timestamp);
+    const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
     const div = document.createElement('div');
     div.className = 'activity-entry';
     div.dataset.type = entry.type || 'all';
+    div.style.animationDelay = `${idx * 0.03}s`;
     div.innerHTML = `
-      <div class="activity-avatar">${getInitials(entry.user)}</div>
-      <div class="activity-body">
-        <div class="activity-text">${entry.user} ${entry.action}</div>
-        <div class="activity-time">${formatTimestamp(entry.timestamp)}</div>
+      <div class="activity-log-col activity-log-col--member">
+        <span class="activity-entry-avatar" style="background:${getColorForUser(entry.user)}">${getInitials(entry.user)}</span>
+        <span class="activity-entry-name">${entry.user}</span>
+      </div>
+      <div class="activity-log-col activity-log-col--action">
+        <span class="activity-entry-action">${entry.action}</span>
+      </div>
+      <div class="activity-log-col activity-log-col--area">
+        <span class="activity-entry-area activity-entry-area--${entry.type}">${entry.area}</span>
+      </div>
+      <div class="activity-log-col activity-log-col--date">
+        <span class="activity-entry-date">${dateStr}</span>
+      </div>
+      <div class="activity-log-col activity-log-col--time">
+        <span class="activity-entry-time">${timeStr}</span>
       </div>
     `;
     list.appendChild(div);
   });
+}
+
+function getColorForUser(name) {
+  const colors = {
+    'Alice Chen': '#7C3AED',
+    'Bob Smith': '#3B82F6',
+    'Carol Davis': '#10B981',
+    'Dave Wilson': '#F59E0B',
+    'Eve Martin': '#EC4899',
+    'Frank Lee': '#06B6D4',
+  };
+  return colors[name] || '#71717A';
 }
 
 export function renderTable(data) {

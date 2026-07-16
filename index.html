@@ -148,6 +148,13 @@
               <path d="M17 13C15 16 11 17 7.5 15C4 13 2.5 9.5 4 6C4.5 5 5.5 4 6.5 3.5C3 4.5 1 8 1 11.5C1 15.5 4.5 19 8.5 19C12 19 15.5 17 17 13Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
             </svg>
           </button>
+          <button class="btn-icon" id="activity-log-btn" aria-label="Toggle activity log" data-tooltip="Activity Log">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="2.5" y="4" width="15" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M6 8.5H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M6 11.5H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
           <button class="btn btn-primary" id="add-task-btn" aria-label="Add new task">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path d="M8 3V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -491,15 +498,29 @@
       </div>
     </div>
 
-    <aside class="activity-sidebar" id="activity-sidebar" role="complementary" aria-label="Activity log" style="display:none">
+    <aside class="activity-panel" id="activity-panel" role="region" aria-label="Activity log panel">
+      <div class="activity-resizer" id="activity-resizer" title="Resize panel"></div>
       <div class="activity-header">
-        <h3 class="activity-title">Activity</h3>
-        <button class="activity-close" id="activity-close" aria-label="Close activity panel">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M4 4L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </button>
+        <h3 class="activity-title">Activity Log</h3>
+        <div class="activity-header-actions">
+          <button class="activity-header-btn" id="activity-search-btn" aria-label="Search activity">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+              <circle cx="6.5" cy="6.5" r="4" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M9.5 9.5L13 13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="activity-header-btn" id="activity-clear-btn" aria-label="Clear activity">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+              <path d="M3 4H12M5 4V2.5C5 2.22386 5.22386 2 5.5 2H9.5C9.77614 2 10 2.22386 10 2.5V4M6 4L6.5 12H8.5L9 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button class="activity-close" id="activity-close" aria-label="Close activity panel">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4 4L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
       </div>
       <div class="activity-filters" id="activity-filters">
         <button class="activity-filter-pill active" data-filter="all">All</button>
@@ -510,7 +531,6 @@
       <div class="activity-list" id="activity-list">
       </div>
     </aside>
-  </div>
 
   <aside class="side-peek" id="side-peek" role="dialog" aria-modal="true" aria-label="Task details">
     <div class="side-peek-backdrop" id="side-peek-backdrop"></div>

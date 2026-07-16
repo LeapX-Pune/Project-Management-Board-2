@@ -349,11 +349,6 @@ body.dark-theme .task-due-date.overdue {
   color: var(--priority-high-text);
 }
 
-body.dark-theme .activity-avatar {
-  background: var(--color-accent-light);
-  color: var(--color-accent);
-}
-
 body.dark-theme .metric-card,
 body.dark-theme .dashboard-card,
 body.dark-theme .chart-card,
