@@ -165,7 +165,6 @@ function wireEventListeners() {
     if (label) label.textContent = isDark ? 'Dark' : 'Light';
   }
 
-  document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
   document.getElementById('header-theme-toggle')?.addEventListener('click', toggleTheme);
 
   document.addEventListener('click', (e) => {
