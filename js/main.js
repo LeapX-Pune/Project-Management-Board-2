@@ -1,14 +1,44 @@
 import { MOCK_DATA } from './data.js';
-import { renderBoard, renderActivity, renderTable, renderList, getInitials, formatTimestamp, getSubtaskProgress } from './ui.js';
+import { renderBoard, renderTable, renderList, getInitials, formatTimestamp, getSubtaskProgress } from './ui.js';
 import { initDragDrop } from './dragdrop.js';
 
 function init() {
   renderBoard(MOCK_DATA);
-  renderActivity(MOCK_DATA.activityLog);
   renderTable(MOCK_DATA);
   renderList(MOCK_DATA);
+  renderTeam(MOCK_DATA.members);
   initDragDrop();
   wireEventListeners();
+}
+
+function renderTeam(members) {
+  const list = document.getElementById('team-list');
+  list.innerHTML = '';
+
+  Object.entries(members).forEach(([key, member]) => {
+    const div = document.createElement('div');
+    div.className = 'team-member';
+    div.dataset.memberKey = key;
+
+    const githubHtml = member.github
+      ? `<a href="https://github.com/${member.github}" target="_blank" rel="noopener noreferrer" class="team-member-github" data-action="view-github">
+           <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+           ${member.github}
+         </a>`
+      : `<button class="team-member-github" data-action="edit-github">+ Add GitHub</button>`;
+
+    div.innerHTML = `
+      <div class="team-member-avatar" style="background:${member.color}">${getInitials(member.name)}</div>
+      <div class="team-member-info">
+        <div class="team-member-name">${member.name}</div>
+        <div class="team-member-edit" data-edit-container>
+          ${githubHtml}
+        </div>
+      </div>
+    `;
+
+    list.appendChild(div);
+  });
 }
 
 function wireEventListeners() {
@@ -157,12 +187,61 @@ function wireEventListeners() {
     document.getElementById('side-peek').classList.remove('open');
   });
 
-  document.getElementById('activity-close')?.addEventListener('click', () => {
-    document.getElementById('activity-sidebar').classList.add('closed');
+  document.getElementById('team-toggle')?.addEventListener('click', () => {
+    document.getElementById('team-sidebar').classList.toggle('closed');
   });
 
-  document.getElementById('activity-toggle')?.addEventListener('click', () => {
-    document.getElementById('activity-sidebar').classList.toggle('closed');
+  document.getElementById('team-list')?.addEventListener('click', (e) => {
+    const githubBtn = e.target.closest('[data-action="edit-github"]');
+    if (!githubBtn) return;
+
+    const member = githubBtn.closest('.team-member');
+    const container = member.querySelector('[data-edit-container]');
+    const key = member.dataset.memberKey;
+
+    container.innerHTML = `
+      <div class="team-member-edit" data-edit-container>
+        <input type="text" class="team-member-edit-input" placeholder="GitHub username" value="" maxlength="39" aria-label="Enter GitHub username">
+        <button class="team-member-edit-btn save" data-action="save-github" aria-label="Save">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L5 10L12 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="team-member-edit-btn cancel" data-action="cancel-github" aria-label="Cancel">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3L11 11M11 3L3 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    `;
+
+    const input = container.querySelector('.team-member-edit-input');
+    input.focus();
+
+    const saveBtn = container.querySelector('[data-action="save-github"]');
+    const cancelBtn = container.querySelector('[data-action="cancel-github"]');
+
+    const cancel = () => {
+      renderTeam(MOCK_DATA.members);
+    };
+
+    const save = () => {
+      const username = input.value.trim();
+      if (username) {
+        MOCK_DATA.members[key].github = username;
+        renderTeam(MOCK_DATA.members);
+      }
+    };
+
+    saveBtn.addEventListener('click', save);
+    cancelBtn.addEventListener('click', cancel);
+    input.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter') save();
+      if (ev.key === 'Escape') cancel();
+    });
+  });
+
+  document.getElementById('team-list')?.addEventListener('click', (e) => {
+    const link = e.target.closest('[data-action="view-github"]');
+    if (link) {
+      window.open(link.href, '_blank', 'noopener,noreferrer');
+    }
   });
 
   document.getElementById('theme-toggle')?.addEventListener('click', () => {
@@ -170,21 +249,6 @@ function wireEventListeners() {
     const label = document.querySelector('.theme-label');
     const isDark = document.body.classList.contains('dark-theme');
     if (label) label.textContent = isDark ? 'Dark' : 'Light';
-  });
-
-  document.querySelectorAll('.activity-filter-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      document.querySelectorAll('.activity-filter-pill').forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-      const filter = pill.dataset.filter;
-      document.querySelectorAll('.activity-entry').forEach(entry => {
-        if (filter === 'all' || entry.dataset.type === filter) {
-          entry.style.display = '';
-        } else {
-          entry.style.display = 'none';
-        }
-      });
-    });
   });
 
   document.addEventListener('click', (e) => {

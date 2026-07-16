@@ -80,10 +80,10 @@ export const MOCK_DATA = {
     },
   },
   members: {
-    alice: { name: 'Alice Chen', color: '#7C3AED' },
-    bob: { name: 'Bob Smith', color: '#3B82F6' },
-    carol: { name: 'Carol Davis', color: '#10B981' },
-    dave: { name: 'Dave Wilson', color: '#F59E0B' },
+    alice: { name: 'Alice Chen', color: '#7C3AED', github: '' },
+    bob: { name: 'Bob Smith', color: '#3B82F6', github: '' },
+    carol: { name: 'Carol Davis', color: '#10B981', github: '' },
+    dave: { name: 'Dave Wilson', color: '#F59E0B', github: '' },
   },
   activityLog: [
     { timestamp: '2026-07-15T09:30:00', user: 'Alice Chen', action: "moved 'Implement auth cookies' to In Progress", type: 'moved' },

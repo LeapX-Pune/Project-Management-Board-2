@@ -341,7 +341,7 @@
   min-height: 0;
 }
 
-.activity-sidebar {
+.team-sidebar {
   width: 280px;
   background: var(--bg-canvas);
   border-left: 1px solid var(--border-subtle);
@@ -350,7 +350,7 @@
   overflow: hidden;
 }
 
-.activity-sidebar.closed {
+.team-sidebar.closed {
   display: none;
 }
 
