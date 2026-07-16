@@ -343,7 +343,7 @@
 
 .activity-sidebar {
   width: 280px;
-  background: var(--bg-surface);
+  background: var(--bg-canvas);
   border-left: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
