@@ -1,3 +1,12 @@
+export const TEAM_MEMBERS = [
+  { id: 'alice', name: 'Alice Chen', role: 'Frontend Lead', initials: 'AC', color: '#7C3AED', githubId: '', tasksCompleted: 3, tasksInProgress: 1 },
+  { id: 'bob', name: 'Bob Smith', role: 'Backend Engineer', initials: 'BS', color: '#3B82F6', githubId: 'bobsmith', tasksCompleted: 1, tasksInProgress: 0 },
+  { id: 'carol', name: 'Carol Davis', role: 'Full Stack Dev', initials: 'CD', color: '#10B981', githubId: '', tasksCompleted: 2, tasksInProgress: 1 },
+  { id: 'dave', name: 'Dave Wilson', role: 'DevOps Engineer', initials: 'DW', color: '#F59E0B', githubId: '', tasksCompleted: 0, tasksInProgress: 1 },
+  { id: 'eve', name: 'Eve Martin', role: 'UI/UX Designer', initials: 'EM', color: '#EC4899', githubId: 'evemartin', tasksCompleted: 2, tasksInProgress: 2 },
+  { id: 'frank', name: 'Frank Lee', role: 'QA Engineer', initials: 'FL', color: '#06B6D4', githubId: '', tasksCompleted: 1, tasksInProgress: 0 },
+];
+
 export const MOCK_DATA = {
   columns: [
     { id: 'col-backlog', title: 'Backlog', taskIds: ['task-1', 'task-2'] },
@@ -86,9 +95,14 @@ export const MOCK_DATA = {
     dave: { name: 'Dave Wilson', color: '#F59E0B' },
   },
   activityLog: [
-    { timestamp: '2026-07-15T09:30:00', user: 'Alice Chen', action: "moved 'Implement auth cookies' to In Progress", type: 'moved' },
-    { timestamp: '2026-07-15T08:15:00', user: 'Carol Davis', action: "created 'Configure CI/CD workflow'", type: 'created' },
-    { timestamp: '2026-07-14T16:45:00', user: 'Bob Smith', action: "updated deadline on 'Evaluate API options'", type: 'edited' },
+    { timestamp: '2026-07-15T09:30:00', user: 'Alice Chen', action: 'Moved task to In Progress', area: 'Board', type: 'moved' },
+    { timestamp: '2026-07-15T08:15:00', user: 'Carol Davis', action: 'Created new task', area: 'Board', type: 'created' },
+    { timestamp: '2026-07-14T16:45:00', user: 'Bob Smith', action: 'Updated deadline', area: 'Calendar', type: 'edited' },
+    { timestamp: '2026-07-14T14:20:00', user: 'Dave Wilson', action: 'Added comment to PR #42', area: 'Board', type: 'edited' },
+    { timestamp: '2026-07-13T11:00:00', user: 'Alice Chen', action: 'Completed auth module review', area: 'Review', type: 'moved' },
+    { timestamp: '2026-07-13T09:45:00', user: 'Carol Davis', action: 'Assigned task to Bob', area: 'Team', type: 'edited' },
+    { timestamp: '2026-07-12T16:30:00', user: 'Eve Martin', action: 'Uploaded new design mockups', area: 'Dashboard', type: 'created' },
+    { timestamp: '2026-07-12T10:15:00', user: 'Frank Lee', action: 'Ran regression test suite', area: 'Analytics', type: 'created' },
   ],
 };
 

@@ -22,7 +22,7 @@ function formatTimestamp(iso) {
 }
 
 function getSubtaskProgress(subtasks) {
-  if (!subtasks || subtasks.length === 0) return null;
+  if (!subtasks || subtasks.length === 0) return { completed: 0, total: 0, pct: 0 };
   const completed = subtasks.filter(s => s.completed).length;
   const total = subtasks.length;
   const pct = Math.round((completed / total) * 100);
@@ -169,21 +169,71 @@ export function renderActivity(entries) {
   if (!list) return;
   list.innerHTML = '';
 
+ feature/activity-log-final
   const sortedEntries = [...entries].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   sortedEntries.forEach(entry => {
+
+  const header = document.createElement('div');
+  header.className = 'activity-log-header';
+  header.innerHTML = `
+    <div class="activity-log-col activity-log-col--member">Member</div>
+    <div class="activity-log-col activity-log-col--action">Activity</div>
+    <div class="activity-log-col activity-log-col--area">Area</div>
+    <div class="activity-log-col activity-log-col--date">Date</div>
+    <div class="activity-log-col activity-log-col--time">Time</div>
+  `;
+  list.appendChild(header);
+
+  entries.forEach((entry, idx) => {
+    const d = new Date(entry.timestamp);
+    const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+ develop
     const div = document.createElement('div');
     div.className = 'activity-entry';
     div.dataset.type = entry.type || 'all';
+    div.style.animationDelay = `${idx * 0.03}s`;
     div.innerHTML = `
+ feature/activity-log-final
       <div class="activity-avatar">${getInitials(entry.user)}</div>
       <div class="activity-body">
         <div class="activity-text"><strong>${entry.user}</strong> ${entry.action}</div>
         <div class="activity-time">${formatTimestamp(entry.timestamp)}</div>
+
+      <div class="activity-log-col activity-log-col--member">
+        <span class="activity-entry-avatar" style="background:${getColorForUser(entry.user)}">${getInitials(entry.user)}</span>
+        <span class="activity-entry-name">${entry.user}</span>
+      </div>
+      <div class="activity-log-col activity-log-col--action">
+        <span class="activity-entry-action">${entry.action}</span>
+      </div>
+      <div class="activity-log-col activity-log-col--area">
+        <span class="activity-entry-area activity-entry-area--${entry.type}">${entry.area}</span>
+      </div>
+      <div class="activity-log-col activity-log-col--date">
+        <span class="activity-entry-date">${dateStr}</span>
+      </div>
+      <div class="activity-log-col activity-log-col--time">
+        <span class="activity-entry-time">${timeStr}</span>
+ develop
       </div>
     `;
     list.appendChild(div);
   });
+}
+
+function getColorForUser(name) {
+  const colors = {
+    'Alice Chen': '#7C3AED',
+    'Bob Smith': '#3B82F6',
+    'Carol Davis': '#10B981',
+    'Dave Wilson': '#F59E0B',
+    'Eve Martin': '#EC4899',
+    'Frank Lee': '#06B6D4',
+  };
+  return colors[name] || '#71717A';
 }
 
 export function renderTable(data) {
@@ -231,6 +281,62 @@ export function renderList(data) {
       container.appendChild(div);
     });
   });
+}
+
+export function renderTeam(members) {
+  const container = document.getElementById('team-container');
+  container.innerHTML = '';
+
+  const header = document.createElement('div');
+  header.className = 'team-header';
+  header.innerHTML = '<h2>Team Members</h2>';
+  container.appendChild(header);
+
+  const grid = document.createElement('div');
+  grid.className = 'team-grid';
+
+  members.forEach((member, idx) => {
+    const card = document.createElement('div');
+    card.className = 'team-card';
+    card.style.animationDelay = `${idx * 0.05}s`;
+    card.dataset.memberId = member.id;
+
+    const githubBadge = member.githubId
+      ? `<span class="team-card-github">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          ${member.githubId}
+        </span>`
+      : '';
+
+    card.innerHTML = `
+      <div class="team-card-avatar" style="background:${member.color}">${member.initials}</div>
+      <div class="team-card-info">
+        <div class="team-card-name">${member.name}</div>
+        <div class="team-card-role">${member.role}</div>
+        ${githubBadge}
+      </div>
+      <div class="team-card-actions">
+        <button class="btn btn-ghost btn-sm team-github-btn" data-member-id="${member.id}">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          ${member.githubId ? 'Edit GitHub ID' : 'Add GitHub ID'}
+        </button>
+      </div>
+      <div class="team-card-stats">
+        <div class="team-card-stat">
+          <span class="team-card-stat-value">${member.tasksCompleted}</span>
+          <span class="team-card-stat-label">Done</span>
+        </div>
+        <div class="team-card-stat">
+          <span class="team-card-stat-value">${member.tasksInProgress}</span>
+          <span class="team-card-stat-label">Active</span>
+        </div>
+      </div>
+    `;
+
+    grid.appendChild(card);
+  });
+
+  container.appendChild(grid);
 }
 
 export { getInitials, formatTimestamp, getSubtaskProgress };

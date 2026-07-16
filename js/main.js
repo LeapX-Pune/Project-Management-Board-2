@@ -1,5 +1,10 @@
+ feature/activity-log-final
 import { MOCK_DATA, addActivityLogEntry } from './data.js';
 import { renderBoard, renderActivity, renderTable, renderList, getInitials, formatTimestamp, getSubtaskProgress } from './ui.js';
+
+import { MOCK_DATA, TEAM_MEMBERS } from './data.js';
+import { renderBoard, renderActivity, renderTable, renderList, renderTeam, getInitials, formatTimestamp, getSubtaskProgress } from './ui.js';
+ develop
 import { initDragDrop } from './dragdrop.js';
 
 function init() {
@@ -7,6 +12,7 @@ function init() {
   renderActivity(MOCK_DATA.activityLog);
   renderTable(MOCK_DATA);
   renderList(MOCK_DATA);
+  renderTeam(TEAM_MEMBERS);
   initDragDrop();
   wireEventListeners();
 
@@ -156,6 +162,11 @@ function wireEventListeners() {
     });
   });
 
+  document.getElementById('activity-clear-btn')?.addEventListener('click', () => {
+    const list = document.getElementById('activity-list');
+    if (list) list.innerHTML = '';
+  });
+
   let commandPaletteOpen = false;
 
   document.addEventListener('keydown', (e) => {
@@ -172,6 +183,7 @@ function wireEventListeners() {
       document.getElementById('command-palette').classList.remove('open');
       document.getElementById('side-peek').classList.remove('open');
       document.getElementById('task-modal').classList.remove('open');
+      if (activityPanel?.classList.contains('open')) setPanelOpen(false);
       commandPaletteOpen = false;
     }
   });
@@ -203,6 +215,7 @@ function wireEventListeners() {
     document.getElementById('side-peek').classList.remove('open');
   });
 
+ feature/activity-log-final
   document.getElementById('activity-close')?.addEventListener('click', () => {
     document.getElementById('activity-sidebar').classList.remove('open');
   });
@@ -212,10 +225,72 @@ function wireEventListeners() {
   });
 
   document.getElementById('theme-toggle')?.addEventListener('click', () => {
+
+  function toggleTheme() {
+ develop
     document.body.classList.toggle('dark-theme');
     const label = document.querySelector('.theme-label');
     const isDark = document.body.classList.contains('dark-theme');
     if (label) label.textContent = isDark ? 'Dark' : 'Light';
+  }
+
+  document.getElementById('header-theme-toggle')?.addEventListener('click', toggleTheme);
+
+  // Activity Log Panel
+  const activityBtn = document.getElementById('activity-log-btn');
+  const activityPanel = document.getElementById('activity-panel');
+  const activityClose = document.getElementById('activity-close');
+  const STORAGE_KEY = 'activity-log-open';
+
+  function setPanelOpen(open) {
+    if (!activityPanel) return;
+    if (open) {
+      activityPanel.style.height = '';
+      const list = document.getElementById('activity-list');
+      if (list) list.scrollTop = 0;
+    } else {
+      activityPanel.style.height = '';
+    }
+    activityPanel.classList.toggle('open', open);
+    if (activityBtn) activityBtn.setAttribute('aria-pressed', String(open));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(open));
+  }
+
+  activityBtn?.addEventListener('click', () => {
+    setPanelOpen(!activityPanel?.classList.contains('open'));
+  });
+
+  activityClose?.addEventListener('click', () => setPanelOpen(false));
+
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved === 'true') {
+    setPanelOpen(true);
+  }
+
+  // Resizer
+  const resizer = document.getElementById('activity-resizer');
+  let startY = undefined;
+  let startHeight = 0;
+
+  resizer?.addEventListener('mousedown', (e) => {
+    startY = e.clientY;
+    startHeight = activityPanel.getBoundingClientRect().height;
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'ns-resize';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (startY === undefined || !activityPanel) return;
+    const diff = startY - e.clientY;
+    let newHeight = Math.min(Math.max(startHeight + diff, 180), window.innerHeight * 0.65);
+    activityPanel.style.height = `${newHeight}px`;
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (startY === undefined) return;
+    startY = undefined;
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
   });
 
   document.querySelectorAll('.activity-filter-pill').forEach(pill => {
@@ -555,6 +630,51 @@ function wireEventListeners() {
     const card = e.target.closest('.task-card');
     if (card) {
       openSidePeek(card);
+    }
+  });
+
+  let selectedMemberId = null;
+
+  document.getElementById('team-container')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.team-github-btn');
+    if (!btn) return;
+    selectedMemberId = btn.dataset.memberId;
+    const member = TEAM_MEMBERS.find(m => m.id === selectedMemberId);
+    if (!member) return;
+    document.getElementById('github-modal-member-name').textContent = member.name;
+    document.getElementById('github-modal-title').textContent = member.githubId ? 'Edit GitHub ID' : 'Add GitHub ID';
+    document.getElementById('github-id-input').value = member.githubId || '';
+    document.getElementById('github-modal').classList.add('open');
+  });
+
+  document.querySelectorAll('.github-modal-close').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('github-modal').classList.remove('open');
+    });
+  });
+
+  document.getElementById('github-modal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) {
+      document.getElementById('github-modal').classList.remove('open');
+    }
+  });
+
+  document.getElementById('github-save-btn')?.addEventListener('click', () => {
+    const input = document.getElementById('github-id-input');
+    const username = input.value.trim();
+    if (!username) return;
+
+    const member = TEAM_MEMBERS.find(m => m.id === selectedMemberId);
+    if (member) {
+      member.githubId = username;
+      renderTeam(TEAM_MEMBERS);
+    }
+    document.getElementById('github-modal').classList.remove('open');
+  });
+
+  document.getElementById('github-id-input')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      document.getElementById('github-save-btn')?.click();
     }
   });
 }
