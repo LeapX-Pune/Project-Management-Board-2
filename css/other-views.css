@@ -65,7 +65,7 @@
 }
 
 .metric-badge.success {
-  background: rgba(16, 185, 129, 0.1);
+  background: var(--priority-low-bg);
   color: var(--priority-low-text);
 }
 
@@ -80,7 +80,7 @@
 }
 
 .metric-badge.info {
-  background: rgba(99, 102, 241, 0.1);
+  background: var(--color-accent-soft);
   color: var(--color-accent);
 }
 

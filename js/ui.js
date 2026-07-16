@@ -22,7 +22,7 @@ function formatTimestamp(iso) {
 }
 
 function getSubtaskProgress(subtasks) {
-  if (!subtasks || subtasks.length === 0) return null;
+  if (!subtasks || subtasks.length === 0) return { completed: 0, total: 0, pct: 0 };
   const completed = subtasks.filter(s => s.completed).length;
   const total = subtasks.length;
   const pct = Math.round((completed / total) * 100);

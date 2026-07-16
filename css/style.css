@@ -354,6 +354,23 @@ body.dark-theme .activity-avatar {
   color: var(--color-accent);
 }
 
+body.dark-theme .metric-card,
+body.dark-theme .dashboard-card,
+body.dark-theme .chart-card,
+body.dark-theme .calendar-month-grid,
+body.dark-theme .calendar-day,
+body.dark-theme .member-stats-table {
+  background: var(--color-surface-2);
+}
+
+body.dark-theme .calendar-day.other-month {
+  background: var(--color-surface-3);
+}
+
+body.dark-theme .calendar-day:hover {
+  background: var(--color-surface-3);
+}
+
 body.dark-theme .theme-icon-light { display: none; }
 body.dark-theme .theme-icon-dark { display: block; }
 
