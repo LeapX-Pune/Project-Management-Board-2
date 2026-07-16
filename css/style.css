@@ -396,6 +396,10 @@ body.dark-theme .metric-badge.info {
   color: var(--color-accent);
 }
 
+body.dark-theme .team-card {
+  background: var(--color-surface-2);
+}
+
 body.dark-theme .doughnut-bg {
   stroke: #272B33;
 }

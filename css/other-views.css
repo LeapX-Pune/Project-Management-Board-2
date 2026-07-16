@@ -445,3 +445,159 @@
   border-radius: 999px;
   transition: width var(--transition-base);
 }
+
+.view-container.active.team-view {
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.team-wrapper {
+  padding: var(--space-lg);
+  height: 100%;
+  overflow-y: auto;
+}
+
+.team-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+}
+
+.team-header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-lg);
+}
+
+.team-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-subtle);
+  transition: var(--transition-base);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-md);
+  animation: slideUp 0.3s ease both;
+}
+
+.team-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+.team-card-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  border: 3px solid var(--color-border);
+  transition: var(--transition-base);
+}
+
+.team-card:hover .team-card-avatar {
+  border-color: var(--color-accent);
+}
+
+.team-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.team-card-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 2px;
+}
+
+.team-card-role {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-bottom: var(--space-xs);
+}
+
+.team-card-github {
+  font-size: 0.75rem;
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.team-card-github svg {
+  width: 14px;
+  height: 14px;
+}
+
+.team-card-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.team-card-actions .btn {
+  font-size: 0.8125rem;
+  height: 32px;
+  padding: 0 0.75rem;
+}
+
+.team-card-stats {
+  display: flex;
+  gap: var(--space-md);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--border-subtle);
+  width: 100%;
+  justify-content: center;
+}
+
+.team-card-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.team-card-stat-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  font-family: var(--font-mono);
+}
+
+.team-card-stat-label {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modal--sm {
+  max-width: 400px;
+}
+
+.github-modal-member-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-main);
+  text-align: center;
+  padding: var(--space-sm) 0;
+}
