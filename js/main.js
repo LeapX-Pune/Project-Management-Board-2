@@ -158,7 +158,11 @@ function wireEventListeners() {
   });
 
   document.getElementById('activity-close')?.addEventListener('click', () => {
-    document.getElementById('activity-sidebar').classList.toggle('open');
+    document.getElementById('activity-sidebar').classList.add('closed');
+  });
+
+  document.getElementById('activity-toggle')?.addEventListener('click', () => {
+    document.getElementById('activity-sidebar').classList.toggle('closed');
   });
 
   document.getElementById('theme-toggle')?.addEventListener('click', () => {

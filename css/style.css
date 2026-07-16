@@ -371,6 +371,47 @@ body.dark-theme .calendar-day:hover {
   background: var(--color-surface-3);
 }
 
+body.dark-theme .metric-badge.neutral {
+  background: rgba(161, 161, 170, 0.15);
+  color: var(--color-text-muted);
+}
+
+body.dark-theme .metric-badge.success {
+  background: rgba(52, 211, 153, 0.2);
+  color: #6EE7B7;
+}
+
+body.dark-theme .metric-badge.warning {
+  background: rgba(251, 191, 36, 0.2);
+  color: #FCD34D;
+}
+
+body.dark-theme .metric-badge.danger {
+  background: rgba(248, 113, 113, 0.2);
+  color: #FCA5A5;
+}
+
+body.dark-theme .metric-badge.info {
+  background: rgba(136, 186, 246, 0.2);
+  color: var(--color-accent);
+}
+
+body.dark-theme .doughnut-bg {
+  stroke: #272B33;
+}
+
+body.dark-theme .doughnut-segment-high {
+  stroke: #F87171;
+}
+
+body.dark-theme .doughnut-segment-medium {
+  stroke: #FBBF24;
+}
+
+body.dark-theme .doughnut-segment-low {
+  stroke: #34D399;
+}
+
 body.dark-theme .theme-icon-light { display: none; }
 body.dark-theme .theme-icon-dark { display: block; }
 

@@ -308,6 +308,22 @@
   flex-shrink: 0;
 }
 
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  transition: var(--transition-fast);
+}
+
+.btn-icon:hover {
+  background: var(--color-muted);
+  color: var(--color-foreground);
+}
+
 .main-area {
   flex: 1;
   overflow: hidden;
@@ -331,6 +347,10 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.activity-sidebar.closed {
+  display: none;
 }
 
 .activity-header {
