@@ -1,0 +1,104 @@
+/* Dropdown Assignment Menu Styles */
+
+.dropdown-container {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 4px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    width: 240px;
+    z-index: 500;
+    padding: var(--spacing-xs);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.dropdown.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* Search bar inside dropdown */
+.dropdown-search-wrapper {
+    padding: var(--spacing-xs);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dropdown-search {
+    width: 100%;
+    padding: 6px var(--spacing-sm);
+    font-size: 0.8rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-app);
+    outline: none;
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.dropdown-search:focus {
+    border-color: var(--primary-color);
+    background-color: var(--bg-surface);
+}
+
+/* Items List wrapper */
+.dropdown-list {
+    max-height: 180px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-xs) 0;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+    user-select: none;
+}
+
+.dropdown-item:hover {
+    background-color: var(--bg-surface-hover);
+}
+
+.dropdown-item--selected {
+    background-color: var(--primary-light);
+    color: var(--primary-hover);
+    font-weight: 500;
+}
+
+.dropdown-item__check {
+    margin-left: auto;
+    color: var(--primary-color);
+    display: none;
+    flex-shrink: 0;
+}
+
+.dropdown-item--selected .dropdown-item__check {
+    display: flex;
+}
+
+/* Helper to position the dropdown on the right hand side if needed */
+.dropdown--right {
+    left: auto;
+    right: 0;
+}

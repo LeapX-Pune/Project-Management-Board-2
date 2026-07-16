@@ -205,3 +205,167 @@ window.AppUI.renderHeaderTeamList = function(containerId, members) {
     const avatarGroup = window.AppUI.createAvatarGroup(members, { size: 'sm', max: 5 });
     container.appendChild(avatarGroup);
 };
+
+/**
+ * Shows an assignment dropdown positioned relative to the target element.
+ * @param {HTMLElement} triggerEl - The button or element that triggered the dropdown
+ * @param {Array<string>} assignedIds - List of currently assigned member IDs
+ * @param {Function} onAssignChange - Callback function `(memberId, isSelected)` when an item is toggled
+ */
+window.AppUI.showAssignDropdown = function(triggerEl, assignedIds = [], onAssignChange) {
+    // 1. Close any open dropdown first
+    window.AppUI.closeDropdown();
+    
+    // 2. Create Dropdown Elements
+    const dropdown = document.createElement('div');
+    dropdown.className = 'dropdown';
+    dropdown.id = 'assign-dropdown';
+    
+    // Search Box
+    const searchWrapper = document.createElement('div');
+    searchWrapper.className = 'dropdown-search-wrapper';
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.className = 'dropdown-search';
+    searchInput.placeholder = 'Search members...';
+    searchWrapper.appendChild(searchInput);
+    dropdown.appendChild(searchWrapper);
+    
+    // Options List
+    const list = document.createElement('div');
+    list.className = 'dropdown-list';
+    
+    const members = window.AppStore.getMembers();
+    
+    if (members.length === 0) {
+        const noMembers = document.createElement('div');
+        noMembers.className = 'dropdown-item';
+        noMembers.style.color = 'var(--text-muted)';
+        noMembers.style.cursor = 'default';
+        noMembers.textContent = 'No members. Click "Manage Team" to add.';
+        list.appendChild(noMembers);
+    } else {
+        members.forEach(member => {
+            const isSelected = assignedIds.includes(member.id);
+            const item = document.createElement('div');
+            item.className = 'dropdown-item';
+            if (isSelected) {
+                item.className += ' dropdown-item--selected';
+            }
+            item.setAttribute('data-member-id', member.id);
+            
+            const avatar = window.AppUI.createAvatar(member, { size: 'xs' });
+            
+            const name = document.createElement('span');
+            name.style.marginLeft = 'var(--spacing-xs)';
+            name.textContent = member.name;
+            
+            const check = document.createElement('span');
+            check.className = 'dropdown-item__check';
+            check.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+            `;
+            
+            item.appendChild(avatar);
+            item.appendChild(name);
+            item.appendChild(check);
+            
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const selected = item.classList.toggle('dropdown-item--selected');
+                
+                if (onAssignChange) {
+                    onAssignChange(member.id, selected);
+                }
+            });
+            
+            list.appendChild(item);
+        });
+    }
+    
+    dropdown.appendChild(list);
+    document.body.appendChild(dropdown);
+    
+    // 3. Position the dropdown relative to triggerEl
+    const rect = triggerEl.getBoundingClientRect();
+    dropdown.style.position = 'fixed';
+    dropdown.style.top = `${rect.bottom + window.scrollY + 6}px`;
+    
+    // Default left align
+    let dropdownLeft = rect.left + window.scrollX;
+    const dropdownWidth = 240; // match CSS width
+    if (rect.left + dropdownWidth > window.innerWidth) {
+        // align to right side of trigger element if it overflows screen
+        dropdownLeft = rect.right + window.scrollX - dropdownWidth;
+    }
+    dropdown.style.left = `${dropdownLeft}px`;
+    
+    // 4. Animation Frame Trigger
+    requestAnimationFrame(() => {
+        dropdown.classList.add('active');
+    });
+    
+    // Focus search input
+    setTimeout(() => searchInput.focus(), 50);
+    
+    // 5. Search filtering logic
+    searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase().trim();
+        const items = list.querySelectorAll('.dropdown-item[data-member-id]');
+        items.forEach(item => {
+            const nameEl = item.querySelector('span:not(.dropdown-item__check)');
+            if (nameEl && nameEl.textContent.toLowerCase().includes(query)) {
+                item.style.display = 'flex';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+    
+    // 6. Register dismiss events
+    function handleOutsideClick(e) {
+        if (!dropdown.contains(e.target) && !triggerEl.contains(e.target)) {
+            window.AppUI.closeDropdown();
+        }
+    }
+    
+    function handleScroll() {
+        window.AppUI.closeDropdown();
+    }
+    
+    function handleKeyDown(e) {
+        if (e.key === 'Escape') {
+            window.AppUI.closeDropdown();
+            triggerEl.focus();
+        }
+    }
+    
+    // Delay adding listeners so opening click doesn't trigger close
+    setTimeout(() => {
+        window.addEventListener('click', handleOutsideClick);
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('keydown', handleKeyDown);
+        
+        // Cache event removal functions on the element itself for easy cleanup!
+        dropdown._cleanup = function() {
+            window.removeEventListener('click', handleOutsideClick);
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, 100);
+};
+
+/**
+ * Closes the active assignment dropdown and cleans up listeners.
+ */
+window.AppUI.closeDropdown = function() {
+    const activeDropdown = document.getElementById('assign-dropdown');
+    if (activeDropdown) {
+        if (activeDropdown._cleanup) {
+            activeDropdown._cleanup();
+        }
+        activeDropdown.remove();
+    }
+};
