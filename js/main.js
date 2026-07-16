@@ -223,6 +223,21 @@ function wireEventListeners() {
     document.body.style.cursor = '';
   });
 
+  document.querySelectorAll('.activity-filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.activity-filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      const filter = pill.dataset.filter;
+      document.querySelectorAll('.activity-entry').forEach(entry => {
+        if (filter === 'all' || entry.dataset.type === filter) {
+          entry.style.display = '';
+        } else {
+          entry.style.display = 'none';
+        }
+      });
+    });
+  });
+
   document.addEventListener('click', (e) => {
     const renameBtn = e.target.closest('[data-action="rename"]');
     if (renameBtn) {
