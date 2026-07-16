@@ -248,11 +248,11 @@ body.dark-theme {
   --color-header: var(--color-sidebar);
 
   /* Column status backgrounds (dark theme: lighter for visibility) */
-  --col-backlog-bg: #2A2E38;
-  --col-todo-bg: #3A3020;
-  --col-in-progress-bg: #1E2E4A;
-  --col-review-bg: #2E1E3E;
-  --col-done-bg: #1A3828;
+  --col-backlog-bg: #3E4350;
+  --col-todo-bg: #5C4A2E;
+  --col-in-progress-bg: #2E4E76;
+  --col-review-bg: #4A2E5E;
+  --col-done-bg: #2A5040;
 
   /* Border tokens */
   --color-border: #272B33;
