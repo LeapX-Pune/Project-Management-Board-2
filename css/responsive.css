@@ -64,6 +64,10 @@
     box-shadow: var(--shadow-lg);
   }
 
+  .activity-panel {
+    left: 0 !important;
+  }
+
   .app-header {
     padding: var(--space-sm) var(--space-md);
     gap: var(--space-sm);
