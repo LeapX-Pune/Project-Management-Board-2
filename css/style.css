@@ -28,9 +28,9 @@
   /* Surface tokens */
   --color-canvas: var(--brand-100);
   --color-surface: var(--brand-50);
-  --color-surface-2: var(--brand-50);
+  --color-surface-2: var(--brand-100);
   --color-surface-3: var(--brand-100);
-  --color-sidebar: var(--brand-50);
+  --color-sidebar: var(--brand-100);
 
   /* Border tokens */
   --color-border: var(--brand-200);
@@ -76,7 +76,7 @@
   --color-secondary: var(--brand-400);
   --color-background: var(--color-canvas);
   --color-foreground: var(--color-text);
-  --color-muted: var(--brand-100);
+  --color-muted: var(--brand-200);
 
   /* Priority tokens */
   --priority-high-bg: rgba(220, 38, 38, 0.08);
