@@ -412,6 +412,25 @@ body.dark-theme .doughnut-segment-low {
   stroke: #34D399;
 }
 
+body.dark-theme .calendar-event {
+  color: var(--color-text);
+}
+
+body.dark-theme .calendar-event.high {
+  background: rgba(248, 113, 113, 0.25);
+  border-left-color: #F87171;
+}
+
+body.dark-theme .calendar-event.medium {
+  background: rgba(251, 191, 36, 0.25);
+  border-left-color: #FBBF24;
+}
+
+body.dark-theme .calendar-event.low {
+  background: rgba(52, 211, 153, 0.25);
+  border-left-color: #34D399;
+}
+
 body.dark-theme .theme-icon-light { display: none; }
 body.dark-theme .theme-icon-dark { display: block; }
 
