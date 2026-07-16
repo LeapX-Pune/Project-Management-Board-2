@@ -16,6 +16,10 @@ function init() {
     renderTable(MOCK_DATA);
     renderList(MOCK_DATA);
   });
+
+  window.addEventListener('activityLogUpdated', () => {
+    renderActivity(MOCK_DATA.activityLog);
+  });
 }
 
 function openSidePeek(card) {
@@ -306,7 +310,7 @@ function wireEventListeners() {
     }
   });
 
-  document.querySelector('.btn-primary')?.addEventListener('click', (e) => {
+  document.querySelector('#side-peek .btn-primary')?.addEventListener('click', (e) => {
     const peekContent = e.target.closest('.side-peek-content');
     if (peekContent) {
       const sidePeek = document.getElementById('side-peek');
