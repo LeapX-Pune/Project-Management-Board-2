@@ -109,6 +109,16 @@
   opacity: 0.8;
 }
 
+.chart-bar-info { fill: var(--color-info); }
+.chart-bar-warning { fill: var(--color-warning); }
+.chart-bar-accent { fill: var(--color-accent); }
+.chart-bar-danger { fill: var(--color-destructive); }
+.chart-bar-success { fill: var(--color-success); }
+
+.analytics-wrapper .chart-svg text {
+  fill: var(--color-text-muted);
+}
+
 .dashboard-member-list {
   display: flex;
   flex-direction: column;

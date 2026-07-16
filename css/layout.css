@@ -429,7 +429,7 @@
 .side-peek-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(9, 9, 11, 0.3);
+  background: var(--color-overlay);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }
@@ -574,7 +574,7 @@
 .command-palette-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(9, 9, 11, 0.5);
+  background: var(--color-overlay);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   display: none;
@@ -744,9 +744,9 @@
   flex-shrink: 0;
 }
 
-.list-item-priority.high { background: var(--color-destructive); }
-.list-item-priority.medium { background: #F59E0B; }
-.list-item-priority.low { background: #10B981; }
+.list-item-priority.high { background: var(--priority-high-text); }
+.list-item-priority.medium { background: var(--priority-medium-text); }
+.list-item-priority.low { background: var(--priority-low-text); }
 
 .list-item-content {
   flex: 1;
