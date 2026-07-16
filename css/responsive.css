@@ -1,1 +1,65 @@
-/* Media queries */
+/* Media queries for global responsiveness and module overrides */
+
+/* Tablet Breakpoint */
+@media (max-width: 1024px) {
+    :root {
+        --spacing-md: 0.75rem;
+        --spacing-lg: 1rem;
+        --spacing-xl: 1.5rem;
+    }
+    
+    .modal-container {
+        max-width: 90%;
+    }
+}
+
+/* Mobile Breakpoint */
+@media (max-width: 768px) {
+    .header-container {
+        padding: var(--spacing-xs) 0;
+    }
+    
+    /* Hide the header group avatars to save horizontal spacing */
+    .header-team-group {
+        margin-right: 0 !important;
+    }
+    
+    .header-team-group .avatar-group {
+        display: none !important;
+    }
+}
+
+/* Small Smartphone Breakpoint */
+@media (max-width: 480px) {
+    .app-header {
+        height: auto;
+        padding: var(--spacing-sm);
+    }
+    
+    .header-container {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        align-items: center;
+    }
+    
+    .app-logo {
+        margin-bottom: var(--spacing-xs);
+    }
+    
+    #manage-team-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Modify scroll containers to stack vertically on small viewports */
+    body {
+        height: 100%;
+        overflow-y: auto;
+    }
+    
+    .app-main {
+        overflow-x: visible;
+        overflow-y: visible;
+        padding: var(--spacing-sm);
+    }
+}
