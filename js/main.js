@@ -165,13 +165,20 @@ function wireEventListeners() {
   });
 
   function toggleTheme() {
-    document.body.classList.toggle('dark-theme');
+    const isDark = document.body.classList.toggle('dark-theme');
     const label = document.querySelector('.theme-label');
-    const isDark = document.body.classList.contains('dark-theme');
     if (label) label.textContent = isDark ? 'Dark' : 'Light';
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
   }
 
   document.getElementById('header-theme-toggle')?.addEventListener('click', toggleTheme);
+
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    document.body.classList.add('dark-theme');
+    const label = document.querySelector('.theme-label');
+    if (label) label.textContent = 'Dark';
+  }
 
   // Activity Log Panel
   const activityBtn = document.getElementById('activity-log-btn');
