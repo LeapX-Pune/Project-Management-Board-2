@@ -682,6 +682,14 @@
   height: 100%;
 }
 
+.table-view {
+  flex-direction: column;
+}
+
+.task-table {
+  table-layout: fixed;
+}
+
 .task-table {
   width: 100%;
   border-collapse: collapse;
@@ -723,11 +731,16 @@
   overflow-y: auto;
 }
 
+.list-view {
+  flex-direction: column;
+}
+
 .list-item {
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  padding: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  min-height: 56px;
   background: var(--bg-surface);
   border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
@@ -737,11 +750,12 @@
 
 .list-item:hover {
   box-shadow: var(--shadow-md);
+  border-color: var(--color-border);
 }
 
 .list-item-priority {
   width: 4px;
-  height: 32px;
+  height: 36px;
   border-radius: 2px;
   flex-shrink: 0;
 }

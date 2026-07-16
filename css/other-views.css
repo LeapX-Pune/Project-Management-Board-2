@@ -2,12 +2,18 @@
   animation: fadeIn 0.2s ease;
 }
 
+.dashboard-view {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--space-md);
-  margin-bottom: var(--space-lg);
   padding: var(--space-lg);
+  padding-bottom: 0;
 }
 
 .metric-card {
@@ -17,6 +23,10 @@
   box-shadow: var(--shadow-card);
   border: 1px solid var(--border-subtle);
   transition: var(--transition-base);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 120px;
 }
 
 .metric-card:hover {
@@ -78,7 +88,9 @@
   display: grid;
   grid-template-columns: 1.5fr 1fr;
   gap: var(--space-md);
-  padding: 0 var(--space-lg) var(--space-lg);
+  padding: var(--space-lg);
+  flex: 1;
+  min-height: 0;
 }
 
 .dashboard-card {
@@ -87,6 +99,8 @@
   padding: var(--space-lg);
   box-shadow: var(--shadow-card);
   border: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
 }
 
 .dashboard-card-title {
@@ -223,8 +237,8 @@
 }
 
 .calendar-day {
-  min-height: 100px;
-  padding: var(--space-sm);
+  min-height: 110px;
+  padding: var(--space-xs) var(--space-sm);
   border-right: 1px solid var(--border-subtle);
   border-bottom: 1px solid var(--border-subtle);
   background: var(--bg-surface);
@@ -297,15 +311,22 @@
   border-left-color: var(--priority-low-text);
 }
 
+.analytics-view {
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .analytics-wrapper {
   padding: var(--space-lg);
   height: 100%;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--space-lg);
   margin-bottom: var(--space-lg);
 }
@@ -316,6 +337,12 @@
   padding: var(--space-lg);
   box-shadow: var(--shadow-card);
   border: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-card .chart-svg {
+  flex: 1;
 }
 
 .chart-card-title {
