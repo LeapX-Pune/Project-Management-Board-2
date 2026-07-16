@@ -181,6 +181,13 @@ function wireEventListeners() {
 
   function setPanelOpen(open) {
     if (!activityPanel) return;
+    if (open) {
+      activityPanel.style.height = '';
+      const list = document.getElementById('activity-list');
+      if (list) list.scrollTop = 0;
+    } else {
+      activityPanel.style.height = '';
+    }
     activityPanel.classList.toggle('open', open);
     if (activityBtn) activityBtn.setAttribute('aria-pressed', String(open));
     localStorage.setItem(STORAGE_KEY, JSON.stringify(open));
