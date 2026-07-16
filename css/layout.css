@@ -480,13 +480,13 @@
 
 .peek-title-input {
   width: 100%;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   border: none;
   outline: none;
   background: transparent;
-  padding: var(--space-sm) 0;
+  padding: 0;
   color: var(--color-foreground);
 }
 
