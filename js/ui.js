@@ -166,16 +166,19 @@ export function renderBoard(data) {
 
 export function renderActivity(entries) {
   const list = document.getElementById('activity-list');
+  if (!list) return;
   list.innerHTML = '';
 
-  entries.forEach(entry => {
+  const sortedEntries = [...entries].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  sortedEntries.forEach(entry => {
     const div = document.createElement('div');
     div.className = 'activity-entry';
     div.dataset.type = entry.type || 'all';
     div.innerHTML = `
       <div class="activity-avatar">${getInitials(entry.user)}</div>
       <div class="activity-body">
-        <div class="activity-text">${entry.user} ${entry.action}</div>
+        <div class="activity-text"><strong>${entry.user}</strong> ${entry.action}</div>
         <div class="activity-time">${formatTimestamp(entry.timestamp)}</div>
       </div>
     `;

@@ -91,3 +91,15 @@ export const MOCK_DATA = {
     { timestamp: '2026-07-14T16:45:00', user: 'Bob Smith', action: "updated deadline on 'Evaluate API options'", type: 'edited' },
   ],
 };
+
+export function addActivityLogEntry(user, action, type) {
+  const newEntry = {
+    timestamp: new Date().toISOString(),
+    user: user,
+    action: action,
+    type: type
+  };
+  MOCK_DATA.activityLog.push(newEntry);
+  window.dispatchEvent(new CustomEvent('activityLogUpdated', { detail: newEntry }));
+  return newEntry;
+}
