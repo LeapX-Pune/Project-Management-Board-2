@@ -38,23 +38,23 @@
 }
 
 .column[data-column-id="col-backlog"] {
-  background: color-mix(in srgb, var(--color-info) 8%, var(--color-muted));
+  background: var(--col-backlog-bg);
 }
 
 .column[data-column-id="col-todo"] {
-  background: color-mix(in srgb, var(--color-warning) 8%, var(--color-muted));
+  background: var(--col-todo-bg);
 }
 
 .column[data-column-id="col-in-progress"] {
-  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-muted));
+  background: var(--col-in-progress-bg);
 }
 
 .column[data-column-id="col-review"] {
-  background: color-mix(in srgb, var(--color-destructive) 6%, var(--color-muted));
+  background: var(--col-review-bg);
 }
 
 .column[data-column-id="col-done"] {
-  background: color-mix(in srgb, var(--color-success) 8%, var(--color-muted));
+  background: var(--col-done-bg);
 }
 
 .column-header {

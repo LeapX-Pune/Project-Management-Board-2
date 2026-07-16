@@ -31,6 +31,14 @@
   --color-surface-2: var(--brand-100);
   --color-surface-3: var(--brand-100);
   --color-sidebar: var(--brand-100);
+  --color-header: var(--color-sidebar);
+
+  /* Column status backgrounds (light theme: darker shades) */
+  --col-backlog-bg: #BEC8D6;
+  --col-todo-bg: #F0D6B0;
+  --col-in-progress-bg: #A8C8F0;
+  --col-review-bg: #D0C0F0;
+  --col-done-bg: #A8E0C0;
 
   /* Border tokens */
   --color-border: var(--brand-200);
@@ -237,6 +245,14 @@ body.dark-theme {
   --color-surface-2: #181C22;
   --color-surface-3: #1E222A;
   --color-sidebar: #0E1115;
+  --color-header: var(--color-sidebar);
+
+  /* Column status backgrounds (dark theme: lighter for visibility) */
+  --col-backlog-bg: #2A2E38;
+  --col-todo-bg: #3A3020;
+  --col-in-progress-bg: #1E2E4A;
+  --col-review-bg: #2E1E3E;
+  --col-done-bg: #1A3828;
 
   /* Border tokens */
   --color-border: #272B33;
@@ -300,10 +316,6 @@ body.dark-theme {
   --shadow-md: var(--shadow-card-hover);
   --shadow-lg: var(--shadow-floating);
   --shadow-peek: -10px 0 30px rgba(0, 0, 0, 0.4);
-}
-
-body.dark-theme .app-header {
-  background: rgba(18, 20, 25, 0.85);
 }
 
 body.dark-theme .task-priority.high {
