@@ -219,7 +219,7 @@ function wireEventListeners() {
   document.addEventListener('mousemove', (e) => {
     if (startY === undefined || !activityPanel) return;
     const diff = startY - e.clientY;
-    let newHeight = Math.min(Math.max(startHeight + diff, 180), 500);
+    let newHeight = Math.min(Math.max(startHeight + diff, 180), window.innerHeight * 0.65);
     activityPanel.style.height = `${newHeight}px`;
   });
 

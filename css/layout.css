@@ -348,7 +348,7 @@
   flex-direction: column;
   height: 0;
   min-height: 0;
-  max-height: 500px;
+  max-height: 65vh;
   background: var(--bg-surface);
   border-top: 1px solid var(--border-subtle);
   box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
