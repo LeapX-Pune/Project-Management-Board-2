@@ -149,10 +149,20 @@
           </div>
         </div>
         <div class="header-right">
-          <button class="btn-icon" id="activity-toggle" aria-label="Toggle activity panel">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-              <path d="M10 2C6 2 3 5 3 9V13L2 15H18L17 13V9C17 5 14 2 10 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-              <path d="M8 15C8 15.5 8.5 17 10 17C11.5 17 12 15.5 12 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <button class="btn-icon" id="header-theme-toggle" aria-label="Toggle dark mode">
+            <svg class="theme-icon-light" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M10 1V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M10 17V19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M4.5 4.5L5.5 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M14.5 14.5L15.5 15.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M1 10H3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M17 10H19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M4.5 15.5L5.5 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M14.5 5.5L15.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <svg class="theme-icon-dark" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M17 13C15 16 11 17 7.5 15C4 13 2.5 9.5 4 6C4.5 5 5.5 4 6.5 3.5C3 4.5 1 8 1 11.5C1 15.5 4.5 19 8.5 19C12 19 15.5 17 17 13Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
             </svg>
           </button>
           <button class="btn btn-primary" id="add-task-btn" aria-label="Add new task">
@@ -498,7 +508,7 @@
       </div>
     </div>
 
-    <aside class="activity-sidebar" id="activity-sidebar" role="complementary" aria-label="Activity log">
+    <aside class="activity-sidebar" id="activity-sidebar" role="complementary" aria-label="Activity log" style="display:none">
       <div class="activity-header">
         <h3 class="activity-title">Activity</h3>
         <button class="activity-close" id="activity-close" aria-label="Close activity panel">
