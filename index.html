@@ -13,18 +13,74 @@
     <link rel="stylesheet" href="css/board.css">
     <link rel="stylesheet" href="css/task.css">
     <link rel="stylesheet" href="css/avatar.css">
+    <link rel="stylesheet" href="css/member-modal.css">
     
     <!-- Responsive overrides -->
     <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
     <header class="app-header">
-        <!-- Header content (title, search, filters) will go here -->
+        <div class="header-container flex-between">
+            <h1 class="app-logo">ProjectBoard</h1>
+            <div class="header-actions flex-center">
+                <div id="header-team-group" class="header-team-group flex-center" style="margin-right: var(--spacing-md);">
+                    <!-- Dynamic team avatars group list will render here -->
+                </div>
+                <button id="manage-team-btn" class="btn btn--secondary flex-center" aria-label="Manage Team Members">
+                    <span>Manage Team</span>
+                </button>
+            </div>
+        </div>
     </header>
     
     <main class="app-main">
         <!-- Board columns will be structured here -->
     </main>
+
+    <!-- Team Member Management Modal -->
+    <div id="member-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="modal-title">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 id="modal-title" class="modal-title">Manage Team Members</h2>
+                <button class="modal-close" id="close-member-modal" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="member-manager">
+                    <!-- Left Pane: Member List -->
+                    <div class="member-list-pane" id="member-list-container">
+                        <!-- Dynamic member items will render here -->
+                    </div>
+                    
+                    <!-- Right Pane: Add/Edit Form -->
+                    <div class="member-form-pane">
+                        <h3 id="form-action-title" class="member-form-title">Add New Member</h3>
+                        <form id="member-form" novalidate>
+                            <input type="hidden" id="member-id-input">
+                            <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                                <label for="member-name-input" class="form-label">Full Name</label>
+                                <input type="text" id="member-name-input" class="form-input" placeholder="e.g. Sarah Jenkins" required>
+                                <span class="form-error-msg" id="name-error">Name is required.</span>
+                            </div>
+                            <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                                <label for="member-email-input" class="form-label">Email Address</label>
+                                <input type="email" id="member-email-input" class="form-input" placeholder="e.g. sarah.j@example.com" required>
+                                <span class="form-error-msg" id="email-error">Please enter a valid email.</span>
+                            </div>
+                            <div class="form-group" style="margin-bottom: var(--spacing-md);">
+                                <label for="member-avatar-input" class="form-label">Avatar Photo URL (Optional)</label>
+                                <input type="url" id="member-avatar-input" class="form-input" placeholder="e.g. https://images.unsplash.com/...">
+                                <span class="form-error-msg" id="avatar-error">Please enter a valid URL.</span>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" id="btn-cancel-edit" class="btn btn--secondary" style="display: none;">Cancel</button>
+                                <button type="submit" id="btn-submit-member" class="btn btn--primary">Save Member</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="js/data.js" defer></script>

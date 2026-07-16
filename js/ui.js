@@ -90,3 +90,118 @@ window.AppUI.createAvatarGroup = function(members, options = {}) {
     
     return groupContainer;
 };
+
+/**
+ * Renders the list of team members in the management modal pane.
+ * @param {string} containerId - ID of the container element
+ * @param {Array<Object>} members - List of team members
+ * @param {string|null} activeEditId - ID of the member currently being edited
+ */
+window.AppUI.renderMemberList = function(containerId, members, activeEditId = null) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (members.length === 0) {
+        const emptyState = document.createElement('div');
+        emptyState.className = 'flex-center';
+        emptyState.style.flexDirection = 'column';
+        emptyState.style.padding = 'var(--spacing-xl) var(--spacing-md)';
+        emptyState.style.color = 'var(--text-muted)';
+        emptyState.style.fontSize = '0.9rem';
+        emptyState.style.textAlign = 'center';
+        emptyState.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="margin-bottom: var(--spacing-sm); color: var(--text-muted);">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <p>No team members yet. Create one on the right.</p>
+        `;
+        container.appendChild(emptyState);
+        return;
+    }
+    
+    members.forEach(member => {
+        const item = document.createElement('div');
+        item.className = 'member-item';
+        if (activeEditId === member.id) {
+            item.className += ' member-item--selected';
+        }
+        item.setAttribute('data-member-id', member.id);
+        
+        // Left side: Info
+        const info = document.createElement('div');
+        info.className = 'member-item__info';
+        
+        const avatarEl = window.AppUI.createAvatar(member, { size: 'sm' });
+        
+        const details = document.createElement('div');
+        details.className = 'member-item__details';
+        
+        const name = document.createElement('span');
+        name.className = 'member-item__name';
+        name.textContent = member.name;
+        
+        const email = document.createElement('span');
+        email.className = 'member-item__email';
+        email.textContent = member.email;
+        
+        details.appendChild(name);
+        details.appendChild(email);
+        
+        info.appendChild(avatarEl);
+        info.appendChild(details);
+        
+        // Right side: Actions
+        const actions = document.createElement('div');
+        actions.className = 'member-item__actions';
+        
+        // Edit Action button
+        const editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.className = 'btn-icon';
+        editBtn.setAttribute('data-action', 'edit');
+        editBtn.setAttribute('aria-label', `Edit ${member.name}`);
+        editBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+        `;
+        
+        // Delete Action button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'btn-icon btn-icon--danger';
+        deleteBtn.setAttribute('data-action', 'delete');
+        deleteBtn.setAttribute('aria-label', `Delete ${member.name}`);
+        deleteBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+        `;
+        
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+        
+        item.appendChild(info);
+        item.appendChild(actions);
+        
+        container.appendChild(item);
+    });
+};
+
+/**
+ * Renders the list of active team avatars in the header layout.
+ * @param {string} containerId - ID of the container element
+ * @param {Array<Object>} members - List of team members
+ */
+window.AppUI.renderHeaderTeamList = function(containerId, members) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    container.innerHTML = '';
+    if (members.length === 0) return;
+    
+    const avatarGroup = window.AppUI.createAvatarGroup(members, { size: 'sm', max: 5 });
+    container.appendChild(avatarGroup);
+};
