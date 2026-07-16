@@ -2,7 +2,7 @@
   animation: fadeIn 0.2s ease;
 }
 
-.dashboard-view {
+.view-container.active.dashboard-view {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -311,7 +311,7 @@
   border-left-color: var(--priority-low-text);
 }
 
-.analytics-view {
+.view-container.active.analytics-view {
   flex-direction: column;
   overflow: hidden;
 }
