@@ -24,9 +24,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-md) var(--space-md);
+  padding: 0 var(--space-md);
+  height: 56px;
   border-bottom: 1px solid var(--border-subtle);
-  min-height: 56px;
 }
 
 .sidebar-logo {
@@ -76,7 +76,7 @@
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-xs);
   padding: var(--space-sm);
   flex: 1;
 }
@@ -192,14 +192,13 @@
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  padding: var(--space-sm) var(--space-lg);
+  padding: 0 var(--space-lg);
+  height: 56px;
   background: var(--color-header);
-  border-bottom: 1px solid var(--color-border);
   border-bottom: 1px solid var(--border-subtle);
   position: sticky;
   top: 0;
   z-index: 10;
-  min-height: 56px;
 }
 
 .header-left {
@@ -234,7 +233,8 @@
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: 0.375rem 0.75rem;
+  padding: 0 0.75rem;
+  height: 36px;
   background: var(--color-muted);
   border-radius: var(--radius-md);
   border: 1px solid transparent;
@@ -269,17 +269,20 @@
 
 .view-toggle {
   display: flex;
+  align-items: center;
   background: var(--color-muted);
   border-radius: var(--radius-md);
   padding: 2px;
   gap: 2px;
+  height: 36px;
 }
 
 .view-btn {
   display: flex;
   align-items: center;
   gap: var(--space-xs);
-  padding: 0.375rem 0.75rem;
+  padding: 0 0.75rem;
+  height: 32px;
   border-radius: calc(var(--radius-md) - 2px);
   color: var(--text-muted);
   font-size: 0.8125rem;
