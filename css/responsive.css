@@ -1,8 +1,4 @@
 @media (max-width: 1200px) {
-  .activity-sidebar {
-    width: 240px;
-  }
-
   .side-peek-content {
     width: 420px;
   }
@@ -39,19 +35,8 @@
     display: none;
   }
 
-  .activity-sidebar {
-    display: none;
-  }
-
-  .activity-sidebar.open {
-    display: flex;
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 320px;
-    z-index: 30;
-    box-shadow: var(--shadow-lg);
+  .activity-panel {
+    max-height: 400px;
   }
 
   .side-peek-content {
