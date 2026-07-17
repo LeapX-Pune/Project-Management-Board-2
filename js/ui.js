@@ -444,3 +444,51 @@ export function renderByDate(data) {
 
   container.innerHTML = html;
 }
+
+export function renderWeeklyLineGraph(data) {
+  const svg = document.querySelector('#dashboard-view .chart-svg.line-graph');
+  if (!svg) return;
+
+  const today = new Date();
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const stored = localStorage.getItem('dashboard-weekly-data');
+  let series = stored ? JSON.parse(stored) : null;
+
+  if (!series) {
+    series = Array(7).fill(0);
+    data.activityLog.forEach(entry => {
+      const d = new Date(entry.timestamp);
+      const diff = Math.floor((today - d) / msPerDay);
+      if (diff >= 0 && diff < 7) {
+        const idx = (today.getDay() + 6 - diff) % 7;
+        series[idx] += 1;
+      }
+    });
+    localStorage.setItem('dashboard-weekly-data', JSON.stringify(series));
+  }
+
+  const maxVal = Math.max(...series, 1);
+  const points = series.map((v, i) => {
+    const x = 20 + i * (280 / 6);
+    const y = 140 - (v / maxVal) * 120;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+
+  const poly = svg.querySelector('.line-path');
+  if (poly) poly.setAttribute('points', points);
+}
+
+export function renderRecentActivity(data) {
+  const list = document.getElementById('recent-activity-list');
+  if (!list) return;
+  const recent = data.activityLog
+    .slice()
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    .slice(0, 3);
+
+  list.innerHTML = recent.map(entry => {
+    const time = new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const txt = `${entry.user} ${entry.action}`;
+    return `<div class="recent-activity-item"><span>${txt}</span><span class="time">${time}</span></div>`;
+  }).join('');
+}
