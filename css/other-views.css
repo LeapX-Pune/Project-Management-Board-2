@@ -609,6 +609,38 @@
   font-size: 8px;
 }
 
+/* KPI section */
+.kpi-section {
+  padding: 0 var(--space-lg) var(--space-lg);
+}
+
+.kpi-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: var(--space-md);
+  letter-spacing: -0.01em;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+}
+
+.kpi-grid .metric-card {
+  min-height: 100px;
+}
+
+@media (max-width: 768px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  .kpi-section {
+    padding: 0 var(--space-md) var(--space-md);
+  }
+}
+
 /* Recent activity */
 .recent-activity-list {
   display: flex;
