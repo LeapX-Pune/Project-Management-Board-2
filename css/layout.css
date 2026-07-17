@@ -262,11 +262,17 @@
   gap: var(--space-md);
   padding: 0 var(--space-lg);
   height: 56px;
-  background: var(--color-header);
+  background: rgba(218, 232, 248, 0.85);
   border-bottom: 1px solid var(--border-subtle);
   position: sticky;
   top: 0;
   z-index: 10;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+body.dark-theme .app-header {
+  background: rgba(30, 34, 42, 0.85);
 }
 
 .header-left {
