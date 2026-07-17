@@ -259,6 +259,7 @@
 
 .calendar-day:hover {
   background: var(--bg-canvas);
+  z-index: 1;
 }
 
 .calendar-day.other-month {
@@ -272,6 +273,10 @@
 
 .calendar-day.today {
   box-shadow: inset 0 0 0 2px var(--color-accent);
+}
+
+.calendar-day.today:hover {
+  background: var(--color-accent-light);
 }
 
 .calendar-day-number {
