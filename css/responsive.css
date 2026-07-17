@@ -23,10 +23,6 @@
 }
 
 @media (max-width: 1024px) {
-  .header-center {
-    gap: var(--space-md);
-  }
-
   .search-bar {
     max-width: 240px;
   }
@@ -77,17 +73,12 @@
     display: none;
   }
 
-  .header-center {
-    justify-content: flex-start;
-    flex: 1;
-  }
-
   .search-bar {
     max-width: none;
     min-width: 0;
   }
 
-  .view-toggle {
+  .board-view-controls {
     display: none;
   }
 

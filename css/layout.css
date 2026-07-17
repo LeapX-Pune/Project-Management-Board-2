@@ -272,7 +272,38 @@
 .header-left {
   display: flex;
   align-items: center;
-  flex-shrink: 0;
+  gap: var(--space-lg);
+  flex: 1;
+  min-width: 0;
+}
+
+.board-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.board-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-foreground);
+  margin: 0;
+}
+
+.board-view-controls {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+@media (max-width: 480px) {
+  .board-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-xs);
+  }
 }
 
 .breadcrumb {
@@ -287,14 +318,6 @@
 .breadcrumb-current {
   color: var(--color-foreground);
   font-weight: 500;
-}
-
-.header-center {
-  display: flex;
-  align-items: center;
-  gap: var(--space-lg);
-  flex: 1;
-  justify-content: center;
 }
 
 .search-bar {
