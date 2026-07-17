@@ -64,7 +64,7 @@ function wireEventListeners() {
       item.classList.add('active-view');
       
       const section = item.dataset.section;
-      const viewToggle = document.querySelector('.view-toggle');
+      const boardHeader = document.querySelector('.board-header');
       
       // Hide all main area view containers
       document.querySelectorAll('.view-container').forEach(v => {
@@ -72,7 +72,7 @@ function wireEventListeners() {
       });
       
       if (section === 'board') {
-        if (viewToggle) viewToggle.style.display = '';
+        if (boardHeader) boardHeader.style.display = '';
         
         // Show the active sub-view based on the active header view tab
         const activeSubViewBtn = document.querySelector('.view-btn.active');
@@ -80,7 +80,7 @@ function wireEventListeners() {
         const subViewEl = document.getElementById(`${activeSubView}-view`);
         if (subViewEl) subViewEl.classList.add('active');
       } else {
-        if (viewToggle) viewToggle.style.display = 'none';
+        if (boardHeader) boardHeader.style.display = 'none';
         
         const viewEl = document.getElementById(`${section}-view`);
         if (viewEl) viewEl.classList.add('active');
@@ -557,9 +557,12 @@ function restorePersistedState() {
   document.querySelectorAll('.sidebar-nav .nav-item').forEach(b => b.classList.remove('active-view'));
   navItem.classList.add('active-view');
 
+  const boardHeader = document.querySelector('.board-header');
+
   document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
 
   if (savedSection === 'board') {
+    if (boardHeader) boardHeader.style.display = '';
     const savedSubView = localStorage.getItem('boardSubView') || 'board';
     document.querySelectorAll('.view-btn').forEach(b => {
       const isActive = b.dataset.view === savedSubView;
@@ -569,6 +572,7 @@ function restorePersistedState() {
     const subViewEl = document.getElementById(`${savedSubView}-view`);
     if (subViewEl) subViewEl.classList.add('active');
   } else {
+    if (boardHeader) boardHeader.style.display = 'none';
     const viewEl = document.getElementById(`${savedSection}-view`);
     if (viewEl) viewEl.classList.add('active');
   }
