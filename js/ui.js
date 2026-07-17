@@ -1,5 +1,5 @@
 // DOM manipulation and UI rendering
-import { TEAM_MEMBERS } from './data.js';
+import { TEAM_MEMBERS, MOCK_DATA } from './data.js';
 
 /**
  * Creates and returns an Avatar DOM element.
@@ -405,6 +405,39 @@ export function populateAssigneeSelects(members) {
   }
 }
 
+export function getMemberMetrics(memberId, tasks = MOCK_DATA.tasks) {
+  const memberTasks = Object.values(tasks || {}).filter(t => t.assignee === memberId);
+  const completedTasks = memberTasks.filter(t => t.status === 'col-done');
+  const inProgressTasks = memberTasks.filter(t => t.status === 'col-in-progress');
+  const reviewTasks = memberTasks.filter(t => t.status === 'col-review');
+  const todoTasks = memberTasks.filter(t => t.status === 'col-todo');
+  const backlogTasks = memberTasks.filter(t => t.status === 'col-backlog');
+  
+  const activeTasks = memberTasks.filter(t => t.status !== 'col-done');
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const overdueTasks = activeTasks.filter(t => t.dueDate && (new Date(t.dueDate) < today));
+
+  const highPriorityTasks = memberTasks.filter(t => t.priority === 'high');
+
+  const totalTasks = memberTasks.length;
+  const completionPercentage = totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
+
+  return {
+    total: totalTasks,
+    completed: completedTasks.length,
+    inProgress: inProgressTasks.length,
+    review: reviewTasks.length,
+    todo: todoTasks.length,
+    backlog: backlogTasks.length,
+    active: activeTasks.length,
+    overdue: overdueTasks.length,
+    highPriority: highPriorityTasks.length,
+    completionPercentage
+  };
+}
+
 // Develop base helper functions
 export function getInitials(name) {
   return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
@@ -776,18 +809,19 @@ export function renderTeam(members) {
       const nameMatch = member.name.toLowerCase().includes(searchVal) || member.role.toLowerCase().includes(searchVal);
       const roleMatch = !roleVal || member.role === roleVal;
       
+      const mMetrics = getMemberMetrics(member.id, MOCK_DATA.tasks);
       let workload = 'low';
-      if (member.tasksInProgress >= 4) workload = 'high';
-      else if (member.tasksInProgress >= 2) workload = 'medium';
+      if (mMetrics.active >= 4) workload = 'high';
+      else if (mMetrics.active >= 2) workload = 'medium';
       const workloadMatch = !workloadVal || workload === workloadVal;
 
       return nameMatch && roleMatch && workloadMatch;
     });
 
     // Render Metrics based on filtered list!
-    const activeCount = filtered.filter(m => m.tasksInProgress > 0).length;
-    const highWorkloadCount = filtered.filter(m => m.tasksInProgress >= 3).length;
-    const totalTasksCount = filtered.reduce((sum, m) => sum + m.tasksInProgress, 0);
+    const activeCount = filtered.filter(m => getMemberMetrics(m.id, MOCK_DATA.tasks).active > 0).length;
+    const highWorkloadCount = filtered.filter(m => getMemberMetrics(m.id, MOCK_DATA.tasks).active >= 3).length;
+    const totalTasksCount = filtered.reduce((sum, m) => sum + getMemberMetrics(m.id, MOCK_DATA.tasks).active, 0);
 
     metricsContainer.innerHTML = `
       <div class="metric-card" style="min-height: 100px;">
@@ -842,18 +876,19 @@ export function renderTeam(members) {
       card.dataset.memberId = member.id;
 
       // Workload assessment
+      const mMetrics = getMemberMetrics(member.id, MOCK_DATA.tasks);
       let workloadClass = 'low';
       let workloadText = 'Low Workload';
-      if (member.tasksInProgress >= 4) {
+      if (mMetrics.active >= 4) {
         workloadClass = 'high';
         workloadText = 'High Workload';
-      } else if (member.tasksInProgress >= 2) {
+      } else if (mMetrics.active >= 2) {
         workloadClass = 'medium';
         workloadText = 'Moderate Workload';
       }
 
-      const totalTasks = member.tasksCompleted + member.tasksInProgress;
-      const pct = totalTasks > 0 ? Math.round((member.tasksCompleted / totalTasks) * 100) : 0;
+      const totalTasks = mMetrics.total;
+      const pct = mMetrics.completionPercentage;
 
       card.innerHTML = `
         <div class="team-card-header" style="position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; gap: var(--space-sm);">
@@ -874,7 +909,7 @@ export function renderTeam(members) {
           <div class="progress-cell" style="flex-direction: column; align-items: stretch; width: 100%; gap: var(--space-xs);">
             <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
               <span style="color: var(--color-text-muted);">Assigned Tasks</span>
-              <span style="font-weight: 600; color: var(--color-text-muted);">${member.tasksCompleted}/${totalTasks} completed</span>
+              <span style="font-weight: 600; color: var(--color-text-muted);">${mMetrics.completed}/${totalTasks} completed</span>
             </div>
             <div class="progress-bar" style="height: 6px; width: 100%; background: var(--color-border);">
               <div class="progress-bar-fill" style="width: ${pct}%; background: var(--color-accent);"></div>
@@ -905,3 +940,124 @@ export function renderTeam(members) {
   // Initial render
   updateFilteredView();
 }
+
+export function updateDashboardMetrics() {
+  const totalTasksEl = document.getElementById('db-total-tasks');
+  const completedTasksEl = document.getElementById('db-completed-tasks');
+  const inProgressTasksEl = document.getElementById('db-inprogress-tasks');
+  const overdueTasksEl = document.getElementById('db-overdue-tasks');
+
+  if (!totalTasksEl) return;
+
+  const tasksList = Object.values(MOCK_DATA.tasks || {});
+  
+  // 1. Total tasks
+  const totalTasks = tasksList.length;
+  totalTasksEl.textContent = totalTasks;
+
+  // 2. Completed tasks
+  const completedTasks = tasksList.filter(t => t.status === 'col-done').length;
+  completedTasksEl.textContent = completedTasks;
+
+  // 3. In progress tasks
+  const inProgressTasks = tasksList.filter(t => t.status === 'col-in-progress').length;
+  inProgressTasksEl.textContent = inProgressTasks;
+
+  // 4. Overdue tasks
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const overdueTasks = tasksList.filter(t => t.status !== 'col-done' && t.dueDate && (new Date(t.dueDate) < today)).length;
+  overdueTasksEl.textContent = overdueTasks;
+
+  // 5. Update Active Team Members list
+  const memberListEl = document.getElementById('db-member-list');
+  if (memberListEl) {
+    memberListEl.innerHTML = '';
+    const sortedMembers = [...TEAM_MEMBERS].map(m => {
+      const metrics = getMemberMetrics(m.id, MOCK_DATA.tasks);
+      return { ...m, activeTasksCount: metrics.active };
+    }).sort((a, b) => b.activeTasksCount - a.activeTasksCount);
+
+    sortedMembers.slice(0, 4).forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'dashboard-member-item';
+      
+      const avatarEl = createAvatar(m, { size: 'xs' });
+      avatarEl.className = 'task-avatar';
+
+      const infoDiv = document.createElement('div');
+      infoDiv.style.flex = '1';
+      infoDiv.style.minWidth = '0';
+      infoDiv.innerHTML = `
+        <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">${m.name}</div>
+        <div class="member-status ${m.activeTasksCount > 0 ? 'active' : 'idle'}">
+          ${m.activeTasksCount > 0 ? `Active on ${m.activeTasksCount} task${m.activeTasksCount > 1 ? 's' : ''}` : 'Idle'}
+        </div>
+      `;
+
+      div.appendChild(avatarEl);
+      div.appendChild(infoDiv);
+      memberListEl.appendChild(div);
+    });
+  }
+
+  // 6. Update Workload by Member chart
+  const workloadChartEl = document.getElementById('db-workload-chart');
+  if (workloadChartEl) {
+    workloadChartEl.innerHTML = '';
+    const activeMembers = TEAM_MEMBERS.map(m => {
+      const metrics = getMemberMetrics(m.id, MOCK_DATA.tasks);
+      return { ...m, activeTasksCount: metrics.active };
+    }).filter(m => m.activeTasksCount > 0).sort((a, b) => b.activeTasksCount - a.activeTasksCount);
+
+    if (activeMembers.length === 0) {
+      workloadChartEl.innerHTML = '<p style="color:var(--color-text-muted);font-size:0.85rem;padding:var(--space-sm) 0;text-align:center;">No members assigned to active tasks.</p>';
+    } else {
+      const maxActive = Math.max(...activeMembers.map(m => m.activeTasksCount), 1);
+      
+      activeMembers.slice(0, 4).forEach(m => {
+        const pct = Math.round((m.activeTasksCount / maxActive) * 100);
+        const div = document.createElement('div');
+        div.innerHTML = `
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
+            <span style="font-weight:500;color:var(--color-text)">${m.name}</span>
+            <span style="color:var(--color-text-muted)">${m.activeTasksCount} task${m.activeTasksCount > 1 ? 's' : ''}</span>
+          </div>
+          <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${m.color || '#4F46E5'};border-radius:999px"></div>
+          </div>
+        `;
+        workloadChartEl.appendChild(div);
+      });
+    }
+  }
+
+  // 7. Update Member Stats Table
+  const statsTbodyEl = document.getElementById('db-stats-tbody');
+  if (statsTbodyEl) {
+    statsTbodyEl.innerHTML = '';
+    const sortedStats = TEAM_MEMBERS.map(m => {
+      const metrics = getMemberMetrics(m.id, MOCK_DATA.tasks);
+      return { ...m, metrics };
+    }).sort((a, b) => b.metrics.completed - a.metrics.completed || b.metrics.completionPercentage - a.metrics.completionPercentage);
+
+    sortedStats.slice(0, 4).forEach(m => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${m.name}</strong></td>
+        <td>${m.metrics.completed}</td>
+        <td>${m.metrics.inProgress}</td>
+        <td>
+          <div class="progress-cell">
+            <div class="progress-bar">
+              <div class="progress-bar-fill" style="width:${m.metrics.completionPercentage}%;background:${m.color || 'var(--color-accent)'}"></div>
+            </div>
+            ${m.metrics.completionPercentage}%
+          </div>
+        </td>
+      `;
+      statsTbodyEl.appendChild(tr);
+    });
+  }
+}
+

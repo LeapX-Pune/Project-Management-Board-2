@@ -182,22 +182,22 @@
           <div class="metrics-grid" id="metrics-grid">
             <div class="metric-card">
               <div class="metric-label">Total Tasks</div>
-              <div class="metric-value">24</div>
+              <div class="metric-value" id="db-total-tasks">24</div>
               <span class="metric-badge neutral">All projects</span>
             </div>
             <div class="metric-card">
               <div class="metric-label">Completed</div>
-              <div class="metric-value">12</div>
+              <div class="metric-value" id="db-completed-tasks">12</div>
               <span class="metric-badge success">+12% this week</span>
             </div>
             <div class="metric-card">
               <div class="metric-label">In Progress</div>
-              <div class="metric-value">7</div>
+              <div class="metric-value" id="db-inprogress-tasks">7</div>
               <span class="metric-badge info">Active tasks</span>
             </div>
             <div class="metric-card">
               <div class="metric-label">Overdue</div>
-              <div class="metric-value">3</div>
+              <div class="metric-value" id="db-overdue-tasks">3</div>
               <span class="metric-badge danger">Needs attention</span>
             </div>
           </div>
@@ -230,7 +230,7 @@
             </div>
             <div class="dashboard-card">
               <div class="dashboard-card-title">Active Team Members</div>
-              <div class="dashboard-member-list">
+              <div class="dashboard-member-list" id="db-member-list">
                 <div class="dashboard-member-item">
                   <div class="task-avatar" style="background:#4F46E5">ST</div>
                   <div style="flex:1;min-width:0">
@@ -422,7 +422,7 @@
               </div>
               <div class="chart-card">
                 <div class="chart-card-title">Workload by Member</div>
-                <div style="display:flex;flex-direction:column;gap:var(--space-md)">
+                <div id="db-workload-chart" style="display:flex;flex-direction:column;gap:var(--space-md)">
                   <div>
                     <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
                       <span style="font-weight:500;color:var(--color-text)">Sankalp Tiwari</span>
@@ -472,7 +472,7 @@
                     <th>Completion Rate</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody id="db-stats-tbody">
                   <tr>
                     <td><strong>Sankalp Tiwari</strong></td>
                     <td>5</td>

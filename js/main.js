@@ -6,6 +6,7 @@ import {
   renderList, 
   renderTeam, 
   getInitials, 
+  getMemberMetrics,
   formatTimestamp, 
   getSubtaskProgress,
   createAvatar,
@@ -14,7 +15,8 @@ import {
   renderHeaderTeamList,
   showAssignDropdown,
   closeDropdown,
-  populateAssigneeSelects
+  populateAssigneeSelects,
+  updateDashboardMetrics
 } from './ui.js';
 import { initDragDrop } from './dragdrop.js';
 import { appState, saveState, addTask } from './state.js';
@@ -55,9 +57,10 @@ function openMemberProfileDrawer(member) {
   // Set accessibility label
   sidePeek.setAttribute('aria-label', `Member Profile: ${member.name}`);
 
-  // Calculate statistics
-  const totalTasks = member.tasksCompleted + member.tasksInProgress;
-  const pct = totalTasks > 0 ? Math.round((member.tasksCompleted / totalTasks) * 100) : 0;
+  // Calculate statistics dynamically
+  const metrics = getMemberMetrics(member.id, MOCK_DATA.tasks);
+  const totalTasks = metrics.total;
+  const pct = metrics.completionPercentage;
 
   // Get assigned tasks list
   const memberTasks = Object.values(MOCK_DATA.tasks).filter(t => t.assignee === member.id);
@@ -67,6 +70,14 @@ function openMemberProfileDrawer(member) {
   } else {
     memberTasks.forEach(task => {
       const priorityClass = task.priority === 'high' ? 'high' : task.priority === 'medium' ? 'medium' : 'low';
+      const statusLabels = {
+        'col-backlog': 'Backlog',
+        'col-todo': 'To Do',
+        'col-in-progress': 'In Progress',
+        'col-review': 'Review',
+        'col-done': 'Done'
+      };
+      const statusLabel = statusLabels[task.status] || task.status;
       tasksHtml += `
         <div class="list-item" style="border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-sm); background: var(--color-surface); margin-bottom: var(--space-sm); cursor: pointer;" data-task-link-id="${task.id}">
           <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -75,7 +86,7 @@ function openMemberProfileDrawer(member) {
           </div>
           <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-text-muted); margin-top: 4px;">
             <span>Due: ${task.dueDate || 'No Date'}</span>
-            <span>Status: ${task.status}</span>
+            <span>Status: ${statusLabel}</span>
           </div>
         </div>
       `;
@@ -120,7 +131,7 @@ function openMemberProfileDrawer(member) {
         <div class="progress-cell" style="flex-direction: column; align-items: stretch; gap: var(--space-xs);">
           <div style="display: flex; justify-content: space-between; font-size: 0.8125rem;">
             <span>Completed Tasks</span>
-            <span style="font-weight: 600;">${member.tasksCompleted}/${totalTasks} tasks (${pct}%)</span>
+            <span style="font-weight: 600;">${metrics.completed}/${totalTasks} tasks (${pct}%)</span>
           </div>
           <div class="progress-bar" style="height: 8px; background: var(--color-border);">
             <div class="progress-bar-fill" style="width: ${pct}%; background: var(--color-accent);"></div>
@@ -165,6 +176,11 @@ function openMemberProfileDrawer(member) {
     link.addEventListener('click', () => {
       const taskId = link.getAttribute('data-task-link-id');
       sidePeek.classList.remove('open');
+      
+      // Navigate back to the Board view tab first!
+      document.querySelector('.sidebar-nav .nav-item[data-section="board"]')?.click();
+      document.querySelector('.view-btn[data-view="board"]')?.click();
+
       setTimeout(() => {
         const cardEditBtn = document.querySelector(`.task-card[data-task-id="${taskId}"] [data-action="edit"]`);
         if (cardEditBtn) {
@@ -191,6 +207,7 @@ function init() {
   renderTable(appState);
   renderList(appState);
   renderTeam(TEAM_MEMBERS);
+  updateDashboardMetrics();
   
   // Cache original side-peek body html
   const peekBody = document.querySelector('#side-peek .side-peek-body');
@@ -212,6 +229,8 @@ function init() {
     renderActivity(MOCK_DATA.activityLog);
     renderTable(MOCK_DATA);
     renderList(MOCK_DATA);
+    renderTeam(TEAM_MEMBERS);
+    updateDashboardMetrics();
   });
 
   window.addEventListener('activityLogUpdated', () => {
@@ -426,6 +445,7 @@ function handleMemberFormSubmit(e) {
     renderHeaderTeamList('header-team-group', TEAM_MEMBERS);
     renderTeam(TEAM_MEMBERS);
     populateAssigneeSelects(TEAM_MEMBERS);
+    updateDashboardMetrics();
   } catch (err) {
     emailError.textContent = err.message;
     emailError.style.display = 'block';
@@ -517,6 +537,7 @@ function wireEventListeners() {
           renderTable(MOCK_DATA);
           renderList(MOCK_DATA);
           populateAssigneeSelects(TEAM_MEMBERS);
+          updateDashboardMetrics();
           showToast(`${member.name} removed from team`, 'danger');
         } catch (err) {
           alert('Error deleting member: ' + err.message);
@@ -601,11 +622,16 @@ function wireEventListeners() {
       e.stopPropagation();
 
       showAssignDropdown(avatarEl, task.assignee ? [task.assignee] : [], (memberId, isSelected) => {
+        const oldAssignee = task.assignee;
         task.assignee = isSelected ? memberId : '';
+        
+        if (oldAssignee !== task.assignee) {
+          const newName = MOCK_DATA.members[task.assignee]?.name || 'Unassigned';
+          addActivityLogEntry('Sankalp Tiwari', `assigned task '${task.title}' to ${newName}`, 'edited', 'Team');
+        }
+
         saveMockData();
-        renderBoard(MOCK_DATA);
-        renderTable(MOCK_DATA);
-        renderList(MOCK_DATA);
+        window.dispatchEvent(new CustomEvent('boardStateChanged'));
         closeDropdown();
       });
     }
@@ -862,11 +888,12 @@ function wireEventListeners() {
         card.style.transform = 'translateX(100%)';
         card.style.opacity = '0';
         setTimeout(() => {
+          const taskTitle = MOCK_DATA.tasks[taskId]?.title || 'Task';
           card.remove();
           delete MOCK_DATA.tasks[taskId];
+          addActivityLogEntry('Sankalp Tiwari', `deleted task '${taskTitle}'`, 'edited', 'Board');
           syncBoardDOMToState();
-          renderTable(MOCK_DATA);
-          renderList(MOCK_DATA);
+          window.dispatchEvent(new CustomEvent('boardStateChanged'));
         }, 300);
         return;
       }
