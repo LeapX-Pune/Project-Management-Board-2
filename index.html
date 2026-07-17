@@ -7,11 +7,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Core styles -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/layout.css">
+  
+  <!-- Component styles -->
   <link rel="stylesheet" href="css/board.css">
   <link rel="stylesheet" href="css/task.css">
+  <link rel="stylesheet" href="css/avatar.css">
+  <link rel="stylesheet" href="css/member-modal.css">
+  <link rel="stylesheet" href="css/dropdown.css">
   <link rel="stylesheet" href="css/other-views.css">
+  
+  <!-- Responsive overrides -->
   <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
@@ -132,6 +141,9 @@
           </div>
         </div>
         <div class="header-right">
+          <!-- Dynamically populated team avatars list in header -->
+          <div id="header-team-group" class="header-team-group flex-center" style="margin-right: var(--space-sm);"></div>
+          
           <button class="btn-icon" id="header-theme-toggle" aria-label="Toggle dark mode">
             <svg class="theme-icon-light" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/>
@@ -220,30 +232,30 @@
               <div class="dashboard-card-title">Active Team Members</div>
               <div class="dashboard-member-list">
                 <div class="dashboard-member-item">
-                  <div class="task-avatar" style="background:#7C3AED">AC</div>
+                  <div class="task-avatar" style="background:#4F46E5">ST</div>
                   <div style="flex:1;min-width:0">
-                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Alice Chen</div>
+                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Sankalp Tiwari</div>
                     <div class="member-status active">Active on 3 tasks</div>
                   </div>
                 </div>
                 <div class="dashboard-member-item">
-                  <div class="task-avatar" style="background:#3B82F6">BS</div>
+                  <div class="task-avatar" style="background:#3B82F6">AV</div>
                   <div style="flex:1;min-width:0">
-                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Bob Smith</div>
-                    <div class="member-status active">Active on 1 task</div>
-                  </div>
-                </div>
-                <div class="dashboard-member-item">
-                  <div class="task-avatar" style="background:#10B981">CD</div>
-                  <div style="flex:1;min-width:0">
-                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Carol Davis</div>
+                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Aditya Vawhal</div>
                     <div class="member-status active">Active on 2 tasks</div>
                   </div>
                 </div>
                 <div class="dashboard-member-item">
-                  <div class="task-avatar" style="background:#F59E0B">DW</div>
+                  <div class="task-avatar" style="background:#06B6D4">KD</div>
                   <div style="flex:1;min-width:0">
-                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Dave Wilson</div>
+                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Kshitij Das</div>
+                    <div class="member-status active">Active on 2 tasks</div>
+                  </div>
+                </div>
+                <div class="dashboard-member-item">
+                  <div class="task-avatar" style="background:#ef4444">MR</div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Mohammed Rehan</div>
                     <div class="member-status idle">Idle</div>
                   </div>
                 </div>
@@ -413,38 +425,38 @@
                 <div style="display:flex;flex-direction:column;gap:var(--space-md)">
                   <div>
                     <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
-                      <span style="font-weight:500;color:var(--color-text)">Alice Chen</span>
+                      <span style="font-weight:500;color:var(--color-text)">Sankalp Tiwari</span>
+                      <span style="color:var(--text-muted)">3 tasks</span>
+                    </div>
+                    <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
+                      <div style="width:100%;height:100%;background:#4F46E5;border-radius:999px"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
+                      <span style="font-weight:500;color:var(--color-text)">Aditya Vawhal</span>
                       <span style="color:var(--text-muted)">2 tasks</span>
                     </div>
                     <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
-                      <div style="width:67%;height:100%;background:#7C3AED;border-radius:999px"></div>
+                      <div style="width:67%;height:100%;background:#3B82F6;border-radius:999px"></div>
                     </div>
                   </div>
                   <div>
                     <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
-                      <span style="font-weight:500;color:var(--color-text)">Bob Smith</span>
-                      <span style="color:var(--text-muted)">1 task</span>
-                    </div>
-                    <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
-                      <div style="width:33%;height:100%;background:#3B82F6;border-radius:999px"></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
-                      <span style="font-weight:500;color:var(--color-text)">Carol Davis</span>
+                      <span style="font-weight:500;color:var(--color-text)">Kshitij Das</span>
                       <span style="color:var(--text-muted)">2 tasks</span>
                     </div>
                     <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
-                      <div style="width:67%;height:100%;background:#10B981;border-radius:999px"></div>
+                      <div style="width:67%;height:100%;background:#06B6D4;border-radius:999px"></div>
                     </div>
                   </div>
                   <div>
                     <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
-                      <span style="font-weight:500;color:var(--color-text)">Dave Wilson</span>
+                      <span style="font-weight:500;color:var(--color-text)">Sai Shendge</span>
                       <span style="color:var(--text-muted)">1 task</span>
                     </div>
                     <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
-                      <div style="width:33%;height:100%;background:#F59E0B;border-radius:999px"></div>
+                      <div style="width:33%;height:100%;background:#7C3AED;border-radius:999px"></div>
                     </div>
                   </div>
                 </div>
@@ -462,28 +474,28 @@
                 </thead>
                 <tbody>
                   <tr>
-                    <td><strong>Alice Chen</strong></td>
+                    <td><strong>Sankalp Tiwari</strong></td>
+                    <td>5</td>
                     <td>3</td>
-                    <td>1</td>
-                    <td><div class="progress-cell"><div class="progress-bar"><div class="progress-bar-fill" style="width:75%;background:var(--color-accent)"></div></div>75%</div></td>
+                    <td><div class="progress-cell"><div class="progress-bar"><div class="progress-bar-fill" style="width:63%;background:#4F46E5"></div></div>63%</div></td>
                   </tr>
                   <tr>
-                    <td><strong>Carol Davis</strong></td>
-                    <td>2</td>
+                    <td><strong>Ankit Bhalke</strong></td>
+                    <td>5</td>
                     <td>1</td>
-                    <td><div class="progress-cell"><div class="progress-bar"><div class="progress-bar-fill" style="width:67%;background:#10B981"></div></div>67%</div></td>
+                    <td><div class="progress-cell"><div class="progress-bar"><div class="progress-bar-fill" style="width:83%;background:#10B981"></div></div>83%</div></td>
                   </tr>
                   <tr>
-                    <td><strong>Bob Smith</strong></td>
+                    <td><strong>Sai Shendge</strong></td>
+                    <td>4</td>
                     <td>1</td>
+                    <td><div class="progress-cell"><div class="progress-bar"><div class="progress-bar-fill" style="width:80%;background:#7C3AED"></div></div>80%</div></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Devansh Mittal</strong></td>
+                    <td>6</td>
                     <td>0</td>
-                    <td><div class="progress-cell"><div class="progress-bar"><div class="progress-bar-fill" style="width:50%;background:#3B82F6"></div></div>50%</div></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Dave Wilson</strong></td>
-                    <td>0</td>
-                    <td>1</td>
-                    <td><div class="progress-cell"><div class="progress-bar"><div class="progress-bar-fill" style="width:25%;background:#F59E0B"></div></div>25%</div></td>
+                    <td><div class="progress-cell"><div class="progress-bar"><div class="progress-bar-fill" style="width:100%;background:#EC4899"></div></div>100%</div></td>
                   </tr>
                 </tbody>
               </table>
@@ -571,10 +583,17 @@
           <div class="peek-field">
             <label>Assignee</label>
             <select class="peek-select">
-              <option value="alice">Alice Chen</option>
-              <option value="bob">Bob Smith</option>
-              <option value="carol">Carol Davis</option>
-              <option value="dave">Dave Wilson</option>
+              <option value="sai">Sai Shendge</option>
+              <option value="aditya">Aditya Vawhal</option>
+              <option value="ankit">Ankit Bhalke</option>
+              <option value="devansh">Devansh Mittal</option>
+              <option value="khushi">Khushi Shah</option>
+              <option value="kshitij">Kshitij Das</option>
+              <option value="rehan">Mohammed Rehan</option>
+              <option value="pulak">Pulak Saha</option>
+              <option value="sankalp" selected>Sankalp Tiwari</option>
+              <option value="sauryaman">Sauryaman Bisen</option>
+              <option value="sumit">Sumit Tiwari</option>
             </select>
           </div>
         </div>
@@ -696,10 +715,17 @@
         <div class="form-group">
           <label class="form-label" for="task-assignee">Assignee</label>
           <select class="form-select" id="task-assignee" name="assignee">
-            <option value="alice">Alice Chen</option>
-            <option value="bob">Bob Smith</option>
-            <option value="carol">Carol Davis</option>
-            <option value="dave">Dave Wilson</option>
+            <option value="sai">Sai Shendge</option>
+            <option value="aditya">Aditya Vawhal</option>
+            <option value="ankit">Ankit Bhalke</option>
+            <option value="devansh">Devansh Mittal</option>
+            <option value="khushi">Khushi Shah</option>
+            <option value="kshitij">Kshitij Das</option>
+            <option value="rehan">Mohammed Rehan</option>
+            <option value="pulak">Pulak Saha</option>
+            <option value="sankalp" selected>Sankalp Tiwari</option>
+            <option value="sauryaman">Sauryaman Bisen</option>
+            <option value="sumit">Sumit Tiwari</option>
           </select>
         </div>
         <div class="form-group">
@@ -749,6 +775,58 @@
       </div>
     </div>
   </div>
+
+  <!-- Team Member Management Modal Overlay -->
+  <div id="member-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="modal-title">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2 id="modal-title" class="modal-title">Manage Team Members</h2>
+        <button class="modal-close" id="close-member-modal" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="member-manager">
+          <!-- Left Pane: Member List -->
+          <div class="member-list-pane" id="member-list-container">
+            <!-- Dynamic member items will render here -->
+          </div>
+          
+          <!-- Right Pane: Add/Edit Form -->
+          <div class="member-form-pane">
+            <h3 id="form-action-title" class="member-form-title">Add New Member</h3>
+            <form id="member-form" novalidate>
+              <input type="hidden" id="member-id-input">
+              <div class="form-group" style="margin-bottom: var(--space-sm);">
+                <label for="member-name-input" class="form-label">Full Name</label>
+                <input type="text" id="member-name-input" class="form-input" placeholder="e.g. Sarah Jenkins" required>
+                <span class="form-error-msg" id="name-error">Name is required.</span>
+              </div>
+              <div class="form-group" style="margin-bottom: var(--space-sm);">
+                <label for="member-email-input" class="form-label">Email Address</label>
+                <input type="email" id="member-email-input" class="form-input" placeholder="e.g. sarah.j@example.com" required>
+                <span class="form-error-msg" id="email-error">Please enter a valid email.</span>
+              </div>
+              <div class="form-group" style="margin-bottom: var(--space-sm);">
+                <label for="member-role-input" class="form-label">Role</label>
+                <input type="text" id="member-role-input" class="form-input" placeholder="e.g. Frontend Engineer">
+              </div>
+              <div class="form-group" style="margin-bottom: var(--space-md);">
+                <label for="member-avatar-input" class="form-label">Avatar Photo URL (Optional)</label>
+                <input type="url" id="member-avatar-input" class="form-input" placeholder="e.g. https://images.unsplash.com/...">
+                <span class="form-error-msg" id="avatar-error">Please enter a valid URL.</span>
+              </div>
+              <div class="form-actions">
+                <button type="button" id="btn-cancel-edit" class="btn btn-ghost" style="display: none;">Cancel</button>
+                <button type="submit" id="btn-submit-member" class="btn btn-primary">Save Member</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- App Toast Alerts container -->
+  <div id="toast-container" class="toast-container"></div>
 
   <script type="module" src="js/main.js"></script>
 </body>

@@ -66,11 +66,14 @@ function initDragDrop() {
         }
 
         // Log task movement
-        addActivityLogEntry('Alice Chen', `moved '${taskTitle}' to ${columnTitle}`, 'moved', 'Board');
+        addActivityLogEntry('Sankalp Tiwari', `moved '${taskTitle}' to ${columnTitle}`, 'moved', 'Board');
 
         // Dispatch event to re-render all views
         window.dispatchEvent(new CustomEvent('boardStateChanged'));
       }
+      
+      // Dispatch event to sync state
+      document.dispatchEvent(new CustomEvent('app:board-mutated'));
     }
 
     document.querySelectorAll('.task-list').forEach(el => el.classList.remove('drag-over'));

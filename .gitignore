@@ -1,5 +1,6 @@
 node_modules/
 .DS_Store
+doc/
 project-docs/
 .vscode/
 .agents/
@@ -14,3 +15,4 @@ playwright.config.js
 PRD.pdf
 TO-DO.csv
 REQUIREMENT.md
+
