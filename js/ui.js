@@ -367,3 +367,80 @@ export function renderQuickStats(data) {
     </div>
   `;
 }
+
+export function renderByDate(data) {
+  const container = document.getElementById('bydate-view');
+  if (!container) return;
+
+  const toMidnight = iso => {
+    const d = new Date(iso);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+
+  const dayOfWeek = now.getDay();
+  const diffToMon = (dayOfWeek + 6) % 7;
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - diffToMon);
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+  const startOfNextWeek = new Date(endOfWeek);
+  startOfNextWeek.setDate(endOfWeek.getDate() + 1);
+  const endOfNextWeek = new Date(startOfNextWeek);
+  endOfNextWeek.setDate(startOfNextWeek.getDate() + 6);
+
+  const buckets = {
+    today: [],
+    tomorrow: [],
+    thisWeek: [],
+    nextWeek: [],
+    later: []
+  };
+
+  Object.values(data.tasks).forEach(task => {
+    if (!task.dueDate) {
+      buckets.later.push(task);
+      return;
+    }
+    const d = toMidnight(task.dueDate);
+    if (d.getTime() === now.getTime()) buckets.today.push(task);
+    else if (d.getTime() === tomorrow.getTime()) buckets.tomorrow.push(task);
+    else if (d >= startOfWeek && d <= endOfWeek) buckets.thisWeek.push(task);
+    else if (d >= startOfNextWeek && d <= endOfNextWeek) buckets.nextWeek.push(task);
+    else buckets.later.push(task);
+  });
+
+  const sections = [
+    { key: 'today', label: 'Today' },
+    { key: 'tomorrow', label: 'Tomorrow' },
+    { key: 'thisWeek', label: 'This Week' },
+    { key: 'nextWeek', label: 'Next Week' },
+    { key: 'later', label: 'Later' }
+  ];
+
+  const html = sections.map(sec => {
+    const tasks = buckets[sec.key];
+    if (tasks.length === 0) return '';
+    const taskList = tasks
+      .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+      .map(task => {
+        const li = createTaskCard(task, data.members);
+        return li.outerHTML;
+      })
+      .join('');
+    return `
+      <section class="bydate-section" data-section="${sec.key}">
+        <h2 class="bydate-section-title">${sec.label}</h2>
+        <div class="bydate-tasks">${taskList}</div>
+      </section>
+    `;
+  }).join('');
+
+  container.innerHTML = html;
+}
