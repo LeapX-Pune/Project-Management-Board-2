@@ -1,3 +1,14 @@
 node_modules/
 .DS_Store
 doc/
+project-docs/
+.vscode/
+.agents/
+.claude/
+graphify-out
+skills-lock.json
+test-results/
+tests/
+CLAUDE.md
+.playwright-cli/
+playwright.config.js
