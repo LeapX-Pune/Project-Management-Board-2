@@ -66,7 +66,7 @@
 
   /* Shadow tokens */
   --shadow-elevated: 0px 4px 12px -2px rgba(3, 46, 99, 0.08), 0px 2px 4px -2px rgba(3, 46, 99, 0.06);
-  --shadow-floating: 0 12px 24px -4px rgba(3, 46, 99, 0.12), 0 4px 12px -2px rgba(3, 46, 99, 0.08);
+  --shadow-floating: 0 12px 24px -4px rgba(3, 46, 99, 0.25), 0 4px 12px -2px rgba(3, 46, 99, 0.15);
 
   /* Backward-compat aliases */
   --bg-canvas: var(--color-canvas);
@@ -101,7 +101,7 @@
   --shadow-sm: var(--shadow-card);
   --shadow-md: var(--shadow-card-hover);
   --shadow-lg: var(--shadow-floating);
-  --shadow-peek: -10px 0 30px rgba(3, 46, 99, 0.08);
+  --shadow-peek: -10px 0 30px rgba(3, 46, 99, 0.20);
 
   --space-xs: 4px;
   --space-sm: 8px;
@@ -281,7 +281,7 @@ body.dark-theme {
 
   /* Shadow tokens */
   --shadow-elevated: 0px 4px 12px -2px rgba(0, 0, 0, 0.4);
-  --shadow-floating: 0 12px 24px -4px rgba(0, 0, 0, 0.5);
+  --shadow-floating: 0 12px 24px -4px rgba(0, 0, 0, 0.6);
 
   /* Backward-compat aliases */
   --bg-canvas: var(--color-canvas);

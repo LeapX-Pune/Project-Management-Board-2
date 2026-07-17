@@ -690,9 +690,6 @@
 .side-peek-backdrop {
   position: fixed;
   inset: 0;
-  background: var(--color-overlay);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
 }
 
 .side-peek-content {
@@ -1058,9 +1055,15 @@
 }
 
 .bydate-tasks {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: var(--space-sm);
+}
+
+@media (max-width: 768px) {
+  .bydate-tasks {
+    grid-template-columns: 1fr;
+  }
 }
 
 .bydate-tasks .task-card {

@@ -12,6 +12,7 @@ function init() {
   renderByDate(MOCK_DATA);
   initDragDrop();
   wireEventListeners();
+  restorePersistedState();
 }
 
 function wireEventListeners() {
@@ -43,6 +44,8 @@ function wireEventListeners() {
       const view = btn.dataset.view;
       document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
       document.getElementById(`${view}-view`).classList.add('active');
+
+      localStorage.setItem('boardSubView', view);
     });
   });
 
@@ -82,6 +85,8 @@ function wireEventListeners() {
         const viewEl = document.getElementById(`${section}-view`);
         if (viewEl) viewEl.classList.add('active');
       }
+
+      localStorage.setItem('sidebarSection', section);
     });
   });
 
@@ -540,6 +545,33 @@ function updateBoardColumnCounts() {
     const badge = col.querySelector('.column-count');
     if (badge) badge.textContent = count;
   });
+}
+
+function restorePersistedState() {
+  const savedSection = localStorage.getItem('sidebarSection');
+  if (!savedSection) return;
+
+  const navItem = document.querySelector(`.sidebar-nav .nav-item[data-section="${savedSection}"]`);
+  if (!navItem) return;
+
+  document.querySelectorAll('.sidebar-nav .nav-item').forEach(b => b.classList.remove('active-view'));
+  navItem.classList.add('active-view');
+
+  document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+
+  if (savedSection === 'board') {
+    const savedSubView = localStorage.getItem('boardSubView') || 'board';
+    document.querySelectorAll('.view-btn').forEach(b => {
+      const isActive = b.dataset.view === savedSubView;
+      b.classList.toggle('active', isActive);
+      b.setAttribute('aria-selected', String(isActive));
+    });
+    const subViewEl = document.getElementById(`${savedSubView}-view`);
+    if (subViewEl) subViewEl.classList.add('active');
+  } else {
+    const viewEl = document.getElementById(`${savedSection}-view`);
+    if (viewEl) viewEl.classList.add('active');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);
