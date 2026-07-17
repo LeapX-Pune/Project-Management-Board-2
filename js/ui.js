@@ -350,15 +350,20 @@ export function renderQuickStats(data) {
     { label: 'Completed', value: completed },
     { label: 'In Progress', value: inProgress },
     { label: 'Overdue', value: overdue },
-    { label: 'Team members', value: memberCount },
+    { label: 'Members', value: memberCount },
     { label: 'Activity entries', value: activityCount },
     { label: 'Last activity', value: latestDate },
   ];
 
-  container.innerHTML = cards.map(c => `
-    <div class="metric-card">
-      <div class="metric-label">${c.label}</div>
-      <div class="metric-value">${c.value}</div>
+  container.innerHTML = `
+    <div class="quick-stats-header">Quick Stats</div>
+    <div class="quick-stats-grid">
+      ${cards.map(c => `
+        <div class="metric-card">
+          <div class="metric-label">${c.label}</div>
+          <div class="metric-value">${c.value}</div>
+        </div>
+      `).join('')}
     </div>
-  `).join('');
+  `;
 }

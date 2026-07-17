@@ -84,40 +84,101 @@
 .sidebar-footer {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
-  padding: var(--space-sm);
+  gap: 6px;
+  padding: var(--space-sm) var(--space-sm) var(--space-md);
   background: var(--color-sidebar);
   border-top: 1px solid var(--border-subtle);
 }
 
-.quick-stats {
+.quick-stats-header {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  padding: 0 4px 4px;
+}
+
+.quick-stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-sm);
+  gap: 6px;
 }
 
-.quick-stats .metric-card {
-  min-width: 0;
-  padding: var(--space-sm);
-  min-height: auto;
+.quick-stats-grid .metric-card {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  box-shadow: none;
+  padding: 6px 8px;
+  min-height: 0;
+  border-radius: var(--radius-sm);
 }
 
-.sidebar.collapsed .quick-stats {
-  grid-template-columns: 1fr;
+.quick-stats-grid .metric-card:last-child {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.sidebar.collapsed .quick-stats .metric-card .metric-label,
-.sidebar.collapsed .quick-stats .metric-card .metric-value {
-  font-size: 0.7rem;
+.quick-stats-grid .metric-card:last-child .metric-label {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.quick-stats-grid .metric-card:last-child .metric-value {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quick-stats-grid .metric-card:hover {
+  background: var(--color-accent-light);
+  box-shadow: none;
+}
+
+.quick-stats-grid .metric-label {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 1px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.quick-stats-grid .metric-value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+}
+
+.sidebar.collapsed .quick-stats-header {
+  font-size: 0.5rem;
   text-align: center;
 }
 
-.sidebar.collapsed .quick-stats .metric-card .metric-value {
-  font-size: 1rem;
+.sidebar.collapsed .quick-stats-grid {
+  grid-template-columns: 1fr;
+  gap: 2px;
+}
+
+.sidebar.collapsed .quick-stats-grid .metric-card {
+  padding: 2px 4px;
+}
+
+.sidebar.collapsed .quick-stats-grid .metric-label {
+  display: none;
+}
+
+.sidebar.collapsed .quick-stats-grid .metric-value {
+  font-size: 0.75rem;
+  text-align: center;
 }
 
 @media (max-width: 500px) {
-  .quick-stats {
+  .quick-stats-grid {
     grid-template-columns: 1fr;
   }
 }
