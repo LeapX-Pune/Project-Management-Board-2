@@ -69,25 +69,18 @@
           </svg>
           <span class="nav-label">Analytics</span>
         </a>
+        <a href="#" class="nav-item" data-section="team" data-tooltip="Team">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <circle cx="7" cy="6" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="13" cy="6" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M2 17C2 13.5 4 11 7 11C8.5 11 9.5 11.5 10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M18 17C18 13.5 16 11 13 11C11.5 11 10.5 11.5 10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M10 12C10 12 10 15 10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span class="nav-label">Team</span>
+        </a>
       </nav>
       <div class="sidebar-footer">
-        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
-          <svg class="theme-icon-light" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-            <circle cx="9" cy="9" r="3" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M9 1V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M9 15V17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M3.5 3.5L5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M13 13L14.5 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M1 9H3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M15 9H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M3.5 14.5L5 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M13 5L14.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          <svg class="theme-icon-dark" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-            <path d="M15 11.5C13.5 14 10 15 7 13.5C4 12 3 8.5 4.5 6C5 5 6 4 7 3.5C4 4.5 2 7.5 2 10.5C2 14 5 17 8.5 17C11.5 17 14 15 15 11.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-          </svg>
-          <span class="nav-label theme-label">Light</span>
-        </button>
       </div>
     </aside>
 
@@ -139,11 +132,28 @@
           </div>
         </div>
         <div class="header-right">
-          <button class="btn btn-secondary" id="btn-activity-toggle" aria-label="Toggle activity log" style="margin-right: 8px;">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" style="margin-right: 6px;">
-              <path d="M3 4H13M3 8H13M3 12H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <button class="btn-icon" id="header-theme-toggle" aria-label="Toggle dark mode">
+            <svg class="theme-icon-light" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M10 1V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M10 17V19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M4.5 4.5L5.5 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M14.5 14.5L15.5 15.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M1 10H3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M17 10H19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M4.5 15.5L5.5 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M14.5 5.5L15.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
-            <span>Activity</span>
+            <svg class="theme-icon-dark" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M17 13C15 16 11 17 7.5 15C4 13 2.5 9.5 4 6C4.5 5 5.5 4 6.5 3.5C3 4.5 1 8 1 11.5C1 15.5 4.5 19 8.5 19C12 19 15.5 17 17 13Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button class="btn-icon" id="activity-log-btn" aria-label="Toggle activity log" data-tooltip="Activity Log">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="2.5" y="4" width="15" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M6 8.5H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M6 11.5H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
           </button>
           <button class="btn btn-primary" id="add-task-btn" aria-label="Add new task">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -183,25 +193,25 @@
             <div class="dashboard-card">
               <div class="dashboard-card-title">Weekly Completion</div>
               <svg class="chart-svg" viewBox="0 0 320 160" xmlns="http://www.w3.org/2000/svg" aria-label="Weekly completion bar chart">
-                <text x="0" y="12" font-size="10" fill="var(--text-muted)">Mon</text>
+                <text x="0" y="12" font-size="10" fill="var(--color-text-muted)">Mon</text>
                 <rect class="bar" x="0" y="18" width="30" height="80" rx="4" fill="var(--color-accent)" opacity="0.2"/>
                 <rect class="bar" x="0" y="58" width="30" height="40" rx="4" fill="var(--color-accent)"/>
-                <text x="45" y="12" font-size="10" fill="var(--text-muted)">Tue</text>
+                <text x="45" y="12" font-size="10" fill="var(--color-text-muted)">Tue</text>
                 <rect class="bar" x="45" y="18" width="30" height="95" rx="4" fill="var(--color-accent)" opacity="0.2"/>
                 <rect class="bar" x="45" y="43" width="30" height="70" rx="4" fill="var(--color-accent)"/>
-                <text x="90" y="12" font-size="10" fill="var(--text-muted)">Wed</text>
+                <text x="90" y="12" font-size="10" fill="var(--color-text-muted)">Wed</text>
                 <rect class="bar" x="90" y="18" width="30" height="60" rx="4" fill="var(--color-accent)" opacity="0.2"/>
                 <rect class="bar" x="90" y="38" width="30" height="40" rx="4" fill="var(--color-accent)"/>
-                <text x="135" y="12" font-size="10" fill="var(--text-muted)">Thu</text>
+                <text x="135" y="12" font-size="10" fill="var(--color-text-muted)">Thu</text>
                 <rect class="bar" x="135" y="18" width="30" height="110" rx="4" fill="var(--color-accent)" opacity="0.2"/>
                 <rect class="bar" x="135" y="28" width="30" height="100" rx="4" fill="var(--color-accent)"/>
-                <text x="180" y="12" font-size="10" fill="var(--text-muted)">Fri</text>
+                <text x="180" y="12" font-size="10" fill="var(--color-text-muted)">Fri</text>
                 <rect class="bar" x="180" y="18" width="30" height="70" rx="4" fill="var(--color-accent)" opacity="0.2"/>
                 <rect class="bar" x="180" y="58" width="30" height="30" rx="4" fill="var(--color-accent)"/>
-                <text x="225" y="12" font-size="10" fill="var(--text-muted)">Sat</text>
+                <text x="225" y="12" font-size="10" fill="var(--color-text-muted)">Sat</text>
                 <rect class="bar" x="225" y="18" width="30" height="40" rx="4" fill="var(--color-accent)" opacity="0.2"/>
                 <rect class="bar" x="225" y="48" width="30" height="10" rx="4" fill="var(--color-accent)"/>
-                <text x="270" y="12" font-size="10" fill="var(--text-muted)">Sun</text>
+                <text x="270" y="12" font-size="10" fill="var(--color-text-muted)">Sun</text>
                 <rect class="bar" x="270" y="18" width="30" height="30" rx="4" fill="var(--color-accent)" opacity="0.2"/>
                 <rect class="bar" x="270" y="38" width="30" height="10" rx="4" fill="var(--color-accent)"/>
               </svg>
@@ -212,28 +222,28 @@
                 <div class="dashboard-member-item">
                   <div class="task-avatar" style="background:#7C3AED">AC</div>
                   <div style="flex:1;min-width:0">
-                    <div style="font-size:0.875rem;font-weight:600;color:var(--text-main)">Alice Chen</div>
+                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Alice Chen</div>
                     <div class="member-status active">Active on 3 tasks</div>
                   </div>
                 </div>
                 <div class="dashboard-member-item">
                   <div class="task-avatar" style="background:#3B82F6">BS</div>
                   <div style="flex:1;min-width:0">
-                    <div style="font-size:0.875rem;font-weight:600;color:var(--text-main)">Bob Smith</div>
+                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Bob Smith</div>
                     <div class="member-status active">Active on 1 task</div>
                   </div>
                 </div>
                 <div class="dashboard-member-item">
                   <div class="task-avatar" style="background:#10B981">CD</div>
                   <div style="flex:1;min-width:0">
-                    <div style="font-size:0.875rem;font-weight:600;color:var(--text-main)">Carol Davis</div>
+                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Carol Davis</div>
                     <div class="member-status active">Active on 2 tasks</div>
                   </div>
                 </div>
                 <div class="dashboard-member-item">
                   <div class="task-avatar" style="background:#F59E0B">DW</div>
                   <div style="flex:1;min-width:0">
-                    <div style="font-size:0.875rem;font-weight:600;color:var(--text-main)">Dave Wilson</div>
+                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Dave Wilson</div>
                     <div class="member-status idle">Idle</div>
                   </div>
                 </div>
@@ -251,6 +261,14 @@
         <section class="view-container table-view" id="table-view" role="region" aria-label="Table view">
           <div class="table-wrapper">
             <table class="task-table" id="task-table">
+              <colgroup>
+                <col style="width:28%">
+                <col style="width:16%">
+                <col style="width:14%">
+                <col style="width:16%">
+                <col style="width:16%">
+                <col style="width:10%">
+              </colgroup>
               <thead>
                 <tr>
                   <th>Task</th>
@@ -258,6 +276,7 @@
                   <th>Priority</th>
                   <th>Due Date</th>
                   <th>Assignee</th>
+                  <th>Subtasks</th>
                 </tr>
               </thead>
               <tbody id="table-body">
@@ -346,32 +365,32 @@
             <div class="charts-grid">
               <div class="chart-card">
                 <div class="chart-card-title">Task Status Distribution</div>
-                <svg class="chart-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-label="Task status bar chart">
-                  <text x="120" y="18" font-size="11" fill="var(--text-muted)">Backlog</text>
-                  <rect class="bar" x="120" y="26" width="100" height="16" rx="4" fill="rgba(59,130,246,0.6)"/>
-                  <text x="230" y="39" font-size="11" fill="var(--text-muted)">2 tasks</text>
-                  <text x="120" y="58" font-size="11" fill="var(--text-muted)">To Do</text>
-                  <rect class="bar" x="120" y="66" width="50" height="16" rx="4" fill="rgba(249,115,22,0.6)"/>
-                  <text x="230" y="79" font-size="11" fill="var(--text-muted)">1 task</text>
-                  <text x="120" y="98" font-size="11" fill="var(--text-muted)">In Progress</text>
-                  <rect class="bar" x="120" y="106" width="50" height="16" rx="4" fill="rgba(139,92,246,0.6)"/>
-                  <text x="230" y="119" font-size="11" fill="var(--text-muted)">1 task</text>
-                  <text x="120" y="138" font-size="11" fill="var(--text-muted)">Review</text>
-                  <rect class="bar" x="120" y="146" width="50" height="16" rx="4" fill="rgba(236,72,153,0.6)"/>
-                  <text x="230" y="159" font-size="11" fill="var(--text-muted)">1 task</text>
-                  <text x="120" y="178" font-size="11" fill="var(--text-muted)">Done</text>
-                  <rect class="bar" x="120" y="186" width="50" height="16" rx="4" fill="rgba(16,185,129,0.6)"/>
-                  <text x="230" y="199" font-size="11" fill="var(--text-muted)">1 task</text>
+                <svg class="chart-svg" viewBox="0 0 320 260" xmlns="http://www.w3.org/2000/svg" aria-label="Task status bar chart">
+                  <text x="10" y="20" font-size="12" fill="var(--color-text-muted)">Backlog</text>
+                  <rect class="bar chart-bar-info" x="90" y="4" width="180" height="24" rx="4"/>
+                  <text x="280" y="21" font-size="12" fill="var(--color-text-muted)">2 tasks</text>
+                  <text x="10" y="68" font-size="12" fill="var(--color-text-muted)">To Do</text>
+                  <rect class="bar chart-bar-warning" x="90" y="52" width="90" height="24" rx="4"/>
+                  <text x="190" y="69" font-size="12" fill="var(--color-text-muted)">1 task</text>
+                  <text x="10" y="116" font-size="12" fill="var(--color-text-muted)">In Progress</text>
+                  <rect class="bar chart-bar-accent" x="90" y="100" width="90" height="24" rx="4"/>
+                  <text x="190" y="117" font-size="12" fill="var(--color-text-muted)">1 task</text>
+                  <text x="10" y="164" font-size="12" fill="var(--color-text-muted)">Review</text>
+                  <rect class="bar chart-bar-danger" x="90" y="148" width="90" height="24" rx="4"/>
+                  <text x="190" y="165" font-size="12" fill="var(--color-text-muted)">1 task</text>
+                  <text x="10" y="212" font-size="12" fill="var(--color-text-muted)">Done</text>
+                  <rect class="bar chart-bar-success" x="90" y="196" width="90" height="24" rx="4"/>
+                  <text x="190" y="213" font-size="12" fill="var(--color-text-muted)">1 task</text>
                 </svg>
               </div>
               <div class="chart-card">
                 <div class="chart-card-title">Priority Distribution</div>
-                <svg class="chart-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Priority doughnut chart">
-                  <circle cx="100" cy="100" r="70" fill="none" stroke="var(--color-muted)" stroke-width="28"/>
-                  <circle cx="100" cy="100" r="70" fill="none" stroke="var(--priority-high-text)" stroke-width="28" stroke-dasharray="110 330" stroke-dashoffset="0" transform="rotate(-90 100 100)"/>
-                  <circle cx="100" cy="100" r="70" fill="none" stroke="var(--priority-medium-text)" stroke-width="28" stroke-dasharray="110 330" stroke-dashoffset="-110" transform="rotate(-90 100 100)"/>
-                  <circle cx="100" cy="100" r="70" fill="none" stroke="var(--priority-low-text)" stroke-width="28" stroke-dasharray="110 330" stroke-dashoffset="-220" transform="rotate(-90 100 100)"/>
-                  <text x="100" y="95" text-anchor="middle" font-size="24" font-weight="700" fill="var(--text-main)">6</text>
+                <svg class="chart-svg doughnut-chart" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Priority doughnut chart">
+                  <circle class="doughnut-bg" cx="100" cy="100" r="70" fill="none" stroke="var(--color-muted)" stroke-width="28"/>
+                  <circle class="doughnut-segment-high" cx="100" cy="100" r="70" fill="none" stroke="var(--priority-high-text)" stroke-width="28" stroke-dasharray="110 330" stroke-dashoffset="0" transform="rotate(-90 100 100)"/>
+                  <circle class="doughnut-segment-medium" cx="100" cy="100" r="70" fill="none" stroke="var(--priority-medium-text)" stroke-width="28" stroke-dasharray="110 330" stroke-dashoffset="-110" transform="rotate(-90 100 100)"/>
+                  <circle class="doughnut-segment-low" cx="100" cy="100" r="70" fill="none" stroke="var(--priority-low-text)" stroke-width="28" stroke-dasharray="110 330" stroke-dashoffset="-220" transform="rotate(-90 100 100)"/>
+                  <text x="100" y="95" text-anchor="middle" font-size="24" font-weight="700" fill="var(--color-text)">6</text>
                   <text x="100" y="112" text-anchor="middle" font-size="10" fill="var(--text-muted)">tasks</text>
                 </svg>
                 <div class="chart-legend">
@@ -394,7 +413,7 @@
                 <div style="display:flex;flex-direction:column;gap:var(--space-md)">
                   <div>
                     <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
-                      <span style="font-weight:500;color:var(--text-main)">Alice Chen</span>
+                      <span style="font-weight:500;color:var(--color-text)">Alice Chen</span>
                       <span style="color:var(--text-muted)">2 tasks</span>
                     </div>
                     <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
@@ -403,7 +422,7 @@
                   </div>
                   <div>
                     <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
-                      <span style="font-weight:500;color:var(--text-main)">Bob Smith</span>
+                      <span style="font-weight:500;color:var(--color-text)">Bob Smith</span>
                       <span style="color:var(--text-muted)">1 task</span>
                     </div>
                     <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
@@ -412,7 +431,7 @@
                   </div>
                   <div>
                     <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
-                      <span style="font-weight:500;color:var(--text-main)">Carol Davis</span>
+                      <span style="font-weight:500;color:var(--color-text)">Carol Davis</span>
                       <span style="color:var(--text-muted)">2 tasks</span>
                     </div>
                     <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
@@ -421,7 +440,7 @@
                   </div>
                   <div>
                     <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
-                      <span style="font-weight:500;color:var(--text-main)">Dave Wilson</span>
+                      <span style="font-weight:500;color:var(--color-text)">Dave Wilson</span>
                       <span style="color:var(--text-muted)">1 task</span>
                     </div>
                     <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
@@ -471,18 +490,37 @@
             </div>
           </div>
         </section>
+
+        <section class="view-container team-view" id="team-view" role="region" aria-label="Team view">
+          <div class="team-wrapper" id="team-container">
+          </div>
+        </section>
       </div>
     </div>
 
-    <aside class="activity-sidebar" id="activity-sidebar" role="complementary" aria-label="Activity log">
+    <aside class="activity-panel" id="activity-panel" role="region" aria-label="Activity log panel">
+      <div class="activity-resizer" id="activity-resizer" title="Resize panel"></div>
       <div class="activity-header">
-        <h3 class="activity-title">Activity</h3>
-        <button class="activity-close" id="activity-close" aria-label="Close activity panel">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M4 4L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </button>
+        <h3 class="activity-title">Activity Log</h3>
+        <div class="activity-header-actions">
+          <button class="activity-header-btn" id="activity-search-btn" aria-label="Search activity">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+              <circle cx="6.5" cy="6.5" r="4" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M9.5 9.5L13 13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="activity-header-btn" id="activity-clear-btn" aria-label="Clear activity">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+              <path d="M3 4H12M5 4V2.5C5 2.22386 5.22386 2 5.5 2H9.5C9.77614 2 10 2.22386 10 2.5V4M6 4L6.5 12H8.5L9 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button class="activity-close" id="activity-close" aria-label="Close activity panel">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4 4L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
       </div>
       <div class="activity-filters" id="activity-filters">
         <button class="activity-filter-pill active" data-filter="all">All</button>
@@ -493,7 +531,6 @@
       <div class="activity-list" id="activity-list">
       </div>
     </aside>
-  </div>
 
   <aside class="side-peek" id="side-peek" role="dialog" aria-modal="true" aria-label="Task details">
     <div class="side-peek-backdrop" id="side-peek-backdrop"></div>
@@ -682,6 +719,33 @@
       <div class="modal-footer">
         <button class="btn btn-ghost modal-cancel">Cancel</button>
         <button class="btn btn-primary" type="submit">Create Task</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="github-modal" role="dialog" aria-modal="true" aria-label="Add GitHub ID">
+    <div class="modal modal--sm">
+      <div class="modal-header">
+        <h2 class="modal-title" id="github-modal-title">Add GitHub ID</h2>
+        <button class="modal-close github-modal-close" aria-label="Close modal">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path d="M4.5 4.5L13.5 13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M13.5 4.5L4.5 13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <p class="github-modal-member-name" id="github-modal-member-name"></p>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="github-id-input">GitHub Username</label>
+          <input type="text" class="form-input" id="github-id-input" placeholder="Enter GitHub username" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost github-modal-close">Cancel</button>
+        <button class="btn btn-primary" id="github-save-btn">Save</button>
       </div>
     </div>
   </div>

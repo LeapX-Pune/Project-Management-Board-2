@@ -7,6 +7,13 @@
   cursor: grab;
   transition: var(--transition-base);
   position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 152px;
+}
+
+.task-card .task-meta {
+  margin-top: auto;
 }
 
 .task-card:hover {
@@ -49,18 +56,18 @@
 }
 
 .task-priority.high {
-  background: #FEF2F2;
-  color: #DC2626;
+  background: var(--priority-high-bg);
+  color: var(--priority-high-text);
 }
 
 .task-priority.medium {
-  background: #FFFBEB;
-  color: #D97706;
+  background: var(--priority-medium-bg);
+  color: var(--priority-medium-text);
 }
 
 .task-priority.low {
-  background: #F0FDF4;
-  color: #16A34A;
+  background: var(--priority-low-bg);
+  color: var(--priority-low-text);
 }
 
 .task-title {
@@ -111,18 +118,18 @@
 }
 
 .task-due-date.far {
-  background: #F0FDF4;
-  color: #16A34A;
+  background: var(--priority-low-bg);
+  color: var(--priority-low-text);
 }
 
 .task-due-date.approaching {
-  background: #FFFBEB;
-  color: #D97706;
+  background: var(--priority-medium-bg);
+  color: var(--priority-medium-text);
 }
 
 .task-due-date.overdue {
-  background: #FEF2F2;
-  color: #DC2626;
+  background: var(--priority-high-bg);
+  color: var(--priority-high-text);
 }
 
 .task-avatar {
@@ -179,7 +186,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(9, 9, 11, 0.5);
+  background: var(--color-overlay);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   display: none;
@@ -424,7 +431,7 @@
 
 .peek-subtask-remove:hover {
   color: var(--color-destructive);
-  background: rgba(239, 68, 68, 0.1);
+  background: var(--priority-high-bg);
 }
 
 .peek-add-subtask {
