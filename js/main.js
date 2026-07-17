@@ -1,5 +1,5 @@
 import { MOCK_DATA, TEAM_MEMBERS } from './data.js';
-import { renderBoard, renderActivity, renderTable, renderList, renderTeam, getInitials, formatTimestamp, getSubtaskProgress, renderQuickStats, renderByDate, renderWeeklyLineGraph, renderRecentActivity } from './ui.js';
+import { renderBoard, renderActivity, renderTable, renderList, renderTeam, getInitials, formatTimestamp, getSubtaskProgress, renderQuickStats, renderByDate, renderWeeklyLineGraph, renderRecentActivity, renderKPICards } from './ui.js';
 import { initDragDrop } from './dragdrop.js';
 
 function init() {
@@ -12,6 +12,7 @@ function init() {
   renderByDate(MOCK_DATA);
   renderWeeklyLineGraph(MOCK_DATA);
   renderRecentActivity(MOCK_DATA);
+  renderKPICards(MOCK_DATA);
   initDragDrop();
   wireEventListeners();
   restorePersistedState();

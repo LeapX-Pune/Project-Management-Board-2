@@ -501,6 +501,24 @@ export function renderWeeklyLineGraph(data) {
   }
 }
 
+export function renderKPICards(data) {
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  const completedToday = data.activityLog.filter(
+    e => e.type === 'created' && new Date(e.timestamp).toDateString() === today.toDateString()
+  ).length;
+
+  const dueTomorrow = Object.values(data.tasks).filter(
+    t => t.dueDate && new Date(t.dueDate).toDateString() === tomorrow.toDateString()
+  ).length;
+
+  document.getElementById('kpi-today').textContent = completedToday;
+  document.getElementById('kpi-tomorrow').textContent = dueTomorrow;
+  document.getElementById('kpi-avg').textContent = '—';
+}
+
 export function renderRecentActivity(data) {
   const list = document.getElementById('recent-activity-list');
   if (!list) return;
