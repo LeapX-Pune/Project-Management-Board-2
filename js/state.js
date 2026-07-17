@@ -50,3 +50,34 @@ export function saveState(state) {
 
 // Create a singleton state object that can be mutated and saved
 export let appState = loadState();
+
+/**
+ * Helper to retrieve all tasks from state
+ */
+export function getTasks() {
+  return appState.tasks;
+}
+
+/**
+ * Helper to add a new task to state and save
+ */
+export function addTask(taskData) {
+  const newTaskId = 'task-' + Date.now();
+  const newTask = {
+    id: newTaskId,
+    ...taskData,
+    subtasks: []
+  };
+
+  appState.tasks[newTaskId] = newTask;
+  
+  // Add to backlog column by default if column id is not provided
+  const targetColId = taskData.status || 'col-backlog';
+  const targetCol = appState.columns.find(col => col.id === targetColId);
+  if (targetCol) {
+    targetCol.taskIds.push(newTaskId);
+  }
+
+  saveState(appState);
+  return newTask;
+}
