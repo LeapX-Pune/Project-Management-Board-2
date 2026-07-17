@@ -105,3 +105,16 @@ export const MOCK_DATA = {
     { timestamp: '2026-07-12T10:15:00', user: 'Frank Lee', action: 'Ran regression test suite', area: 'Analytics', type: 'created' },
   ],
 };
+
+export function addActivityLogEntry(user, action, type, area = 'Board') {
+  const newEntry = {
+    timestamp: new Date().toISOString(),
+    user: user,
+    action: action,
+    type: type,
+    area: area
+  };
+  MOCK_DATA.activityLog.push(newEntry);
+  window.dispatchEvent(new CustomEvent('activityLogUpdated', { detail: newEntry }));
+  return newEntry;
+}

@@ -1,4 +1,4 @@
-import { MOCK_DATA, TEAM_MEMBERS } from './data.js';
+import { MOCK_DATA, TEAM_MEMBERS, addActivityLogEntry } from './data.js';
 import { renderBoard, renderActivity, renderTable, renderList, renderTeam, getInitials, formatTimestamp, getSubtaskProgress } from './ui.js';
 import { initDragDrop } from './dragdrop.js';
 import { appState, saveState } from './state.js';
@@ -19,6 +19,52 @@ function init() {
   renderTeam(TEAM_MEMBERS);
   initDragDrop();
   wireEventListeners();
+
+  window.addEventListener('boardStateChanged', () => {
+    renderBoard(MOCK_DATA);
+    renderActivity(MOCK_DATA.activityLog);
+    renderTable(MOCK_DATA);
+    renderList(MOCK_DATA);
+  });
+
+  window.addEventListener('activityLogUpdated', () => {
+    renderActivity(MOCK_DATA.activityLog);
+  });
+}
+
+function openSidePeek(card) {
+  const taskId = card.dataset.taskId;
+  const task = MOCK_DATA.tasks[taskId];
+  if (!task) return;
+
+  const sidePeek = document.getElementById('side-peek');
+  sidePeek.dataset.taskId = taskId;
+
+  const peekTitle = document.getElementById('peek-title');
+  const peekDesc = document.querySelector('.peek-textarea');
+  const peekSelects = document.querySelectorAll('.peek-select');
+  const peekDate = document.querySelector('.peek-date');
+
+  if (peekTitle) peekTitle.value = task.title || '';
+  if (peekDesc) peekDesc.value = task.description || '';
+  if (peekDate) peekDate.value = task.dueDate || '';
+
+  const statusSelect = peekSelects[0];
+  const prioritySelect = peekSelects[1];
+  const assigneeSelect = peekSelects[2];
+
+  if (statusSelect) {
+    const column = MOCK_DATA.columns.find(col => col.taskIds.includes(taskId));
+    statusSelect.value = column ? column.title : 'Backlog';
+  }
+  if (prioritySelect) {
+    prioritySelect.value = task.priority ? task.priority.charAt(0).toUpperCase() + task.priority.slice(1) : 'Medium';
+  }
+  if (assigneeSelect) {
+    assigneeSelect.value = task.assignee || 'alice';
+  }
+
+  sidePeek.classList.add('open');
 }
 
 function wireEventListeners() {
@@ -325,33 +371,136 @@ function wireEventListeners() {
     if (editBtn) {
       const card = editBtn.closest('.task-card');
       if (card) {
-        const titleEl = card.querySelector('.task-title');
-        const descEl = card.querySelector('.task-description');
-        const priorityEl = card.querySelector('.task-priority');
-        const avatarEl = card.querySelector('.task-avatar');
-        const dueDateEl = card.querySelector('.task-due-date');
-
-        const peekTitle = document.getElementById('peek-title');
-        const peekDesc = document.querySelector('.peek-textarea');
-        const peekPriority = document.querySelector('.peek-select');
-        const peekStatus = document.querySelector('.peek-select');
-        const peekDate = document.querySelector('.peek-date');
-
-        if (peekTitle && titleEl) peekTitle.value = titleEl.textContent;
-        if (peekDesc && descEl) peekDesc.value = descEl.textContent;
-
-        document.getElementById('side-peek').classList.add('open');
+        openSidePeek(card);
       }
       e.stopPropagation();
     }
   });
 
-  document.querySelector('.btn-primary')?.addEventListener('click', (e) => {
+  document.querySelector('#side-peek .btn-primary')?.addEventListener('click', (e) => {
     const peekContent = e.target.closest('.side-peek-content');
     if (peekContent) {
-      document.getElementById('side-peek').classList.remove('open');
+      const sidePeek = document.getElementById('side-peek');
+      const taskId = sidePeek.dataset.taskId;
+      const task = MOCK_DATA.tasks[taskId];
+
+      if (task) {
+        const peekTitle = document.getElementById('peek-title');
+        const peekDesc = document.querySelector('.peek-textarea');
+        const peekSelects = document.querySelectorAll('.peek-select');
+        const peekDate = document.querySelector('.peek-date');
+
+        const newTitle = peekTitle ? peekTitle.value.trim() : task.title;
+        const newDesc = peekDesc ? peekDesc.value.trim() : task.description;
+        const newDate = peekDate ? peekDate.value : task.dueDate;
+
+        const statusSelect = peekSelects[0];
+        const prioritySelect = peekSelects[1];
+        const assigneeSelect = peekSelects[2];
+
+        const newStatusTitle = statusSelect ? statusSelect.value : '';
+        const newPriority = prioritySelect ? prioritySelect.value.toLowerCase() : task.priority;
+        const newAssignee = assigneeSelect ? assigneeSelect.value : task.assignee;
+
+        let hasChanged = false;
+
+        // 1. Check Assignee change
+        if (newAssignee !== task.assignee) {
+          const newName = MOCK_DATA.members[newAssignee]?.name || 'Unassigned';
+          addActivityLogEntry('Alice Chen', `assigned task '${newTitle}' to ${newName}`, 'edited', 'Team');
+          task.assignee = newAssignee;
+          hasChanged = true;
+        }
+
+        // 2. Check Deadline change
+        if (newDate !== task.dueDate) {
+          addActivityLogEntry('Alice Chen', `updated deadline on '${newTitle}'`, 'edited', 'Calendar');
+          task.dueDate = newDate;
+          hasChanged = true;
+        }
+
+        // 3. Check Status (Column) change
+        const currentColumn = MOCK_DATA.columns.find(col => col.taskIds.includes(taskId));
+        const targetColumn = MOCK_DATA.columns.find(col => col.title === newStatusTitle);
+        
+        if (currentColumn && targetColumn && currentColumn.id !== targetColumn.id) {
+          currentColumn.taskIds = currentColumn.taskIds.filter(id => id !== taskId);
+          targetColumn.taskIds.push(taskId);
+          task.status = targetColumn.id;
+          
+          addActivityLogEntry('Alice Chen', `moved '${newTitle}' to ${targetColumn.title}`, 'moved', 'Board');
+          hasChanged = true;
+        }
+
+        // 4. Update basic fields
+        if (task.title !== newTitle || task.description !== newDesc || task.priority !== newPriority) {
+          task.title = newTitle;
+          task.description = newDesc;
+          task.priority = newPriority;
+          hasChanged = true;
+        }
+
+        if (hasChanged) {
+          window.dispatchEvent(new CustomEvent('boardStateChanged'));
+        }
+      }
+
+      sidePeek.classList.remove('open');
       e.preventDefault();
     }
+  });
+
+  // Task creation submit listener
+  document.querySelector('#task-modal .modal-footer .btn-primary')?.addEventListener('click', (e) => {
+    const titleInput = document.getElementById('task-title');
+    const descInput = document.getElementById('task-description');
+    const assigneeSelect = document.getElementById('task-assignee');
+    const dateInput = document.getElementById('task-dueDate');
+    const prioritySelect = document.getElementById('task-priority');
+
+    const title = titleInput ? titleInput.value.trim() : '';
+    const desc = descInput ? descInput.value.trim() : '';
+    const assignee = assigneeSelect ? assigneeSelect.value : 'alice';
+    const dueDate = dateInput ? dateInput.value : '';
+    const priority = prioritySelect ? prioritySelect.value : 'medium';
+
+    if (!title) {
+      titleInput?.classList.add('error');
+      titleInput?.nextElementSibling?.classList.add('show');
+      return;
+    }
+
+    titleInput?.classList.remove('error');
+    titleInput?.nextElementSibling?.classList.remove('show');
+
+    const newTaskId = 'task-' + Date.now();
+    const newTask = {
+      id: newTaskId,
+      title: title,
+      description: desc,
+      assignee: assignee,
+      dueDate: dueDate,
+      priority: priority,
+      status: 'col-backlog',
+      subtasks: []
+    };
+
+    MOCK_DATA.tasks[newTaskId] = newTask;
+    const backlogCol = MOCK_DATA.columns.find(col => col.id === 'col-backlog');
+    if (backlogCol) {
+      backlogCol.taskIds.push(newTaskId);
+    }
+
+    addActivityLogEntry('Alice Chen', `created '${title}'`, 'created', 'Board');
+
+    if (titleInput) titleInput.value = '';
+    if (descInput) descInput.value = '';
+    if (dateInput) dateInput.value = '';
+    if (assigneeSelect) assigneeSelect.value = 'alice';
+    if (prioritySelect) prioritySelect.value = 'medium';
+
+    document.getElementById('task-modal').classList.remove('open');
+    window.dispatchEvent(new CustomEvent('boardStateChanged'));
   });
 
   document.getElementById('peek-add-subtask-btn')?.addEventListener('click', () => {
@@ -469,10 +618,11 @@ function wireEventListeners() {
     });
   });
 
-  document.querySelectorAll('.task-card').forEach(card => {
-    card.addEventListener('dblclick', () => {
-      document.getElementById('side-peek').classList.add('open');
-    });
+  document.addEventListener('dblclick', (e) => {
+    const card = e.target.closest('.task-card');
+    if (card) {
+      openSidePeek(card);
+    }
   });
 
   let selectedMemberId = null;
