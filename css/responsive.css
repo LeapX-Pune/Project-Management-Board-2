@@ -23,7 +23,7 @@
 }
 
 @media (max-width: 1024px) {
-  .search-bar {
+  .app-header .search-bar {
     max-width: 240px;
   }
 

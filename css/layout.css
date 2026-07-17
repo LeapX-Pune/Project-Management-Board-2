@@ -273,7 +273,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-lg);
-  flex: 1;
+  flex-shrink: 0;
   min-width: 0;
 }
 
@@ -282,7 +282,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-sm) var(--space-lg);
-  background: var(--bg-surface);
+  background: var(--bg-canvas);
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -320,6 +320,12 @@
   font-weight: 500;
 }
 
+.app-header .search-bar {
+  flex: 1;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
 .search-bar {
   display: flex;
   align-items: center;
@@ -331,7 +337,6 @@
   border: 1px solid transparent;
   transition: var(--transition-fast);
   min-width: 200px;
-  max-width: 320px;
   width: 100%;
 }
 
