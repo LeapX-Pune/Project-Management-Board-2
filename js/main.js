@@ -464,32 +464,45 @@ function wireEventListeners() {
     const dueDate = dateInput ? dateInput.value : '';
     const priority = prioritySelect ? prioritySelect.value : 'medium';
 
+    let hasError = false;
+
     if (!title) {
       titleInput?.classList.add('error');
       titleInput?.nextElementSibling?.classList.add('show');
-      return;
+      hasError = true;
+    } else {
+      titleInput?.classList.remove('error');
+      titleInput?.nextElementSibling?.classList.remove('show');
     }
 
-    titleInput?.classList.remove('error');
-    titleInput?.nextElementSibling?.classList.remove('show');
+    if (dueDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDate = new Date(dueDate);
+      if (selectedDate < today) {
+        dateInput?.classList.add('error');
+        dateInput?.nextElementSibling?.classList.add('show');
+        hasError = true;
+      } else {
+        dateInput?.classList.remove('error');
+        dateInput?.nextElementSibling?.classList.remove('show');
+      }
+    } else {
+        dateInput?.classList.remove('error');
+        dateInput?.nextElementSibling?.classList.remove('show');
+    }
 
-    const newTaskId = 'task-' + Date.now();
-    const newTask = {
-      id: newTaskId,
-      title: title,
+    if (hasError) return;
+
+    // Use the exposed addTask function
+    const newTask = addTask({
+      title,
       description: desc,
-      assignee: assignee,
-      dueDate: dueDate,
-      priority: priority,
-      status: 'col-backlog',
-      subtasks: []
-    };
-
-    MOCK_DATA.tasks[newTaskId] = newTask;
-    const backlogCol = MOCK_DATA.columns.find(col => col.id === 'col-backlog');
-    if (backlogCol) {
-      backlogCol.taskIds.push(newTaskId);
-    }
+      assignee,
+      dueDate,
+      priority,
+      status: 'col-backlog'
+    });
 
     addActivityLogEntry('Alice Chen', `created '${title}'`, 'created', 'Board');
 
