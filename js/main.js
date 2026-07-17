@@ -23,6 +23,8 @@ let memberModal, idInput, nameInput, emailInput, roleInput, avatarInput;
 let formTitle, cancelEditBtn, submitBtn;
 let nameError, emailError, avatarError;
 
+let originalSidePeekBodyHTML = '';
+
 export function showToast(message, type = 'success') {
   const container = document.getElementById('toast-container');
   if (!container) return;
@@ -44,6 +46,136 @@ export function showToast(message, type = 'success') {
   }, 3000);
 }
 
+function openMemberProfileDrawer(member) {
+  const sidePeek = document.getElementById('side-peek');
+  const peekBody = sidePeek?.querySelector('.side-peek-body');
+  if (!sidePeek || !peekBody) return;
+
+  // Set accessibility label
+  sidePeek.setAttribute('aria-label', `Member Profile: ${member.name}`);
+
+  // Calculate statistics
+  const totalTasks = member.tasksCompleted + member.tasksInProgress;
+  const pct = totalTasks > 0 ? Math.round((member.tasksCompleted / totalTasks) * 100) : 0;
+
+  // Get assigned tasks list
+  const memberTasks = Object.values(MOCK_DATA.tasks).filter(t => t.assignee === member.id);
+  let tasksHtml = '';
+  if (memberTasks.length === 0) {
+    tasksHtml = '<p style="color: var(--color-text-muted); font-size: 0.85rem; padding: var(--space-sm) 0;">No tasks assigned currently.</p>';
+  } else {
+    memberTasks.forEach(task => {
+      const priorityClass = task.priority === 'high' ? 'high' : task.priority === 'medium' ? 'medium' : 'low';
+      tasksHtml += `
+        <div class="list-item" style="border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-sm); background: var(--color-surface); margin-bottom: var(--space-sm); cursor: pointer;" data-task-link-id="${task.id}">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-weight: 600; color: var(--color-text);">${task.title}</span>
+            <span class="task-priority ${priorityClass}" style="font-size: 0.7rem; padding: 2px 6px;">${task.priority}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-text-muted); margin-top: 4px;">
+            <span>Due: ${task.dueDate || 'No Date'}</span>
+            <span>Status: ${task.status}</span>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  // Get member activity logs
+  const memberActivity = (MOCK_DATA.activityLog || []).filter(entry => 
+    entry.user.toLowerCase().includes(member.name.toLowerCase()) || 
+    (member.githubId && entry.user.toLowerCase().includes(member.githubId.toLowerCase()))
+  );
+  
+  let activityHtml = '';
+  if (memberActivity.length === 0) {
+    activityHtml = '<p style="color: var(--color-text-muted); font-size: 0.85rem; padding: var(--space-sm) 0;">No recent activity logs.</p>';
+  } else {
+    memberActivity.slice(0, 5).forEach(entry => {
+      const timeStr = formatTimestamp(entry.timestamp);
+      activityHtml += `
+        <div style="font-size: 0.8125rem; padding: var(--space-sm) 0; border-bottom: 1px dashed var(--color-border); color: var(--color-text-muted);">
+          <span style="font-weight: 500; color: var(--color-text);">${entry.action}</span> in <span class="activity-entry-area activity-entry-area--${entry.type}" style="font-size: 0.75rem; padding: 1px 4px; border-radius: 4px;">${entry.area}</span>
+          <div style="font-size: 0.7rem; color: var(--color-text-subtle); margin-top: 2px;">${timeStr}</div>
+        </div>
+      `;
+    });
+  }
+
+  // Build the details content
+  peekBody.innerHTML = `
+    <div style="display: flex; flex-direction: column; gap: var(--space-lg); padding-bottom: var(--space-xl);">
+      <div style="display: flex; align-items: center; gap: var(--space-md); border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-md);">
+        <div id="drawer-avatar-placeholder"></div>
+        <div style="min-width: 0;">
+          <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--color-text); line-height: 1.2;">${member.name}</h2>
+          <p style="font-size: 0.875rem; color: var(--color-text-muted);">${member.role}</p>
+          <p style="font-size: 0.75rem; color: var(--color-text-subtle); margin-top: 2px; word-break: break-all;">${member.email}</p>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="font-size: 0.875rem; font-weight: 600; color: var(--color-text); margin-bottom: var(--space-sm);">Workload Summary</h3>
+        <div class="progress-cell" style="flex-direction: column; align-items: stretch; gap: var(--space-xs);">
+          <div style="display: flex; justify-content: space-between; font-size: 0.8125rem;">
+            <span>Completed Tasks</span>
+            <span style="font-weight: 600;">${member.tasksCompleted}/${totalTasks} tasks (${pct}%)</span>
+          </div>
+          <div class="progress-bar" style="height: 8px; background: var(--color-border);">
+            <div class="progress-bar-fill" style="width: ${pct}%; background: var(--color-accent);"></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="font-size: 0.875rem; font-weight: 600; color: var(--color-text); margin-bottom: var(--space-sm);">Assigned Tasks</h3>
+        <div class="drawer-tasks-list" style="max-height: 220px; overflow-y: auto;">
+          ${tasksHtml}
+        </div>
+      </div>
+
+      <div>
+        <h3 style="font-size: 0.875rem; font-weight: 600; color: var(--color-text); margin-bottom: var(--space-sm);">Recent Activity</h3>
+        <div class="drawer-activity-list" style="max-height: 200px; overflow-y: auto;">
+          ${activityHtml}
+        </div>
+      </div>
+
+      <div style="margin-top: var(--space-md);">
+        <button class="btn btn-ghost" id="peek-drawer-close" style="width: 100%;">Close Profile</button>
+      </div>
+    </div>
+  `;
+
+  // Render Avatar
+  const avatarPlaceholder = document.getElementById('drawer-avatar-placeholder');
+  if (avatarPlaceholder) {
+    const avatarEl = createAvatar(member, { size: 'xl' });
+    avatarPlaceholder.replaceWith(avatarEl);
+  }
+
+  // Bind close action
+  document.getElementById('peek-drawer-close')?.addEventListener('click', () => {
+    sidePeek.classList.remove('open');
+  });
+
+  // Task links navigation listener
+  peekBody.querySelectorAll('[data-task-link-id]').forEach(link => {
+    link.addEventListener('click', () => {
+      const taskId = link.getAttribute('data-task-link-id');
+      sidePeek.classList.remove('open');
+      setTimeout(() => {
+        const cardEditBtn = document.querySelector(`.task-card[data-task-id="${taskId}"] [data-action="edit"]`);
+        if (cardEditBtn) {
+          cardEditBtn.click();
+        }
+      }, 350);
+    });
+  });
+
+  sidePeek.classList.add('open');
+}
+
 function init() {
   renderBoard(MOCK_DATA);
   renderActivity(MOCK_DATA.activityLog);
@@ -51,6 +183,12 @@ function init() {
   renderList(MOCK_DATA);
   renderTeam(TEAM_MEMBERS);
   
+  // Cache original side-peek body html
+  const peekBody = document.querySelector('#side-peek .side-peek-body');
+  if (peekBody) {
+    originalSidePeekBodyHTML = peekBody.innerHTML;
+  }
+
   // Render header avatars
   renderHeaderTeamList('header-team-group', TEAM_MEMBERS);
   
@@ -704,6 +842,12 @@ function wireEventListeners() {
         const task = MOCK_DATA.tasks[taskId];
         if (!task) return;
 
+        // Restore original HTML if we altered it!
+        const peekBody = document.querySelector('#side-peek .side-peek-body');
+        if (peekBody && originalSidePeekBodyHTML) {
+          peekBody.innerHTML = originalSidePeekBodyHTML;
+        }
+
         const peekTitle = document.getElementById('peek-title');
         const peekDesc = document.querySelector('.peek-textarea');
         const peekDate = document.querySelector('.peek-date');
@@ -820,36 +964,43 @@ function wireEventListeners() {
     }
   });
 
-  document.getElementById('peek-add-subtask-btn')?.addEventListener('click', () => {
-    const input = document.getElementById('peek-add-subtask-input');
-    const list = document.getElementById('peek-subtask-list');
-    if (input && list && input.value.trim()) {
-      const li = document.createElement('li');
-      li.className = 'peek-subtask-item';
-      li.innerHTML = `
-        <label class="peek-subtask-checkbox">
-          <input type="checkbox" data-sub-id="sub-new-${Date.now()}">
-          <span class="peek-subtask-text">${input.value.trim()}</span>
-        </label>
-        <button class="peek-subtask-remove" aria-label="Remove subtask">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3H10M4.5 3V1.5C4.5 1.22386 4.72386 1 5 1H7C7.27614 1 7.5 1.22386 7.5 1.5V3M3 3L3.5 10.5H8.5L9 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-        </button>
-      `;
-      list.appendChild(li);
-      input.value = '';
+  // Event delegation for subtask additions
+  document.addEventListener('click', (e) => {
+    const addSubtaskBtn = e.target.closest('#peek-add-subtask-btn');
+    if (addSubtaskBtn) {
+      const input = document.getElementById('peek-add-subtask-input');
+      const list = document.getElementById('peek-subtask-list');
+      if (input && list && input.value.trim()) {
+        const li = document.createElement('li');
+        li.className = 'peek-subtask-item';
+        li.innerHTML = `
+          <label class="peek-subtask-checkbox">
+            <input type="checkbox" data-sub-id="sub-new-${Date.now()}">
+            <span class="peek-subtask-text">${input.value.trim()}</span>
+          </label>
+          <button class="peek-subtask-remove" aria-label="Remove subtask">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3H10M4.5 3V1.5C4.5 1.22386 4.72386 1 5 1H7C7.27614 1 7.5 1.22386 7.5 1.5V3M3 3L3.5 10.5H8.5L9 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </button>
+        `;
+        list.appendChild(li);
+        input.value = '';
+        updateSubtaskProgress();
+      }
+    }
+  });
+
+  // Event delegation for subtask checkbox updates
+  document.addEventListener('change', (e) => {
+    if (e.target.closest('#peek-subtask-list') && e.target.type === 'checkbox') {
       updateSubtaskProgress();
     }
   });
 
-  document.getElementById('peek-subtask-list')?.addEventListener('change', (e) => {
-    if (e.target.type === 'checkbox') {
-      updateSubtaskProgress();
-    }
-  });
-
-  document.getElementById('peek-subtask-list')?.addEventListener('click', (e) => {
-    if (e.target.closest('.peek-subtask-remove')) {
-      const item = e.target.closest('.peek-subtask-item');
+  // Event delegation for subtask removals
+  document.addEventListener('click', (e) => {
+    const removeBtn = e.target.closest('#peek-subtask-list .peek-subtask-remove');
+    if (removeBtn) {
+      const item = removeBtn.closest('.peek-subtask-item');
       if (item) {
         item.style.transition = 'all 0.2s ease';
         item.style.opacity = '0';
@@ -989,6 +1140,21 @@ function wireEventListeners() {
   document.getElementById('github-id-input')?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       document.getElementById('github-save-btn')?.click();
+    }
+  });
+
+  // Click listener on team profile cards to open the side drawer profile details
+  document.getElementById('team-container')?.addEventListener('click', (e) => {
+    const githubBtn = e.target.closest('.team-github-btn');
+    if (githubBtn) return; // let GitHub handler manage it
+    
+    const card = e.target.closest('.team-card');
+    if (!card) return;
+    
+    const memberId = card.getAttribute('data-member-id');
+    const member = TEAM_MEMBERS.find(m => m.id === memberId);
+    if (member) {
+      openMemberProfileDrawer(member);
     }
   });
 }

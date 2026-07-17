@@ -217,6 +217,7 @@ export function showAssignDropdown(triggerEl, assignedIds = [], onAssignChange) 
         item.className += ' dropdown-item--selected';
       }
       item.setAttribute('data-member-id', member.id);
+      item.setAttribute('tabindex', '0'); // Enable focus on each dropdown option
       
       const avatar = createAvatar(member, { size: 'xs' });
       
@@ -243,8 +244,39 @@ export function showAssignDropdown(triggerEl, assignedIds = [], onAssignChange) 
           onAssignChange(member.id, selected);
         }
       });
+
+      // Item keyboard navigation listener
+      item.addEventListener('keydown', (e) => {
+        const items = Array.from(list.querySelectorAll('.dropdown-item')).filter(el => el.style.display !== 'none');
+        const currentIndex = items.indexOf(item);
+        
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          items[(currentIndex + 1) % items.length].focus();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          items[(currentIndex - 1 + items.length) % items.length].focus();
+        } else if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          item.click();
+        }
+      });
       
       list.appendChild(item);
+    });
+
+    // Keyboard navigation helper on search field
+    searchInput.addEventListener('keydown', (e) => {
+      const items = Array.from(list.querySelectorAll('.dropdown-item')).filter(el => el.style.display !== 'none');
+      if (items.length === 0) return;
+      
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        items[0].focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        items[items.length - 1].focus();
+      }
     });
   }
   
