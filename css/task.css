@@ -18,10 +18,14 @@
 
 .task-card:hover {
   border-color: var(--color-border-strong);
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: var(--shadow-md);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .task-card:active {
   cursor: grabbing;
+  transform: translateY(-1px) scale(1.005);
 }
 
 .task-card.dragging {
