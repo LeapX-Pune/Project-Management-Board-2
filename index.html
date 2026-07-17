@@ -199,8 +199,25 @@
           <div class="dashboard-split">
             <div class="dashboard-card">
               <div class="dashboard-card-title">Weekly Completion</div>
-              <svg class="chart-svg line-graph" viewBox="0 0 320 160" xmlns="http://www.w3.org/2000/svg" aria-label="Weekly completion line chart">
-                <polyline points="" class="line-path" fill="none" stroke="var(--color-accent)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+              <svg class="chart-svg line-graph" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" aria-label="Weekly completion line chart" style="overflow:visible">
+                <g class="grid-lines" stroke="var(--border-subtle)" stroke-width="1" stroke-dasharray="3,3">
+                  <line x1="20" y1="20" x2="300" y2="20"/>
+                  <line x1="20" y1="60" x2="300" y2="60"/>
+                  <line x1="20" y1="100" x2="300" y2="100"/>
+                  <line x1="20" y1="140" x2="300" y2="140"/>
+                </g>
+                <g class="axis-labels" font-size="10" fill="var(--color-text-muted)" text-anchor="middle">
+                  <text x="20" y="176">Mon</text>
+                  <text x="66.7" y="176">Tue</text>
+                  <text x="113.3" y="176">Wed</text>
+                  <text x="160" y="176">Thu</text>
+                  <text x="206.7" y="176">Fri</text>
+                  <text x="253.3" y="176">Sat</text>
+                  <text x="300" y="176">Sun</text>
+                </g>
+                <polygon class="area-fill" fill="var(--color-accent)" opacity="0.08"/>
+                <polyline points="" class="line-path" fill="none" stroke="var(--color-accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <g class="dot-markers" fill="var(--color-accent)"></g>
               </svg>
             </div>
             <div class="dashboard-card" id="dashboard-recent-activity">

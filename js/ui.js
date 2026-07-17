@@ -468,14 +468,37 @@ export function renderWeeklyLineGraph(data) {
   }
 
   const maxVal = Math.max(...series, 1);
-  const points = series.map((v, i) => {
-    const x = 20 + i * (280 / 6);
-    const y = 140 - (v / maxVal) * 120;
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(' ');
+  const margin = 20;
+  const chartW = 280;
+  const chartH = 120;
+
+  const pts = series.map((v, i) => {
+    const x = margin + i * (chartW / 6);
+    const y = margin + chartH - (v / maxVal) * chartH;
+    return { x, y };
+  });
+
+  const linePoints = pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
 
   const poly = svg.querySelector('.line-path');
-  if (poly) poly.setAttribute('points', points);
+  if (poly) poly.setAttribute('points', linePoints);
+
+  const area = svg.querySelector('.area-fill');
+  if (area) {
+    const areaPts = [
+      `${pts[0].x.toFixed(1)},${(margin + chartH).toFixed(1)}`,
+      ...pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`),
+      `${pts[pts.length - 1].x.toFixed(1)},${(margin + chartH).toFixed(1)}`
+    ].join(' ');
+    area.setAttribute('points', areaPts);
+  }
+
+  const dots = svg.querySelector('.dot-markers');
+  if (dots) {
+    dots.innerHTML = pts.map(p =>
+      `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" stroke="var(--bg-surface)" stroke-width="2"/>`
+    ).join('');
+  }
 }
 
 export function renderRecentActivity(data) {
@@ -484,11 +507,19 @@ export function renderRecentActivity(data) {
   const recent = data.activityLog
     .slice()
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-    .slice(0, 3);
+    .slice(0, 4);
 
   list.innerHTML = recent.map(entry => {
     const time = new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const txt = `${entry.user} ${entry.action}`;
-    return `<div class="recent-activity-item"><span>${txt}</span><span class="time">${time}</span></div>`;
+    const color = getColorForUser(entry.user);
+    const initials = getInitials(entry.user);
+    return `
+      <div class="recent-activity-item">
+        <span class="recent-activity-avatar" style="background:${color}">${initials}</span>
+        <span class="recent-activity-text">
+          <strong>${entry.user}</strong> ${entry.action}
+        </span>
+        <span class="recent-activity-time">${time}</span>
+      </div>`;
   }).join('');
 }
