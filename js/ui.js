@@ -659,8 +659,11 @@ export function renderList(data) {
 export function renderTeam(members) {
   const container = document.getElementById('team-container');
   if (!container) return;
+  
+  // Clear container
   container.innerHTML = '';
 
+  // 1. Header
   const header = document.createElement('div');
   header.className = 'team-header flex-between';
   header.innerHTML = `
@@ -671,56 +674,195 @@ export function renderTeam(members) {
   `;
   container.appendChild(header);
 
+  // 2. Controls & Filters Row
+  const controlsRow = document.createElement('div');
+  controlsRow.className = 'team-controls-row';
+  controlsRow.style.display = 'flex';
+  controlsRow.style.gap = 'var(--space-md)';
+  controlsRow.style.marginBottom = 'var(--space-md)';
+  controlsRow.style.flexWrap = 'wrap';
+
+  // Get unique roles from members
+  const roles = Array.from(new Set(members.map(m => m.role).filter(Boolean)));
+  let roleOptions = '<option value="">All Roles</option>';
+  roles.forEach(role => {
+    roleOptions += `<option value="${role}">${role}</option>`;
+  });
+
+  controlsRow.innerHTML = `
+    <div class="search-bar" style="flex: 1; min-width: 240px; margin-bottom: 0;">
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M12 12L16 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <input type="text" class="search-input" id="team-search-input" placeholder="Search team by name or role..." aria-label="Search team">
+    </div>
+    <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
+      <select id="team-role-filter" class="peek-select" style="min-width: 160px; height: 36px; padding: 0 var(--space-sm); border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface);">
+        ${roleOptions}
+      </select>
+      <select id="team-workload-filter" class="peek-select" style="min-width: 160px; height: 36px; padding: 0 var(--space-sm); border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface);">
+        <option value="">All Workloads</option>
+        <option value="low">Low (0-1 task)</option>
+        <option value="medium">Medium (2-3 tasks)</option>
+        <option value="high">High (4+ tasks)</option>
+      </select>
+    </div>
+  `;
+  container.appendChild(controlsRow);
+
+  // 3. Metrics Grid Row Container
+  const metricsContainer = document.createElement('div');
+  metricsContainer.className = 'metrics-grid team-metrics-grid';
+  metricsContainer.style.padding = '0';
+  metricsContainer.style.marginBottom = 'var(--space-lg)';
+  metricsContainer.style.display = 'grid';
+  metricsContainer.style.gridTemplateColumns = 'repeat(auto-fit, minmax(200px, 1fr))';
+  metricsContainer.style.gap = 'var(--space-md)';
+  container.appendChild(metricsContainer);
+
+  // 4. Team Cards Grid Container
   const grid = document.createElement('div');
   grid.className = 'team-grid';
+  container.appendChild(grid);
 
-  members.forEach((member, idx) => {
-    const card = document.createElement('div');
-    card.className = 'team-card';
-    card.style.animationDelay = `${idx * 0.05}s`;
-    card.dataset.memberId = member.id;
+  // Function to filter members and render active components
+  function updateFilteredView() {
+    const searchVal = document.getElementById('team-search-input')?.value.toLowerCase().trim() || '';
+    const roleVal = document.getElementById('team-role-filter')?.value || '';
+    const workloadVal = document.getElementById('team-workload-filter')?.value || '';
 
-    const githubBadge = member.githubId
-      ? `<span class="team-card-github">
-          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          ${member.githubId}
-        </span>`
-      : '';
+    // Filter list
+    const filtered = members.filter(member => {
+      const nameMatch = member.name.toLowerCase().includes(searchVal) || member.role.toLowerCase().includes(searchVal);
+      const roleMatch = !roleVal || member.role === roleVal;
+      
+      let workload = 'low';
+      if (member.tasksInProgress >= 4) workload = 'high';
+      else if (member.tasksInProgress >= 2) workload = 'medium';
+      const workloadMatch = !workloadVal || workload === workloadVal;
 
-    card.innerHTML = `
-      <div class="team-card-avatar-placeholder"></div>
-      <div class="team-card-info">
-        <div class="team-card-name">${member.name}</div>
-        <div class="team-card-role">${member.role}</div>
-        ${githubBadge}
+      return nameMatch && roleMatch && workloadMatch;
+    });
+
+    // Render Metrics based on filtered list!
+    const activeCount = filtered.filter(m => m.tasksInProgress > 0).length;
+    const highWorkloadCount = filtered.filter(m => m.tasksInProgress >= 3).length;
+    const totalTasksCount = filtered.reduce((sum, m) => sum + m.tasksInProgress, 0);
+
+    metricsContainer.innerHTML = `
+      <div class="metric-card" style="min-height: 100px;">
+        <div class="metric-label">Filtered Members</div>
+        <div class="metric-value">${filtered.length}</div>
+        <span class="metric-badge neutral">Registered profiles</span>
       </div>
-      <div class="team-card-actions">
-        <button class="btn btn-ghost btn-sm team-github-btn" data-member-id="${member.id}">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          ${member.githubId ? 'Edit GitHub ID' : 'Add GitHub ID'}
-        </button>
+      <div class="metric-card" style="min-height: 100px;">
+        <div class="metric-label">Active Members</div>
+        <div class="metric-value">${activeCount}</div>
+        <span class="metric-badge success">Assigned to tasks</span>
       </div>
-      <div class="team-card-stats">
-        <div class="team-card-stat">
-          <span class="team-card-stat-value">${member.tasksCompleted}</span>
-          <span class="team-card-stat-label">Done</span>
-        </div>
-        <div class="team-card-stat">
-          <span class="team-card-stat-value">${member.tasksInProgress}</span>
-          <span class="team-card-stat-label">Active</span>
-        </div>
+      <div class="metric-card" style="min-height: 100px;">
+        <div class="metric-label">High Workload</div>
+        <div class="metric-value">${highWorkloadCount}</div>
+        <span class="metric-badge danger">Needs attention</span>
+      </div>
+      <div class="metric-card" style="min-height: 100px;">
+        <div class="metric-label">Assigned Tasks</div>
+        <div class="metric-value">${totalTasksCount}</div>
+        <span class="metric-badge info">Active board tasks</span>
       </div>
     `;
 
-    const avatarPlaceholder = card.querySelector('.team-card-avatar-placeholder');
-    if (avatarPlaceholder) {
-      const avatarEl = createAvatar(member, { size: 'md' });
-      avatarEl.className = 'team-card-avatar';
-      avatarPlaceholder.replaceWith(avatarEl);
+    // Render Team Cards Grid
+    grid.innerHTML = '';
+
+    if (filtered.length === 0) {
+      const emptyState = document.createElement('div');
+      emptyState.className = 'flex-center';
+      emptyState.style.gridColumn = '1 / -1';
+      emptyState.style.flexDirection = 'column';
+      emptyState.style.padding = 'var(--space-xl) var(--space-md)';
+      emptyState.style.color = 'var(--color-text-muted)';
+      emptyState.style.textAlign = 'center';
+      emptyState.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="margin-bottom: var(--space-sm); color: var(--color-text-subtle);">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+        <h3>No matching team members found</h3>
+        <p style="font-size: 0.85rem; margin-top: 4px;">Adjust your keywords or select another filter.</p>
+      `;
+      grid.appendChild(emptyState);
+      return;
     }
 
-    grid.appendChild(card);
-  });
+    filtered.forEach((member, idx) => {
+      const card = document.createElement('div');
+      card.className = 'team-card';
+      card.style.animationDelay = `${idx * 0.03}s`;
+      card.dataset.memberId = member.id;
 
-  container.appendChild(grid);
+      // Workload assessment
+      let workloadClass = 'low';
+      let workloadText = 'Low Workload';
+      if (member.tasksInProgress >= 4) {
+        workloadClass = 'high';
+        workloadText = 'High Workload';
+      } else if (member.tasksInProgress >= 2) {
+        workloadClass = 'medium';
+        workloadText = 'Moderate Workload';
+      }
+
+      const totalTasks = member.tasksCompleted + member.tasksInProgress;
+      const pct = totalTasks > 0 ? Math.round((member.tasksCompleted / totalTasks) * 100) : 0;
+
+      card.innerHTML = `
+        <div class="team-card-header" style="position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; gap: var(--space-sm);">
+          <div class="team-card-avatar-placeholder"></div>
+          <button class="btn-icon team-github-btn" data-member-id="${member.id}" style="position: absolute; top: -6px; right: -6px; border-radius: 50%; border: 1px solid var(--color-border); background: var(--color-surface); width: 28px; height: 28px;" title="${member.githubId ? 'Edit GitHub ID' : 'Link GitHub'}">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          </button>
+        </div>
+        <div class="team-card-info" style="width: 100%;">
+          <div class="team-card-name">${member.name}</div>
+          <div class="team-card-role">${member.role}</div>
+          <div style="margin-top: var(--space-sm); display: flex; justify-content: center; gap: var(--space-xs); flex-wrap: wrap;">
+            <span class="workload-badge ${workloadClass}">${workloadText}</span>
+            ${member.githubId ? `<span class="workload-badge low" style="background: var(--color-accent-soft); color: var(--color-accent);" title="GitHub user: ${member.githubId}">@${member.githubId}</span>` : ''}
+          </div>
+        </div>
+        <div class="team-card-stats" style="width: 100%; border-top: 1px solid var(--color-border); padding-top: var(--space-md); margin-top: auto;">
+          <div class="progress-cell" style="flex-direction: column; align-items: stretch; width: 100%; gap: var(--space-xs);">
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+              <span style="color: var(--color-text-muted);">Assigned Tasks</span>
+              <span style="font-weight: 600; color: var(--color-text-muted);">${member.tasksCompleted}/${totalTasks} completed</span>
+            </div>
+            <div class="progress-bar" style="height: 6px; width: 100%; background: var(--color-border);">
+              <div class="progress-bar-fill" style="width: ${pct}%; background: var(--color-accent);"></div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const avatarPlaceholder = card.querySelector('.team-card-avatar-placeholder');
+      if (avatarPlaceholder) {
+        const avatarEl = createAvatar(member, { size: 'lg' });
+        avatarEl.className = 'team-card-avatar';
+        avatarEl.setAttribute('tabindex', '0');
+        avatarPlaceholder.replaceWith(avatarEl);
+      }
+
+      grid.appendChild(card);
+    });
+  }
+
+  // Bind controls listeners
+  setTimeout(() => {
+    document.getElementById('team-search-input')?.addEventListener('input', updateFilteredView);
+    document.getElementById('team-role-filter')?.addEventListener('change', updateFilteredView);
+    document.getElementById('team-workload-filter')?.addEventListener('change', updateFilteredView);
+  }, 10);
+
+  // Initial render
+  updateFilteredView();
 }
