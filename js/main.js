@@ -254,7 +254,7 @@ function openSidePeek(card) {
     prioritySelect.value = task.priority ? task.priority.charAt(0).toUpperCase() + task.priority.slice(1) : 'Medium';
   }
   if (assigneeSelect) {
-    assigneeSelect.value = task.assignee || 'alice';
+    assigneeSelect.value = task.assignee || 'sankalp';
   }
 
   // Render subtasks
@@ -988,14 +988,14 @@ function wireEventListeners() {
         // 1. Check Assignee change
         if (newAssignee !== task.assignee) {
           const newName = MOCK_DATA.members[newAssignee]?.name || 'Unassigned';
-          addActivityLogEntry('Alice Chen', `assigned task '${newTitle}' to ${newName}`, 'edited', 'Team');
+          addActivityLogEntry('Sankalp Tiwari', `assigned task '${newTitle}' to ${newName}`, 'edited', 'Team');
           task.assignee = newAssignee;
           hasChanged = true;
         }
 
         // 2. Check Deadline change
         if (newDate !== task.dueDate) {
-          addActivityLogEntry('Alice Chen', `updated deadline on '${newTitle}'`, 'edited', 'Calendar');
+          addActivityLogEntry('Sankalp Tiwari', `updated deadline on '${newTitle}'`, 'edited', 'Calendar');
           task.dueDate = newDate;
           hasChanged = true;
         }
@@ -1009,7 +1009,7 @@ function wireEventListeners() {
           targetColumn.taskIds.push(taskId);
           task.status = targetColumn.id;
           
-          addActivityLogEntry('Alice Chen', `moved '${newTitle}' to ${targetColumn.title}`, 'moved', 'Board');
+          addActivityLogEntry('Sankalp Tiwari', `moved '${newTitle}' to ${targetColumn.title}`, 'moved', 'Board');
           hasChanged = true;
         }
 
@@ -1058,7 +1058,7 @@ function wireEventListeners() {
 
     const title = titleInput ? titleInput.value.trim() : '';
     const desc = descInput ? descInput.value.trim() : '';
-    const assignee = assigneeSelect ? assigneeSelect.value : 'alice';
+    const assignee = assigneeSelect ? assigneeSelect.value : 'sankalp';
     const dueDate = dateInput ? dateInput.value : '';
     const priority = prioritySelect ? prioritySelect.value : 'medium';
 
@@ -1102,12 +1102,12 @@ function wireEventListeners() {
       status: 'col-backlog'
     });
 
-    addActivityLogEntry('Alice Chen', `created '${title}'`, 'created', 'Board');
+    addActivityLogEntry('Sankalp Tiwari', `created '${title}'`, 'created', 'Board');
 
     if (titleInput) titleInput.value = '';
     if (descInput) descInput.value = '';
     if (dateInput) dateInput.value = '';
-    if (assigneeSelect) assigneeSelect.value = 'alice';
+    if (assigneeSelect) assigneeSelect.value = 'sankalp';
     if (prioritySelect) prioritySelect.value = 'medium';
 
     document.getElementById('task-modal').classList.remove('open');

@@ -10,14 +10,21 @@ export const DEFAULT_STATE = {
   tasks: {},
   activityLog: [],
   members: {
-    alice: { name: 'Alice Chen', color: '#7C3AED' },
-    bob: { name: 'Bob Smith', color: '#3B82F6' },
-    carol: { name: 'Carol Davis', color: '#10B981' },
-    dave: { name: 'Dave Wilson', color: '#F59E0B' },
+    sai: { name: 'Sai Shendge', color: '#7C3AED' },
+    aditya: { name: 'Aditya Vawhal', color: '#3B82F6' },
+    ankit: { name: 'Ankit Bhalke', color: '#10B981' },
+    devansh: { name: 'Devansh Mittal', color: '#EC4899' },
+    khushi: { name: 'Khushi Shah', color: '#F59E0B' },
+    kshitij: { name: 'Kshitij Das', color: '#06B6D4' },
+    rehan: { name: 'Mohammed Rehan', color: '#ef4444' },
+    pulak: { name: 'Pulak Saha', color: '#0f766e' },
+    sankalp: { name: 'Sankalp Tiwari', color: '#4F46E5' },
+    sauryaman: { name: 'Sauryaman Bisen', color: '#8B5CF6' },
+    sumit: { name: 'Sumit Tiwari', color: '#F97316' }
   }
 };
 
-const STORAGE_KEY = 'pm-board-state';
+const STORAGE_KEY = 'pm-board-state-v2';
 
 /**
  * Loads the state from localStorage.

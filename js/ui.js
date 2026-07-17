@@ -631,12 +631,17 @@ export function renderActivity(entries) {
 
 function getColorForUser(name) {
   const colors = {
-    'Alice Chen': '#7C3AED',
-    'Bob Smith': '#3B82F6',
-    'Carol Davis': '#10B981',
-    'Dave Wilson': '#F59E0B',
-    'Eve Martin': '#EC4899',
-    'Frank Lee': '#06B6D4',
+    'Sai Shendge': '#7C3AED',
+    'Aditya Vawhal': '#3B82F6',
+    'Ankit Bhalke': '#10B981',
+    'Devansh Mittal': '#EC4899',
+    'Khushi Shah': '#F59E0B',
+    'Kshitij Das': '#06B6D4',
+    'Mohammed Rehan': '#ef4444',
+    'Pulak Saha': '#0f766e',
+    'Sankalp Tiwari': '#4F46E5',
+    'Sauryaman Bisen': '#8B5CF6',
+    'Sumit Tiwari': '#F97316',
   };
   return colors[name] || '#71717A';
 }
