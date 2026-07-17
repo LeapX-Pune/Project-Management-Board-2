@@ -1,104 +1,111 @@
-/* Avatar styles */
+/* Avatar UI Component Styles */
 
 .avatar {
-    --avatar-size: 36px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--avatar-size);
-    height: var(--avatar-size);
-    border-radius: var(--radius-circle);
-    font-weight: 600;
-    font-size: calc(var(--avatar-size) * 0.38);
-    text-transform: uppercase;
-    color: var(--text-inverse);
-    user-select: none;
-    position: relative;
-    border: 2px solid var(--bg-surface);
-    box-shadow: var(--shadow-sm);
-    background-color: var(--text-muted);
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  --avatar-size: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: calc(var(--avatar-size) * 0.38);
+  text-transform: uppercase;
+  color: #ffffff;
+  user-select: none;
+  position: relative;
+  border: 2px solid var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  background-color: var(--color-text-muted);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), outline var(--transition-fast);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
 }
 
 .avatar:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    z-index: 2;
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: var(--shadow-md);
+  z-index: 2;
+}
+
+.avatar:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 .avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: inherit;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
 }
 
 /* Avatar Sizing Modifiers */
 .avatar--xs {
-    --avatar-size: 24px;
+  --avatar-size: 24px;
 }
 
 .avatar--sm {
-    --avatar-size: 32px;
+  --avatar-size: 32px;
 }
 
 .avatar--md {
-    --avatar-size: 40px;
+  --avatar-size: 40px;
 }
 
 .avatar--lg {
-    --avatar-size: 48px;
+  --avatar-size: 48px;
 }
 
 .avatar--xl {
-    --avatar-size: 64px;
+  --avatar-size: 64px;
 }
 
 /* Avatar Overlapping Group Layout */
 .avatar-group {
-    display: inline-flex;
-    align-items: center;
-    flex-direction: row-reverse; /* Allows hover visual stacking overlap correctly */
-    justify-content: flex-end;
+  display: inline-flex;
+  align-items: center;
+  flex-direction: row-reverse; /* Allows hover visual stacking overlap correctly */
+  justify-content: flex-end;
 }
 
 .avatar-group .avatar,
 .avatar-group .avatar-counter {
-    margin-left: -8px;
+  margin-left: -8px;
 }
 
 .avatar-group .avatar:first-child,
 .avatar-group .avatar-counter:first-child {
-    margin-left: 0;
+  margin-left: 0;
 }
 
 .avatar-counter {
-    --avatar-size: 36px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--avatar-size);
-    height: var(--avatar-size);
-    border-radius: var(--radius-circle);
-    background-color: var(--border-color);
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-    font-weight: 600;
-    border: 2px solid var(--bg-surface);
-    box-shadow: var(--shadow-sm);
+  --avatar-size: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  border-radius: 50%;
+  background-color: var(--color-surface-2);
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 2px solid var(--color-surface);
+  box-shadow: var(--shadow-sm);
 }
 
 .avatar-counter--xs {
-    --avatar-size: 24px;
-    font-size: 0.65rem;
+  --avatar-size: 24px;
+  font-size: 0.65rem;
 }
 
 .avatar-counter--sm {
-    --avatar-size: 32px;
-    font-size: 0.75rem;
+  --avatar-size: 32px;
+  font-size: 0.75rem;
 }
 
 .avatar-counter--md {
-    --avatar-size: 40px;
-    font-size: 0.85rem;
+  --avatar-size: 40px;
+  font-size: 0.85rem;
 }

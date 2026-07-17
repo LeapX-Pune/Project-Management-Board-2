@@ -601,3 +601,27 @@
   text-align: center;
   padding: var(--space-sm) 0;
 }
+
+/* Dynamic Workload Indicator Badges */
+.workload-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+}
+.workload-badge.low {
+  background: var(--priority-low-bg);
+  color: var(--priority-low-text);
+}
+.workload-badge.medium {
+  background: var(--priority-medium-bg);
+  color: var(--priority-medium-text);
+}
+.workload-badge.high {
+  background: var(--priority-high-bg);
+  color: var(--priority-high-text);
+}
+
