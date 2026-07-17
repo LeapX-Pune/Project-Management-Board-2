@@ -1,12 +1,21 @@
 import { MOCK_DATA, TEAM_MEMBERS } from './data.js';
 import { renderBoard, renderActivity, renderTable, renderList, renderTeam, getInitials, formatTimestamp, getSubtaskProgress } from './ui.js';
 import { initDragDrop } from './dragdrop.js';
+import { appState, saveState } from './state.js';
 
 function init() {
-  renderBoard(MOCK_DATA);
-  renderActivity(MOCK_DATA.activityLog);
-  renderTable(MOCK_DATA);
-  renderList(MOCK_DATA);
+  // If no tasks exist, optionally seed from MOCK_DATA to have something to show
+  if (Object.keys(appState.tasks).length === 0) {
+    appState.tasks = MOCK_DATA.tasks;
+    appState.columns = MOCK_DATA.columns;
+    appState.activityLog = MOCK_DATA.activityLog;
+    saveState(appState);
+  }
+
+  renderBoard(appState);
+  renderActivity(appState.activityLog);
+  renderTable(appState);
+  renderList(appState);
   renderTeam(TEAM_MEMBERS);
   initDragDrop();
   wireEventListeners();
