@@ -199,61 +199,13 @@
           <div class="dashboard-split">
             <div class="dashboard-card">
               <div class="dashboard-card-title">Weekly Completion</div>
-              <svg class="chart-svg" viewBox="0 0 320 160" xmlns="http://www.w3.org/2000/svg" aria-label="Weekly completion bar chart">
-                <text x="0" y="12" font-size="10" fill="var(--color-text-muted)">Mon</text>
-                <rect class="bar" x="0" y="18" width="30" height="80" rx="4" fill="var(--color-accent)" opacity="0.2"/>
-                <rect class="bar" x="0" y="58" width="30" height="40" rx="4" fill="var(--color-accent)"/>
-                <text x="45" y="12" font-size="10" fill="var(--color-text-muted)">Tue</text>
-                <rect class="bar" x="45" y="18" width="30" height="95" rx="4" fill="var(--color-accent)" opacity="0.2"/>
-                <rect class="bar" x="45" y="43" width="30" height="70" rx="4" fill="var(--color-accent)"/>
-                <text x="90" y="12" font-size="10" fill="var(--color-text-muted)">Wed</text>
-                <rect class="bar" x="90" y="18" width="30" height="60" rx="4" fill="var(--color-accent)" opacity="0.2"/>
-                <rect class="bar" x="90" y="38" width="30" height="40" rx="4" fill="var(--color-accent)"/>
-                <text x="135" y="12" font-size="10" fill="var(--color-text-muted)">Thu</text>
-                <rect class="bar" x="135" y="18" width="30" height="110" rx="4" fill="var(--color-accent)" opacity="0.2"/>
-                <rect class="bar" x="135" y="28" width="30" height="100" rx="4" fill="var(--color-accent)"/>
-                <text x="180" y="12" font-size="10" fill="var(--color-text-muted)">Fri</text>
-                <rect class="bar" x="180" y="18" width="30" height="70" rx="4" fill="var(--color-accent)" opacity="0.2"/>
-                <rect class="bar" x="180" y="58" width="30" height="30" rx="4" fill="var(--color-accent)"/>
-                <text x="225" y="12" font-size="10" fill="var(--color-text-muted)">Sat</text>
-                <rect class="bar" x="225" y="18" width="30" height="40" rx="4" fill="var(--color-accent)" opacity="0.2"/>
-                <rect class="bar" x="225" y="48" width="30" height="10" rx="4" fill="var(--color-accent)"/>
-                <text x="270" y="12" font-size="10" fill="var(--color-text-muted)">Sun</text>
-                <rect class="bar" x="270" y="18" width="30" height="30" rx="4" fill="var(--color-accent)" opacity="0.2"/>
-                <rect class="bar" x="270" y="38" width="30" height="10" rx="4" fill="var(--color-accent)"/>
+              <svg class="chart-svg line-graph" viewBox="0 0 320 160" xmlns="http://www.w3.org/2000/svg" aria-label="Weekly completion line chart">
+                <polyline points="" class="line-path" fill="none" stroke="var(--color-accent)" stroke-width="2" vector-effect="non-scaling-stroke"/>
               </svg>
             </div>
-            <div class="dashboard-card">
-              <div class="dashboard-card-title">Active Team Members</div>
-              <div class="dashboard-member-list">
-                <div class="dashboard-member-item">
-                  <div class="task-avatar" style="background:#7C3AED">AC</div>
-                  <div style="flex:1;min-width:0">
-                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Alice Chen</div>
-                    <div class="member-status active">Active on 3 tasks</div>
-                  </div>
-                </div>
-                <div class="dashboard-member-item">
-                  <div class="task-avatar" style="background:#3B82F6">BS</div>
-                  <div style="flex:1;min-width:0">
-                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Bob Smith</div>
-                    <div class="member-status active">Active on 1 task</div>
-                  </div>
-                </div>
-                <div class="dashboard-member-item">
-                  <div class="task-avatar" style="background:#10B981">CD</div>
-                  <div style="flex:1;min-width:0">
-                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Carol Davis</div>
-                    <div class="member-status active">Active on 2 tasks</div>
-                  </div>
-                </div>
-                <div class="dashboard-member-item">
-                  <div class="task-avatar" style="background:#F59E0B">DW</div>
-                  <div style="flex:1;min-width:0">
-                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Dave Wilson</div>
-                    <div class="member-status idle">Idle</div>
-                  </div>
-                </div>
+            <div class="dashboard-card" id="dashboard-recent-activity">
+              <div class="dashboard-card-title">Recent Activity</div>
+              <div class="recent-activity-list" id="recent-activity-list">
               </div>
             </div>
           </div>
