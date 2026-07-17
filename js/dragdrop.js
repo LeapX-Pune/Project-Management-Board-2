@@ -1,3 +1,5 @@
+import { MOCK_DATA, addActivityLogEntry } from './data.js';
+
 let dragSource = null;
 
 function initDragDrop() {
@@ -46,14 +48,28 @@ function initDragDrop() {
 
     const column = taskList.closest('.column');
     if (column && dragSource) {
-      const clone = dragSource.cloneNode(true);
-      clone.classList.remove('dragging');
-      dragSource.remove();
-      taskList.appendChild(clone);
+      const taskId = dragSource.dataset.taskId;
+      const targetColumnId = column.dataset.columnId;
+      const taskTitle = dragSource.querySelector('.task-title')?.textContent || 'Unnamed Task';
+      const columnTitle = column.querySelector('.column-title')?.textContent || 'Unknown Column';
 
-      const countSpan = column.querySelector('.column-count');
-      if (countSpan) {
-        countSpan.textContent = taskList.querySelectorAll('.task-card').length;
+      const sourceColumn = MOCK_DATA.columns.find(col => col.taskIds.includes(taskId));
+      const targetColumn = MOCK_DATA.columns.find(col => col.id === targetColumnId);
+
+      if (sourceColumn && targetColumn && sourceColumn.id !== targetColumnId) {
+        // Move task in model
+        sourceColumn.taskIds = sourceColumn.taskIds.filter(id => id !== taskId);
+        targetColumn.taskIds.push(taskId);
+
+        if (MOCK_DATA.tasks[taskId]) {
+          MOCK_DATA.tasks[taskId].status = targetColumnId;
+        }
+
+        // Log task movement
+        addActivityLogEntry('Alice Chen', `moved '${taskTitle}' to ${columnTitle}`, 'moved', 'Board');
+
+        // Dispatch event to re-render all views
+        window.dispatchEvent(new CustomEvent('boardStateChanged'));
       }
       
       // Dispatch event to sync state

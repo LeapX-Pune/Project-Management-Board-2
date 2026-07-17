@@ -314,3 +314,16 @@ export function getMemberById(id) {
 
 // Initial self bootstrap on load
 initData();
+
+export function addActivityLogEntry(user, action, type, area = 'Board') {
+  const newEntry = {
+    timestamp: new Date().toISOString(),
+    user: user,
+    action: action,
+    type: type,
+    area: area
+  };
+  MOCK_DATA.activityLog.push(newEntry);
+  window.dispatchEvent(new CustomEvent('activityLogUpdated', { detail: newEntry }));
+  return newEntry;
+}

@@ -1,4 +1,4 @@
-import { MOCK_DATA, TEAM_MEMBERS, addMember, updateMember, deleteMember, getMemberById, saveMockData, saveTeamMembers } from './data.js';
+import { MOCK_DATA, TEAM_MEMBERS, addMember, updateMember, deleteMember, getMemberById, saveMockData, saveTeamMembers, addActivityLogEntry } from './data.js';
 import { 
   renderBoard, 
   renderActivity, 
@@ -17,6 +17,7 @@ import {
   populateAssigneeSelects
 } from './ui.js';
 import { initDragDrop } from './dragdrop.js';
+import { appState, saveState, addTask } from './state.js';
 
 // Modal elements cache
 let memberModal, idInput, nameInput, emailInput, roleInput, avatarInput;
@@ -177,10 +178,18 @@ function openMemberProfileDrawer(member) {
 }
 
 function init() {
-  renderBoard(MOCK_DATA);
-  renderActivity(MOCK_DATA.activityLog);
-  renderTable(MOCK_DATA);
-  renderList(MOCK_DATA);
+  // If no tasks exist, optionally seed from MOCK_DATA to have something to show
+  if (Object.keys(appState.tasks).length === 0) {
+    appState.tasks = MOCK_DATA.tasks;
+    appState.columns = MOCK_DATA.columns;
+    appState.activityLog = MOCK_DATA.activityLog;
+    saveState(appState);
+  }
+
+  renderBoard(appState);
+  renderActivity(appState.activityLog);
+  renderTable(appState);
+  renderList(appState);
   renderTeam(TEAM_MEMBERS);
   
   // Cache original side-peek body html
@@ -197,6 +206,79 @@ function init() {
 
   initDragDrop();
   wireEventListeners();
+
+  window.addEventListener('boardStateChanged', () => {
+    renderBoard(MOCK_DATA);
+    renderActivity(MOCK_DATA.activityLog);
+    renderTable(MOCK_DATA);
+    renderList(MOCK_DATA);
+  });
+
+  window.addEventListener('activityLogUpdated', () => {
+    renderActivity(MOCK_DATA.activityLog);
+  });
+}
+
+function openSidePeek(card) {
+  const taskId = card.dataset.taskId;
+  const task = MOCK_DATA.tasks[taskId];
+  if (!task) return;
+
+  const sidePeek = document.getElementById('side-peek');
+  sidePeek.dataset.taskId = taskId;
+
+  // Restore original HTML if we altered it!
+  const peekBody = sidePeek.querySelector('.side-peek-body');
+  if (peekBody && originalSidePeekBodyHTML) {
+    peekBody.innerHTML = originalSidePeekBodyHTML;
+  }
+
+  const peekTitle = document.getElementById('peek-title');
+  const peekDesc = document.querySelector('.peek-textarea');
+  const peekSelects = document.querySelectorAll('.peek-select');
+  const peekDate = document.querySelector('.peek-date');
+
+  if (peekTitle) peekTitle.value = task.title || '';
+  if (peekDesc) peekDesc.value = task.description || '';
+  if (peekDate) peekDate.value = task.dueDate || '';
+
+  const statusSelect = peekSelects[0];
+  const prioritySelect = peekSelects[1];
+  const assigneeSelect = peekSelects[2];
+
+  if (statusSelect) {
+    const column = MOCK_DATA.columns.find(col => col.taskIds.includes(taskId));
+    statusSelect.value = column ? column.title : 'Backlog';
+  }
+  if (prioritySelect) {
+    prioritySelect.value = task.priority ? task.priority.charAt(0).toUpperCase() + task.priority.slice(1) : 'Medium';
+  }
+  if (assigneeSelect) {
+    assigneeSelect.value = task.assignee || 'alice';
+  }
+
+  // Render subtasks
+  const subtaskList = document.getElementById('peek-subtask-list');
+  if (subtaskList) {
+    subtaskList.innerHTML = '';
+    (task.subtasks || []).forEach(sub => {
+      const li = document.createElement('li');
+      li.className = 'peek-subtask-item';
+      li.innerHTML = `
+        <label class="peek-subtask-checkbox">
+          <input type="checkbox" ${sub.completed ? 'checked' : ''} data-sub-id="${sub.id}">
+          <span class="peek-subtask-text">${sub.text}</span>
+        </label>
+        <button class="peek-subtask-remove" aria-label="Remove subtask">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3H10M4.5 3V1.5C4.5 1.22386 4.72386 1 5 1H7C7.27614 1 7.5 1.22386 7.5 1.5V3M3 3L3.5 10.5H8.5L9 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </button>
+      `;
+      subtaskList.appendChild(li);
+    });
+  }
+  updateSubtaskProgress();
+
+  sidePeek.classList.add('open');
 }
 
 function syncBoardDOMToState() {
@@ -838,127 +920,7 @@ function wireEventListeners() {
     if (editBtn) {
       const card = editBtn.closest('.task-card');
       if (card) {
-        const taskId = card.getAttribute('data-task-id');
-        const task = MOCK_DATA.tasks[taskId];
-        if (!task) return;
-
-        // Restore original HTML if we altered it!
-        const peekBody = document.querySelector('#side-peek .side-peek-body');
-        if (peekBody && originalSidePeekBodyHTML) {
-          peekBody.innerHTML = originalSidePeekBodyHTML;
-        }
-
-        const peekTitle = document.getElementById('peek-title');
-        const peekDesc = document.querySelector('.peek-textarea');
-        const peekDate = document.querySelector('.peek-date');
-
-        // Status select lookup
-        const selectEls = document.querySelectorAll('#side-peek select');
-        let statusSelect, prioritySelect, assigneeSelect;
-        selectEls.forEach(sel => {
-          const label = sel.previousElementSibling;
-          if (label) {
-            const labelText = label.textContent.toLowerCase();
-            if (labelText === 'status') statusSelect = sel;
-            else if (labelText === 'priority') prioritySelect = sel;
-            else if (labelText === 'assignee') assigneeSelect = sel;
-          }
-        });
-
-        // Populate peek fields
-        if (peekTitle) peekTitle.value = task.title;
-        if (peekDesc) peekDesc.value = task.description;
-        if (peekDate) peekDate.value = task.dueDate || '';
-        
-        if (statusSelect) {
-          // Normalize status
-          const normalizedStatus = task.status || 'backlog';
-          const matchOption = Array.from(statusSelect.options).find(o => o.text.toLowerCase().replace(' ', '') === normalizedStatus.replace('-', ''));
-          if (matchOption) statusSelect.value = matchOption.value;
-          else statusSelect.selectedIndex = 0;
-        }
-        if (prioritySelect) {
-          prioritySelect.value = task.priority.charAt(0).toUpperCase() + task.priority.slice(1);
-        }
-        if (assigneeSelect) {
-          assigneeSelect.value = task.assignee || '';
-        }
-
-        // Render subtasks
-        const subtaskList = document.getElementById('peek-subtask-list');
-        if (subtaskList) {
-          subtaskList.innerHTML = '';
-          (task.subtasks || []).forEach(sub => {
-            const li = document.createElement('li');
-            li.className = 'peek-subtask-item';
-            li.innerHTML = `
-              <label class="peek-subtask-checkbox">
-                <input type="checkbox" ${sub.completed ? 'checked' : ''} data-sub-id="${sub.id}">
-                <span class="peek-subtask-text">${sub.text}</span>
-              </label>
-              <button class="peek-subtask-remove" aria-label="Remove subtask">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3H10M4.5 3V1.5C4.5 1.22386 4.72386 1 5 1H7C7.27614 1 7.5 1.22386 7.5 1.5V3M3 3L3.5 10.5H8.5L9 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-              </button>
-            `;
-            subtaskList.appendChild(li);
-          });
-        }
-        updateSubtaskProgress();
-
-        // Save action on side-peek
-        const saveBtn = document.querySelector('#side-peek .peek-actions .btn-primary');
-        if (saveBtn) {
-          // Rebind save click
-          const newSaveBtn = saveBtn.cloneNode(true);
-          saveBtn.replaceWith(newSaveBtn);
-          newSaveBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            task.title = peekTitle ? peekTitle.value.trim() : task.title;
-            task.description = peekDesc ? peekDesc.value.trim() : task.description;
-            task.dueDate = peekDate ? peekDate.value : task.dueDate;
-            
-            if (prioritySelect) task.priority = prioritySelect.value.toLowerCase();
-            if (assigneeSelect) task.assignee = assigneeSelect.value;
-
-            // Save subtasks
-            const subtaskItems = document.querySelectorAll('.peek-subtask-item');
-            task.subtasks = Array.from(subtaskItems).map(item => {
-              const check = item.querySelector('input[type="checkbox"]');
-              const text = item.querySelector('.peek-subtask-text').textContent;
-              return {
-                id: check.getAttribute('data-sub-id') || `sub-${Date.now()}-${Math.random()}`,
-                text,
-                completed: check.checked
-              };
-            });
-
-            // If status changed, move card columns
-            if (statusSelect) {
-              const newStatusText = statusSelect.value.toLowerCase().replace(' ', '-');
-              const targetColId = `col-${newStatusText}`;
-              if (task.status !== newStatusText) {
-                // Remove task from old column
-                MOCK_DATA.columns.forEach(col => {
-                  col.taskIds = col.taskIds.filter(id => id !== task.id);
-                });
-                // Add task to new column
-                const newCol = MOCK_DATA.columns.find(c => c.id === targetColId);
-                if (newCol) {
-                  newCol.taskIds.push(task.id);
-                }
-                task.status = newStatusText;
-              }
-            }
-
-            saveMockData();
-            renderBoard(MOCK_DATA);
-            renderTable(MOCK_DATA);
-            renderList(MOCK_DATA);
-            document.getElementById('side-peek').classList.remove('open');
-          });
-        }
-
-        document.getElementById('side-peek').classList.add('open');
+        openSidePeek(card);
       }
       e.stopPropagation();
     }
@@ -994,6 +956,162 @@ function wireEventListeners() {
     if (e.target.closest('#peek-subtask-list') && e.target.type === 'checkbox') {
       updateSubtaskProgress();
     }
+  });
+
+  document.querySelector('#side-peek .btn-primary')?.addEventListener('click', (e) => {
+    const peekContent = e.target.closest('.side-peek-content');
+    if (peekContent) {
+      const sidePeek = document.getElementById('side-peek');
+      const taskId = sidePeek.dataset.taskId;
+      const task = MOCK_DATA.tasks[taskId];
+
+      if (task) {
+        const peekTitle = document.getElementById('peek-title');
+        const peekDesc = document.querySelector('.peek-textarea');
+        const peekSelects = document.querySelectorAll('.peek-select');
+        const peekDate = document.querySelector('.peek-date');
+
+        const newTitle = peekTitle ? peekTitle.value.trim() : task.title;
+        const newDesc = peekDesc ? peekDesc.value.trim() : task.description;
+        const newDate = peekDate ? peekDate.value : task.dueDate;
+
+        const statusSelect = peekSelects[0];
+        const prioritySelect = peekSelects[1];
+        const assigneeSelect = peekSelects[2];
+
+        const newStatusTitle = statusSelect ? statusSelect.value : '';
+        const newPriority = prioritySelect ? prioritySelect.value.toLowerCase() : task.priority;
+        const newAssignee = assigneeSelect ? assigneeSelect.value : task.assignee;
+
+        let hasChanged = false;
+
+        // 1. Check Assignee change
+        if (newAssignee !== task.assignee) {
+          const newName = MOCK_DATA.members[newAssignee]?.name || 'Unassigned';
+          addActivityLogEntry('Alice Chen', `assigned task '${newTitle}' to ${newName}`, 'edited', 'Team');
+          task.assignee = newAssignee;
+          hasChanged = true;
+        }
+
+        // 2. Check Deadline change
+        if (newDate !== task.dueDate) {
+          addActivityLogEntry('Alice Chen', `updated deadline on '${newTitle}'`, 'edited', 'Calendar');
+          task.dueDate = newDate;
+          hasChanged = true;
+        }
+
+        // 3. Check Status (Column) change
+        const currentColumn = MOCK_DATA.columns.find(col => col.taskIds.includes(taskId));
+        const targetColumn = MOCK_DATA.columns.find(col => col.title === newStatusTitle);
+        
+        if (currentColumn && targetColumn && currentColumn.id !== targetColumn.id) {
+          currentColumn.taskIds = currentColumn.taskIds.filter(id => id !== taskId);
+          targetColumn.taskIds.push(taskId);
+          task.status = targetColumn.id;
+          
+          addActivityLogEntry('Alice Chen', `moved '${newTitle}' to ${targetColumn.title}`, 'moved', 'Board');
+          hasChanged = true;
+        }
+
+        // 4. Update basic fields
+        if (task.title !== newTitle || task.description !== newDesc || task.priority !== newPriority) {
+          task.title = newTitle;
+          task.description = newDesc;
+          task.priority = newPriority;
+          hasChanged = true;
+        }
+
+        // 5. Save subtasks
+        const subtaskItems = document.querySelectorAll('.peek-subtask-item');
+        const oldSubtasksJSON = JSON.stringify(task.subtasks || []);
+        task.subtasks = Array.from(subtaskItems).map(item => {
+          const check = item.querySelector('input[type="checkbox"]');
+          const text = item.querySelector('.peek-subtask-text').textContent;
+          return {
+            id: check.getAttribute('data-sub-id') || `sub-${Date.now()}-${Math.random()}`,
+            text,
+            completed: check.checked
+          };
+        });
+        if (JSON.stringify(task.subtasks) !== oldSubtasksJSON) {
+          hasChanged = true;
+        }
+
+        if (hasChanged) {
+          saveMockData();
+          window.dispatchEvent(new CustomEvent('boardStateChanged'));
+        }
+      }
+
+      sidePeek.classList.remove('open');
+      e.preventDefault();
+    }
+  });
+
+  // Task creation submit listener
+  document.querySelector('#task-modal .modal-footer .btn-primary')?.addEventListener('click', (e) => {
+    const titleInput = document.getElementById('task-title');
+    const descInput = document.getElementById('task-description');
+    const assigneeSelect = document.getElementById('task-assignee');
+    const dateInput = document.getElementById('task-dueDate');
+    const prioritySelect = document.getElementById('task-priority');
+
+    const title = titleInput ? titleInput.value.trim() : '';
+    const desc = descInput ? descInput.value.trim() : '';
+    const assignee = assigneeSelect ? assigneeSelect.value : 'alice';
+    const dueDate = dateInput ? dateInput.value : '';
+    const priority = prioritySelect ? prioritySelect.value : 'medium';
+
+    let hasError = false;
+
+    if (!title) {
+      titleInput?.classList.add('error');
+      titleInput?.nextElementSibling?.classList.add('show');
+      hasError = true;
+    } else {
+      titleInput?.classList.remove('error');
+      titleInput?.nextElementSibling?.classList.remove('show');
+    }
+
+    if (dueDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDate = new Date(dueDate);
+      if (selectedDate < today) {
+        dateInput?.classList.add('error');
+        dateInput?.nextElementSibling?.classList.add('show');
+        hasError = true;
+      } else {
+        dateInput?.classList.remove('error');
+        dateInput?.nextElementSibling?.classList.remove('show');
+      }
+    } else {
+        dateInput?.classList.remove('error');
+        dateInput?.nextElementSibling?.classList.remove('show');
+    }
+
+    if (hasError) return;
+
+    // Use the exposed addTask function
+    const newTask = addTask({
+      title,
+      description: desc,
+      assignee,
+      dueDate,
+      priority,
+      status: 'col-backlog'
+    });
+
+    addActivityLogEntry('Alice Chen', `created '${title}'`, 'created', 'Board');
+
+    if (titleInput) titleInput.value = '';
+    if (descInput) descInput.value = '';
+    if (dateInput) dateInput.value = '';
+    if (assigneeSelect) assigneeSelect.value = 'alice';
+    if (prioritySelect) prioritySelect.value = 'medium';
+
+    document.getElementById('task-modal').classList.remove('open');
+    window.dispatchEvent(new CustomEvent('boardStateChanged'));
   });
 
   // Event delegation for subtask removals
@@ -1092,10 +1210,11 @@ function wireEventListeners() {
     });
   });
 
-  document.querySelectorAll('.task-card').forEach(card => {
-    card.addEventListener('dblclick', () => {
-      document.getElementById('side-peek').classList.add('open');
-    });
+  document.addEventListener('dblclick', (e) => {
+    const card = e.target.closest('.task-card');
+    if (card) {
+      openSidePeek(card);
+    }
   });
 
   // GitHub Username bind/edit modal toggling on team-view cards

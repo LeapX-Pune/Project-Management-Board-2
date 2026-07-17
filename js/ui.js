@@ -585,6 +585,8 @@ export function renderActivity(entries) {
   if (!list) return;
   list.innerHTML = '';
 
+  const sortedEntries = [...entries].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
   const header = document.createElement('div');
   header.className = 'activity-log-header';
   header.innerHTML = `
@@ -596,7 +598,7 @@ export function renderActivity(entries) {
   `;
   list.appendChild(header);
 
-  entries.forEach((entry, idx) => {
+  sortedEntries.forEach((entry, idx) => {
     const d = new Date(entry.timestamp);
     const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -614,7 +616,7 @@ export function renderActivity(entries) {
         <span class="activity-entry-action">${entry.action}</span>
       </div>
       <div class="activity-log-col activity-log-col--area">
-        <span class="activity-entry-area activity-entry-area--${entry.type}">${entry.area}</span>
+        <span class="activity-entry-area activity-entry-area--${entry.type}">${entry.area || 'Board'}</span>
       </div>
       <div class="activity-log-col activity-log-col--date">
         <span class="activity-entry-date">${dateStr}</span>
