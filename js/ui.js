@@ -326,3 +326,39 @@ export function renderTeam(members) {
 }
 
 export { getInitials, formatTimestamp, getSubtaskProgress };
+
+export function renderQuickStats(data) {
+  const container = document.getElementById('quick-stats');
+  if (!container) return;
+
+  const tasks = Object.values(data.tasks);
+  const totalTasks = tasks.length;
+  const completed = tasks.filter(t => t.status === 'done').length;
+  const inProgress = tasks.filter(t => t.status === 'in-progress').length;
+  const overdue = tasks.filter(t => new Date(t.dueDate) < new Date()).length;
+  const memberCount = data.members ? Object.keys(data.members).length : 0;
+  const activityCount = data.activityLog ? data.activityLog.length : 0;
+  const latestEntry = data.activityLog?.length
+    ? data.activityLog.reduce((latest, cur) =>
+        new Date(cur.timestamp) > new Date(latest.timestamp) ? cur : latest
+      )
+    : null;
+  const latestDate = latestEntry ? new Date(latestEntry.timestamp).toLocaleDateString() : '—';
+
+  const cards = [
+    { label: 'Total Tasks', value: totalTasks },
+    { label: 'Completed', value: completed },
+    { label: 'In Progress', value: inProgress },
+    { label: 'Overdue', value: overdue },
+    { label: 'Team members', value: memberCount },
+    { label: 'Activity entries', value: activityCount },
+    { label: 'Last activity', value: latestDate },
+  ];
+
+  container.innerHTML = cards.map(c => `
+    <div class="metric-card">
+      <div class="metric-label">${c.label}</div>
+      <div class="metric-value">${c.value}</div>
+    </div>
+  `).join('');
+}

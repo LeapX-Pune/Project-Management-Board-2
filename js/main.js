@@ -1,5 +1,5 @@
 import { MOCK_DATA, TEAM_MEMBERS } from './data.js';
-import { renderBoard, renderActivity, renderTable, renderList, renderTeam, getInitials, formatTimestamp, getSubtaskProgress } from './ui.js';
+import { renderBoard, renderActivity, renderTable, renderList, renderTeam, getInitials, formatTimestamp, getSubtaskProgress, renderQuickStats } from './ui.js';
 import { initDragDrop } from './dragdrop.js';
 
 function init() {
@@ -8,6 +8,7 @@ function init() {
   renderTable(MOCK_DATA);
   renderList(MOCK_DATA);
   renderTeam(TEAM_MEMBERS);
+  renderQuickStats(MOCK_DATA);
   initDragDrop();
   wireEventListeners();
 }
