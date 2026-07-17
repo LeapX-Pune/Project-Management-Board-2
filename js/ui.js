@@ -519,6 +519,201 @@ export function renderKPICards(data) {
   document.getElementById('kpi-avg').textContent = '—';
 }
 
+export function renderAnalyticsKPIs(data) {
+  const total = Object.values(data.tasks).length;
+  const completed = Object.values(data.tasks).filter(t => t.status === 'done').length;
+  const completedPct = total ? Math.round((completed / total) * 100) + '%' : '0%';
+  const priorityMap = { high: 3, medium: 2, low: 1 };
+  const prioritySum = Object.values(data.tasks).reduce((s, t) => s + (priorityMap[t.priority] || 0), 0);
+  const avgPriority = total ? (prioritySum / total).toFixed(1) : '—';
+  document.getElementById('kpi-total-tasks').textContent = total;
+  document.getElementById('kpi-completed-pct').textContent = completedPct;
+  document.getElementById('kpi-avg-priority').textContent = avgPriority;
+}
+
+export function renderStatusDistribution(data) {
+  const svg = document.querySelector('#status-distribution-card .chart-svg');
+  if (!svg) return;
+  const cols = data.columns;
+  const maxTasks = Math.max(...cols.map(c => c.taskIds.length), 1);
+  const barWidth = 28;
+  const gap = 48;
+  const chartHeight = 150;
+  svg.innerHTML = '<title>Task Status Distribution</title><desc>Bars represent task counts per column.</desc>';
+  cols.forEach((col, idx) => {
+    const count = col.taskIds.length;
+    const barHeight = (count / maxTasks) * chartHeight;
+    const x = 30 + idx * gap;
+    const y = chartHeight + 20 - barHeight;
+    const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    bar.setAttribute('class', 'status-bar');
+    bar.setAttribute('x', x);
+    bar.setAttribute('y', y);
+    bar.setAttribute('width', barWidth);
+    bar.setAttribute('height', barHeight);
+    bar.setAttribute('fill', 'var(--color-accent)');
+    bar.setAttribute('rx', '4');
+    svg.appendChild(bar);
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.setAttribute('class', 'status-label');
+    label.setAttribute('x', x + barWidth / 2);
+    label.setAttribute('y', chartHeight + 38);
+    label.setAttribute('text-anchor', 'middle');
+    label.textContent = col.title;
+    svg.appendChild(label);
+    const cntLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    cntLabel.setAttribute('class', 'status-label');
+    cntLabel.setAttribute('x', x + barWidth / 2);
+    cntLabel.setAttribute('y', y - 6);
+    cntLabel.setAttribute('text-anchor', 'middle');
+    cntLabel.setAttribute('font-size', '12');
+    cntLabel.setAttribute('font-weight', '600');
+    cntLabel.setAttribute('fill', 'var(--text-main)');
+    cntLabel.textContent = count;
+    svg.appendChild(cntLabel);
+  });
+}
+
+export function renderPriorityDoughnut(data) {
+  const svg = document.querySelector('#priority-doughnut-card .chart-svg');
+  if (!svg) return;
+  const total = Object.values(data.tasks).length || 1;
+  const counts = { high: 0, medium: 0, low: 0 };
+  Object.values(data.tasks).forEach(t => {
+    if (t.priority && counts[t.priority] !== undefined) counts[t.priority]++;
+  });
+  const radius = 70;
+  const stroke = 28;
+  const colors = {
+    high: 'var(--priority-high-text)',
+    medium: 'var(--priority-medium-text)',
+    low: 'var(--priority-low-text)'
+  };
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  bg.setAttribute('cx', '100'); bg.setAttribute('cy', '100'); bg.setAttribute('r', String(radius));
+  bg.setAttribute('fill', 'none'); bg.setAttribute('stroke', 'var(--color-muted)'); bg.setAttribute('stroke-width', String(stroke));
+  svg.appendChild(bg);
+  let cumulative = 0;
+  const order = ['high', 'medium', 'low'];
+  order.forEach(prio => {
+    const segment = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    segment.setAttribute('cx', '100'); segment.setAttribute('cy', '100'); segment.setAttribute('r', String(radius));
+    segment.setAttribute('fill', 'none');
+    segment.setAttribute('stroke', colors[prio]);
+    segment.setAttribute('stroke-width', String(stroke));
+    const dashArray = 2 * Math.PI * radius;
+    const portion = counts[prio] / total;
+    const dash = dashArray * portion;
+    const offset = dashArray * cumulative;
+    segment.setAttribute('stroke-dasharray', `${dash} ${dashArray - dash}`);
+    segment.setAttribute('stroke-dashoffset', String(-offset));
+    segment.setAttribute('transform', 'rotate(-90 100 100)');
+    svg.appendChild(segment);
+    cumulative += portion;
+  });
+  const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  txt.setAttribute('x', '100'); txt.setAttribute('y', '105'); txt.setAttribute('text-anchor', 'middle');
+  txt.setAttribute('font-size', '24'); txt.setAttribute('font-weight', '700');
+  txt.setAttribute('fill', 'var(--text-main)');
+  txt.textContent = total;
+  svg.appendChild(txt);
+  const sub = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  sub.setAttribute('x', '100'); sub.setAttribute('y', '125'); sub.setAttribute('text-anchor', 'middle');
+  sub.setAttribute('font-size', '10'); sub.setAttribute('fill', 'var(--text-muted)');
+  sub.textContent = 'tasks';
+  svg.appendChild(sub);
+}
+
+export function renderMemberWorkload(data) {
+  const container = document.querySelector('#workload-member-card .member-bar-chart');
+  if (!container) return;
+  const memberTasks = {};
+  Object.values(data.members).forEach(m => { memberTasks[m.name] = 0; });
+  Object.values(data.tasks).forEach(t => {
+    if (t.assignee && data.members[t.assignee]) {
+      const name = data.members[t.assignee].name;
+      memberTasks[name] = (memberTasks[name] || 0) + 1;
+    }
+  });
+  const max = Math.max(...Object.values(memberTasks), 1);
+  container.innerHTML = '';
+  Object.entries(memberTasks).forEach(([name, count]) => {
+    const row = document.createElement('div');
+    row.style.display = 'flex';
+    row.style.justifyContent = 'space-between';
+    row.style.alignItems = 'center';
+    const label = document.createElement('span');
+    label.textContent = name;
+    label.style.fontSize = '0.8125rem';
+    label.style.fontWeight = '500';
+    label.style.color = 'var(--text-main)';
+    const cnt = document.createElement('span');
+    cnt.textContent = `${count} task${count !== 1 ? 's' : ''}`;
+    cnt.style.color = 'var(--text-muted)';
+    cnt.style.fontSize = '0.75rem';
+    const barWrapper = document.createElement('div');
+    barWrapper.style.flex = '1';
+    barWrapper.style.margin = '0 var(--space-sm)';
+    barWrapper.style.height = '8px';
+    barWrapper.style.background = 'var(--color-muted)';
+    barWrapper.style.borderRadius = '999px';
+    barWrapper.style.overflow = 'hidden';
+    const bar = document.createElement('div');
+    bar.style.width = `${(count / max) * 100}%`;
+    bar.style.height = '100%';
+    bar.style.background = `hsl(${120 - (count / max) * 120}, 70%, 50%)`;
+    bar.style.borderRadius = '999px';
+    bar.style.transition = 'width 0.3s ease';
+    barWrapper.appendChild(bar);
+    row.appendChild(label);
+    row.appendChild(cnt);
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.style.alignItems = 'center';
+    wrapper.appendChild(barWrapper);
+    const containerRow = document.createElement('div');
+    containerRow.style.display = 'flex';
+    containerRow.style.flexDirection = 'column';
+    containerRow.style.gap = 'var(--space-xs)';
+    containerRow.appendChild(row);
+    containerRow.appendChild(wrapper);
+    container.appendChild(containerRow);
+  });
+}
+
+export function initAnalyticsFilters(data) {
+  const statusSelect = document.getElementById('filter-status');
+  const prioritySelect = document.getElementById('filter-priority');
+  if (!statusSelect || !prioritySelect) return;
+
+  const columns = data.columns;
+  columns.forEach(col => {
+    const opt = document.createElement('option');
+    opt.value = col.id;
+    opt.textContent = col.title;
+    statusSelect.appendChild(opt);
+  });
+
+  const applyFilters = () => {
+    const status = statusSelect.value;
+    const priority = prioritySelect.value;
+    const filtered = { ...data };
+    filtered.columns = status === 'all' ? data.columns : data.columns.filter(c => c.id === status);
+    if (priority !== 'all') {
+      filtered.tasks = Object.fromEntries(
+        Object.entries(data.tasks).filter(([, task]) => task.priority === priority)
+      );
+    }
+    renderStatusDistribution(filtered);
+    renderPriorityDoughnut(filtered);
+    renderMemberWorkload(filtered);
+  };
+
+  statusSelect.addEventListener('change', applyFilters);
+  prioritySelect.addEventListener('change', applyFilters);
+}
+
 export function renderRecentActivity(data) {
   const list = document.getElementById('recent-activity-list');
   if (!list) return;

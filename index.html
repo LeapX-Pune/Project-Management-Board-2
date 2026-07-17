@@ -361,92 +361,41 @@
 
         <section class="view-container analytics-view" id="analytics-view" role="region" aria-label="Analytics view">
           <div class="analytics-wrapper">
+            <h3 class="analytics-metrics-title">Key Metrics</h3>
+            <div class="analytics-metrics-grid" id="analytics-metrics-grid">
+              <div class="metric-card"><div class="metric-label">Total Tasks</div><div class="metric-value" id="kpi-total-tasks">0</div></div>
+              <div class="metric-card"><div class="metric-label">Completed %</div><div class="metric-value" id="kpi-completed-pct">0%</div></div>
+              <div class="metric-card"><div class="metric-label">Avg Priority</div><div class="metric-value" id="kpi-avg-priority">—</div></div>
+            </div>
+            <div class="analytics-filters">
+              <select id="filter-status" aria-label="Filter by column status">
+                <option value="all">All Columns</option>
+              </select>
+              <select id="filter-priority" aria-label="Filter by priority">
+                <option value="all">All Priorities</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
             <div class="charts-grid">
-              <div class="chart-card">
+              <div class="chart-card" id="status-distribution-card">
                 <div class="chart-card-title">Task Status Distribution</div>
-                <svg class="chart-svg" viewBox="0 0 320 260" xmlns="http://www.w3.org/2000/svg" aria-label="Task status bar chart">
-                  <text x="10" y="20" font-size="12" fill="var(--color-text-muted)">Backlog</text>
-                  <rect class="bar chart-bar-info" x="90" y="4" width="180" height="24" rx="4"/>
-                  <text x="280" y="21" font-size="12" fill="var(--color-text-muted)">2 tasks</text>
-                  <text x="10" y="68" font-size="12" fill="var(--color-text-muted)">To Do</text>
-                  <rect class="bar chart-bar-warning" x="90" y="52" width="90" height="24" rx="4"/>
-                  <text x="190" y="69" font-size="12" fill="var(--color-text-muted)">1 task</text>
-                  <text x="10" y="116" font-size="12" fill="var(--color-text-muted)">In Progress</text>
-                  <rect class="bar chart-bar-accent" x="90" y="100" width="90" height="24" rx="4"/>
-                  <text x="190" y="117" font-size="12" fill="var(--color-text-muted)">1 task</text>
-                  <text x="10" y="164" font-size="12" fill="var(--color-text-muted)">Review</text>
-                  <rect class="bar chart-bar-danger" x="90" y="148" width="90" height="24" rx="4"/>
-                  <text x="190" y="165" font-size="12" fill="var(--color-text-muted)">1 task</text>
-                  <text x="10" y="212" font-size="12" fill="var(--color-text-muted)">Done</text>
-                  <rect class="bar chart-bar-success" x="90" y="196" width="90" height="24" rx="4"/>
-                  <text x="190" y="213" font-size="12" fill="var(--color-text-muted)">1 task</text>
+                <svg class="chart-svg" viewBox="0 0 320 200" role="img" aria-label="Task status distribution chart">
+                  <title>Task Status Distribution</title>
+                  <desc>Bars represent the number of tasks in each column.</desc>
                 </svg>
               </div>
-              <div class="chart-card">
+              <div class="chart-card" id="priority-doughnut-card">
                 <div class="chart-card-title">Priority Distribution</div>
-                <svg class="chart-svg doughnut-chart" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Priority doughnut chart">
-                  <circle class="doughnut-bg" cx="100" cy="100" r="70" fill="none" stroke="var(--color-muted)" stroke-width="28"/>
-                  <circle class="doughnut-segment-high" cx="100" cy="100" r="70" fill="none" stroke="var(--priority-high-text)" stroke-width="28" stroke-dasharray="110 330" stroke-dashoffset="0" transform="rotate(-90 100 100)"/>
-                  <circle class="doughnut-segment-medium" cx="100" cy="100" r="70" fill="none" stroke="var(--priority-medium-text)" stroke-width="28" stroke-dasharray="110 330" stroke-dashoffset="-110" transform="rotate(-90 100 100)"/>
-                  <circle class="doughnut-segment-low" cx="100" cy="100" r="70" fill="none" stroke="var(--priority-low-text)" stroke-width="28" stroke-dasharray="110 330" stroke-dashoffset="-220" transform="rotate(-90 100 100)"/>
-                  <text x="100" y="95" text-anchor="middle" font-size="24" font-weight="700" fill="var(--color-text)">6</text>
-                  <text x="100" y="112" text-anchor="middle" font-size="10" fill="var(--text-muted)">tasks</text>
+                <svg class="chart-svg doughnut-chart" viewBox="0 0 200 200" role="img" aria-label="Priority distribution doughnut chart">
+                  <title>Priority Distribution</title>
+                  <desc>Shows proportion of high, medium and low priority tasks.</desc>
                 </svg>
-                <div class="chart-legend">
-                  <div class="chart-legend-item">
-                    <div class="chart-legend-dot" style="background:var(--priority-high-text)"></div>
-                    <span>High (2)</span>
-                  </div>
-                  <div class="chart-legend-item">
-                    <div class="chart-legend-dot" style="background:var(--priority-medium-text)"></div>
-                    <span>Medium (2)</span>
-                  </div>
-                  <div class="chart-legend-item">
-                    <div class="chart-legend-dot" style="background:var(--priority-low-text)"></div>
-                    <span>Low (2)</span>
-                  </div>
-                </div>
               </div>
-              <div class="chart-card">
+              <div class="chart-card" id="workload-member-card">
                 <div class="chart-card-title">Workload by Member</div>
-                <div style="display:flex;flex-direction:column;gap:var(--space-md)">
-                  <div>
-                    <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
-                      <span style="font-weight:500;color:var(--color-text)">Alice Chen</span>
-                      <span style="color:var(--text-muted)">2 tasks</span>
-                    </div>
-                    <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
-                      <div style="width:67%;height:100%;background:#7C3AED;border-radius:999px"></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
-                      <span style="font-weight:500;color:var(--color-text)">Bob Smith</span>
-                      <span style="color:var(--text-muted)">1 task</span>
-                    </div>
-                    <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
-                      <div style="width:33%;height:100%;background:#3B82F6;border-radius:999px"></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
-                      <span style="font-weight:500;color:var(--color-text)">Carol Davis</span>
-                      <span style="color:var(--text-muted)">2 tasks</span>
-                    </div>
-                    <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
-                      <div style="width:67%;height:100%;background:#10B981;border-radius:999px"></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
-                      <span style="font-weight:500;color:var(--color-text)">Dave Wilson</span>
-                      <span style="color:var(--text-muted)">1 task</span>
-                    </div>
-                    <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
-                      <div style="width:33%;height:100%;background:#F59E0B;border-radius:999px"></div>
-                    </div>
-                  </div>
-                </div>
+                <div class="member-bar-chart"></div>
               </div>
             </div>
             <div class="member-stats-table">
