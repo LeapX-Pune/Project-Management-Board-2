@@ -1,310 +1,314 @@
 /* Team Member Modal & Overlay Styles */
 
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(15, 23, 42, 0.45);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity var(--transition-normal);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(12, 14, 18, 0.45);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-base);
 }
 
 .modal-overlay.active {
-    opacity: 1;
-    pointer-events: auto;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .modal-container {
-    background: var(--bg-surface);
-    border-radius: var(--radius-lg);
-    width: 92%;
-    max-width: 680px;
-    max-height: 85vh;
-    box-shadow: var(--shadow-lg);
-    transform: scale(0.96);
-    transition: transform var(--transition-normal);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border: 1px solid var(--border-color);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  width: 92%;
+  max-width: 680px;
+  max-height: 85vh;
+  box-shadow: var(--shadow-lg);
+  transform: scale(0.96);
+  transition: transform var(--transition-base);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
 }
 
 .modal-overlay.active .modal-container {
-    transform: scale(1);
+  transform: scale(1);
 }
 
 .modal-header {
-    padding: var(--spacing-lg);
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  padding: var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .modal-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--text-primary);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 .modal-close {
-    width: 32px;
-    height: 32px;
-    border-radius: var(--radius-circle);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-secondary);
-    transition: background-color var(--transition-fast), color var(--transition-fast);
-    font-size: 1.25rem;
-    line-height: 1;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
 .modal-close:hover {
-    background-color: var(--bg-surface-hover);
-    color: var(--text-primary);
+  background-color: var(--color-surface-2);
+  color: var(--color-text);
 }
 
 .modal-body {
-    padding: var(--spacing-lg);
-    overflow-y: auto;
-    flex: 1;
+  padding: var(--space-lg);
+  overflow-y: auto;
+  flex: 1;
 }
 
 /* Modal Inner Grid: Team List vs. Form */
 .member-manager {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: var(--spacing-lg);
-    align-items: start;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: var(--space-lg);
+  align-items: start;
 }
 
 /* Members List Pane */
 .member-list-pane {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-    max-height: 400px;
-    overflow-y: auto;
-    padding-right: var(--spacing-xs);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: var(--space-xs);
 }
 
 .member-list-pane::after {
-    content: "";
-    height: 1px;
+  content: "";
+  height: 1px;
 }
 
 .member-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--spacing-sm);
-    border-radius: var(--radius-md);
-    border: 1px solid transparent;
-    transition: background-color var(--transition-fast), border-color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
 }
 
 .member-item:hover {
-    background-color: var(--bg-surface-hover);
-    border-color: var(--border-color);
+  background-color: var(--color-surface-2);
+  border-color: var(--color-border);
 }
 
 .member-item--selected {
-    background-color: var(--primary-light) !important;
-    border-color: var(--primary-color) !important;
+  background-color: var(--color-accent-soft) !important;
+  border-color: var(--color-accent) !important;
 }
 
 .member-item__info {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    min-width: 0; /* Ensures email truncate handles properly */
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0; /* Ensures email truncate handles properly */
 }
 
 .member-item__details {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .member-item__name {
-    font-weight: 500;
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .member-item__email {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .member-item__actions {
-    display: flex;
-    gap: var(--spacing-xs);
-    flex-shrink: 0;
+  display: flex;
+  gap: var(--space-xs);
+  flex-shrink: 0;
 }
 
 /* Reusable UI Action Buttons */
 .btn-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: var(--radius-sm);
-    color: var(--text-secondary);
-    transition: background-color var(--transition-fast), color var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .btn-icon:hover {
-    background-color: var(--border-color);
-    color: var(--text-primary);
+  background-color: var(--color-border);
+  color: var(--color-text);
 }
 
 .btn-icon--danger:hover {
-    background-color: var(--danger-light);
-    color: var(--danger-color);
+  background-color: rgba(220, 38, 38, 0.08);
+  color: var(--color-destructive);
 }
 
 /* Member Form Pane */
 .member-form-pane {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
-    background-color: var(--bg-app);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background-color: var(--color-canvas);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
 }
 
 .member-form-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-xs);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-xs);
 }
 
 .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  position: relative;
+  padding-bottom: 16px;
 }
 
 .form-label {
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
 }
 
 .form-input {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid var(--border-color);
-    background-color: var(--bg-surface);
-    border-radius: var(--radius-md);
-    font-size: 0.9rem;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  color: var(--color-text);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .form-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px var(--primary-light);
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-light);
 }
 
 .form-error-msg {
-    font-size: 0.75rem;
-    color: var(--danger-color);
-    display: none;
-    margin-top: 2px;
+  font-size: 0.72rem;
+  color: var(--color-destructive);
+  display: none;
+  position: absolute;
+  bottom: 0;
+  left: 0;
 }
 
 .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--spacing-sm);
-    margin-top: var(--spacing-xs);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  margin-top: var(--space-xs);
 }
 
-/* Button UI Components */
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 16px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    border-radius: var(--radius-md);
-    transition: background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
-    white-space: nowrap;
+/* App Toast Notification styling */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  pointer-events: none;
 }
 
-.btn:active {
-    transform: scale(0.98);
+.toast {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-floating);
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  transform: translateY(20px);
+  opacity: 0;
+  pointer-events: auto;
+  transition: transform var(--transition-base), opacity var(--transition-base);
+  border-left: 4px solid var(--color-accent);
 }
 
-.btn--primary {
-    background-color: var(--primary-color);
-    color: var(--text-inverse);
+.toast.active {
+  transform: translateY(0);
+  opacity: 1;
 }
 
-.btn--primary:hover {
-    background-color: var(--primary-hover);
+.toast--success {
+  border-left-color: var(--color-success);
 }
 
-.btn--secondary {
-    background-color: var(--bg-surface);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-}
-
-.btn--secondary:hover {
-    background-color: var(--bg-surface-hover);
-}
-
-.btn--danger {
-    background-color: var(--danger-color);
-    color: var(--text-inverse);
-}
-
-.btn--danger:hover {
-    background-color: var(--danger-hover);
+.toast--danger {
+  border-left-color: var(--color-destructive);
 }
 
 /* Responsiveness for Member Management Grid */
 @media (max-width: 640px) {
-    .modal-container {
-        max-height: 90vh;
-        width: 95%;
-    }
-    
-    .modal-body {
-        padding: var(--spacing-md);
-    }
-    
-    .member-manager {
-        grid-template-columns: 1fr;
-        gap: var(--spacing-md);
-    }
-    
-    .member-list-pane {
-        max-height: 200px;
-        border-bottom: 1px solid var(--border-color);
-        padding-bottom: var(--spacing-md);
-    }
+  .modal-container {
+    max-height: 90vh;
+    width: 95%;
+  }
+  
+  .modal-body {
+    padding: var(--space-md);
+  }
+  
+  .member-manager {
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+  
+  .member-list-pane {
+    max-height: 200px;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-md);
+  }
 }

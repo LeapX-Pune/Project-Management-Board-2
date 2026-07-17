@@ -23,6 +23,27 @@ let memberModal, idInput, nameInput, emailInput, roleInput, avatarInput;
 let formTitle, cancelEditBtn, submitBtn;
 let nameError, emailError, avatarError;
 
+export function showToast(message, type = 'success') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast--${type}`;
+  toast.innerHTML = `<span>${message}</span>`;
+  container.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.classList.add('active');
+  });
+
+  setTimeout(() => {
+    toast.classList.remove('active');
+    setTimeout(() => {
+      toast.remove();
+    }, 300);
+  }, 3000);
+}
+
 function init() {
   renderBoard(MOCK_DATA);
   renderActivity(MOCK_DATA.activityLog);
@@ -170,6 +191,7 @@ function handleMemberFormSubmit(e) {
         role: roleVal,
         avatarUrl: avatarVal
       });
+      showToast('Member details updated successfully', 'success');
     } else {
       addMember({
         name: nameVal,
@@ -177,6 +199,7 @@ function handleMemberFormSubmit(e) {
         role: roleVal,
         avatarUrl: avatarVal
       });
+      showToast('New team member added successfully', 'success');
     }
     resetMemberForm();
     renderMemberList('member-list-container', TEAM_MEMBERS, null);
@@ -274,6 +297,7 @@ function wireEventListeners() {
           renderTable(MOCK_DATA);
           renderList(MOCK_DATA);
           populateAssigneeSelects(TEAM_MEMBERS);
+          showToast(`${member.name} removed from team`, 'danger');
         } catch (err) {
           alert('Error deleting member: ' + err.message);
         }
