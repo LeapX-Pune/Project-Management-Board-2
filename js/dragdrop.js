@@ -66,7 +66,7 @@ function initDragDrop() {
         }
 
         // Log task movement
-        addActivityLogEntry('Alice Chen', `moved '${taskTitle}' to ${columnTitle}`, 'moved');
+        addActivityLogEntry('Alice Chen', `moved '${taskTitle}' to ${columnTitle}`, 'moved', 'Board');
 
         // Dispatch event to re-render all views
         window.dispatchEvent(new CustomEvent('boardStateChanged'));

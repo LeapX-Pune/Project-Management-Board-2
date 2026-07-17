@@ -398,14 +398,14 @@ function wireEventListeners() {
         // 1. Check Assignee change
         if (newAssignee !== task.assignee) {
           const newName = MOCK_DATA.members[newAssignee]?.name || 'Unassigned';
-          addActivityLogEntry('Alice Chen', `assigned task '${newTitle}' to ${newName}`, 'edited');
+          addActivityLogEntry('Alice Chen', `assigned task '${newTitle}' to ${newName}`, 'edited', 'Team');
           task.assignee = newAssignee;
           hasChanged = true;
         }
 
         // 2. Check Deadline change
         if (newDate !== task.dueDate) {
-          addActivityLogEntry('Alice Chen', `updated deadline on '${newTitle}'`, 'edited');
+          addActivityLogEntry('Alice Chen', `updated deadline on '${newTitle}'`, 'edited', 'Calendar');
           task.dueDate = newDate;
           hasChanged = true;
         }
@@ -419,7 +419,7 @@ function wireEventListeners() {
           targetColumn.taskIds.push(taskId);
           task.status = targetColumn.id;
           
-          addActivityLogEntry('Alice Chen', `moved '${newTitle}' to ${targetColumn.title}`, 'moved');
+          addActivityLogEntry('Alice Chen', `moved '${newTitle}' to ${targetColumn.title}`, 'moved', 'Board');
           hasChanged = true;
         }
 
@@ -482,7 +482,7 @@ function wireEventListeners() {
       backlogCol.taskIds.push(newTaskId);
     }
 
-    addActivityLogEntry('Alice Chen', `created '${title}'`, 'created');
+    addActivityLogEntry('Alice Chen', `created '${title}'`, 'created', 'Board');
 
     if (titleInput) titleInput.value = '';
     if (descInput) descInput.value = '';

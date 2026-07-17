@@ -106,12 +106,13 @@ export const MOCK_DATA = {
   ],
 };
 
-export function addActivityLogEntry(user, action, type) {
+export function addActivityLogEntry(user, action, type, area = 'Board') {
   const newEntry = {
     timestamp: new Date().toISOString(),
     user: user,
     action: action,
-    type: type
+    type: type,
+    area: area
   };
   MOCK_DATA.activityLog.push(newEntry);
   window.dispatchEvent(new CustomEvent('activityLogUpdated', { detail: newEntry }));
