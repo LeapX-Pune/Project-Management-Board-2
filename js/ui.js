@@ -525,7 +525,7 @@ export function renderRecentActivity(data) {
   const recent = data.activityLog
     .slice()
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-    .slice(0, 4);
+    .slice(0, 6);
 
   list.innerHTML = recent.map(entry => {
     const time = new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
