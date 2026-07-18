@@ -3,7 +3,7 @@ node_modules/
 doc/
 project-docs/
 .vscode/
-.agents/
+.opencode/
 .claude/
 graphify-out
 skills-lock.json
