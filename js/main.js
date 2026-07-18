@@ -903,6 +903,9 @@ function wireEventListeners() {
         renderTable(MOCK_DATA);
         renderList(MOCK_DATA);
         window.dispatchEvent(new CustomEvent('boardStateChanged'));
+      } else if (titleEl) {
+        titleEl.classList.remove('hidden');
+        e.target.classList.add('hidden');
       }
     }
   });
@@ -915,7 +918,9 @@ function wireEventListeners() {
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && e.target.classList.contains('column-title-input')) {
-      e.target.blur();
+      e.preventDefault();
+      const changeEvent = new Event('change', { bubbles: true });
+      e.target.dispatchEvent(changeEvent);
     }
     if (e.key === 'Escape' && e.target.classList.contains('column-title-input')) {
       const titleEl = e.target.closest('.column-header')?.querySelector('.column-title');
