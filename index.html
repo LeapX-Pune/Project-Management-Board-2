@@ -111,7 +111,7 @@
         </div>
         <div class="header-right">
           <!-- Dynamically populated team avatars list in header -->
-          <div id="header-team-group" class="header-team-group flex-center" style="margin-right: var(--space-sm);"></div>
+          <div id="header-team-group" class="header-team-group flex-center" style="margin-right: 4px;"></div>
           
           <button class="btn-icon" id="header-theme-toggle" aria-label="Toggle dark mode">
             <svg class="theme-icon-light" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -193,22 +193,22 @@
           <div class="metrics-grid" id="metrics-grid">
             <div class="metric-card" data-metric="total">
               <div class="metric-label">Total Tasks</div>
-              <div class="metric-value" id="db-total-tasks">—</div>
+              <div class="metric-value">—</div>
               <span class="metric-badge neutral">All projects</span>
             </div>
             <div class="metric-card" data-metric="completed">
               <div class="metric-label">Completed</div>
-              <div class="metric-value" id="db-completed-tasks">—</div>
+              <div class="metric-value">—</div>
               <span class="metric-badge success">Done</span>
             </div>
             <div class="metric-card" data-metric="in-progress">
               <div class="metric-label">In Progress</div>
-              <div class="metric-value" id="db-inprogress-tasks">—</div>
+              <div class="metric-value">—</div>
               <span class="metric-badge info">Active tasks</span>
             </div>
             <div class="metric-card" data-metric="overdue">
               <div class="metric-label">Overdue</div>
-              <div class="metric-value" id="db-overdue-tasks">—</div>
+              <div class="metric-value">—</div>
               <span class="metric-badge danger">Needs attention</span>
             </div>
           </div>
@@ -235,11 +235,6 @@
                 <polyline points="" class="line-path" fill="none" stroke="var(--color-accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                 <g class="dot-markers" fill="var(--color-accent)"></g>
               </svg>
-            </div>
-            <div class="dashboard-card">
-              <div class="dashboard-card-title">Active Team Members</div>
-              <div class="dashboard-member-list" id="db-member-list">
-              </div>
             </div>
             <div class="dashboard-card" id="dashboard-recent-activity">
               <div class="dashboard-card-title">Recent Activity</div>
@@ -753,6 +748,28 @@
             </form>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Dialog Modal -->
+  <div class="modal-overlay" id="confirm-dialog" role="dialog" aria-modal="true" aria-label="Confirm action">
+    <div class="modal modal--sm">
+      <div class="modal-header">
+        <h2 class="modal-title" id="confirm-dialog-title">Confirm</h2>
+        <button class="modal-close" id="confirm-dialog-close" aria-label="Close modal">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path d="M4.5 4.5L13.5 13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M13.5 4.5L4.5 13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-dialog-message" style="font-size: 0.9rem; color: var(--color-text); line-height: 1.5;"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="confirm-dialog-cancel">Cancel</button>
+        <button class="btn btn-primary" id="confirm-dialog-ok" style="background: var(--color-destructive); border-color: var(--color-destructive);">Delete</button>
       </div>
     </div>
   </div>

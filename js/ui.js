@@ -2,6 +2,46 @@
 import { TEAM_MEMBERS, MOCK_DATA } from './data.js';
 
 /**
+ * Shows a custom confirmation dialog modal. Returns a Promise that resolves
+ * to true (confirmed) or false (cancelled).
+ */
+export function showConfirmDialog(message) {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('confirm-dialog');
+    const messageEl = document.getElementById('confirm-dialog-message');
+    const okBtn = document.getElementById('confirm-dialog-ok');
+    const cancelBtn = document.getElementById('confirm-dialog-cancel');
+    const closeBtn = document.getElementById('confirm-dialog-close');
+
+    messageEl.textContent = message;
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+
+    function okClick() { cleanup(true); }
+    function cancelClick() { cleanup(false); }
+    function overlayClick(e) { if (e.target === overlay) cleanup(false); }
+    function keydown(e) { if (e.key === 'Escape') cleanup(false); }
+
+    function cleanup(result) {
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      okBtn.removeEventListener('click', okClick);
+      cancelBtn.removeEventListener('click', cancelClick);
+      closeBtn.removeEventListener('click', cancelClick);
+      overlay.removeEventListener('click', overlayClick);
+      document.removeEventListener('keydown', keydown);
+      resolve(result);
+    }
+
+    okBtn.addEventListener('click', okClick);
+    cancelBtn.addEventListener('click', cancelClick);
+    closeBtn.addEventListener('click', cancelClick);
+    overlay.addEventListener('click', overlayClick);
+    document.addEventListener('keydown', keydown);
+  });
+}
+
+/**
  * Creates and returns an Avatar DOM element.
  */
 export function createAvatar(member, options = {}) {
@@ -405,42 +445,6 @@ export function populateAssigneeSelects(members) {
   }
 }
 
-export function getMemberMetrics(memberId, tasks = MOCK_DATA.tasks) {
-  const memberTasks = Object.values(tasks || {}).filter(t => t.assignee === memberId);
-  const completedTasks = memberTasks.filter(t => t.status === 'col-done');
-  const inProgressTasks = memberTasks.filter(t => t.status === 'col-in-progress');
-  const reviewTasks = memberTasks.filter(t => t.status === 'col-review');
-  const todoTasks = memberTasks.filter(t => t.status === 'col-todo');
-  const backlogTasks = memberTasks.filter(t => t.status === 'col-backlog');
-  
-  const activeTasks = memberTasks.filter(t => t.status !== 'col-done');
-
-  const now = new Date();
-  const overdueTasks = activeTasks.filter(t => {
-    if (!t.dueDate) return false;
-    const due = new Date(t.dueDate + 'T23:59:59');
-    return due < now;
-  });
-
-  const highPriorityTasks = memberTasks.filter(t => t.priority === 'high');
-
-  const totalTasks = memberTasks.length;
-  const completionPercentage = totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
-
-  return {
-    total: totalTasks,
-    completed: completedTasks.length,
-    inProgress: inProgressTasks.length,
-    review: reviewTasks.length,
-    todo: todoTasks.length,
-    backlog: backlogTasks.length,
-    active: activeTasks.length,
-    overdue: overdueTasks.length,
-    highPriority: highPriorityTasks.length,
-    completionPercentage
-  };
-}
-
 // Develop base helper functions
 export function getInitials(name) {
   return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
@@ -559,8 +563,11 @@ export function createColumn(col, tasks, members) {
         </svg>
       </button>
       <button class="column-option-btn destructive" data-action="delete" aria-label="Delete column">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <path d="M2 3.5H12M5 3.5V2C5 1.72386 5.22386 1.5 5.5 1.5H8.5C8.77614 1.5 9 1.72386 9 2V3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M3 4.5H13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M6 4.5V3.25C6 2.836 6.336 2.5 6.75 2.5H9.25C9.664 2.5 10 2.836 10 3.25V4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M12.5 4.5L12 13C12 13.553 11.553 14 11 14H5C4.447 14 4 13.553 4 13L3.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M6.5 7V11M9.5 7V11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
         </svg>
       </button>
     </div>
@@ -735,10 +742,8 @@ export function renderTeam(members) {
   const container = document.getElementById('team-container');
   if (!container) return;
   
-  // Clear container
   container.innerHTML = '';
 
-  // 1. Header
   const header = document.createElement('div');
   header.className = 'team-header flex-between';
   header.innerHTML = `
@@ -748,8 +753,6 @@ export function renderTeam(members) {
     </button>
   `;
   container.appendChild(header);
-
-  // 2. Controls & Filters Row
   const controlsRow = document.createElement('div');
   controlsRow.className = 'team-controls-row';
   controlsRow.style.display = 'flex';
@@ -757,7 +760,6 @@ export function renderTeam(members) {
   controlsRow.style.marginBottom = 'var(--space-md)';
   controlsRow.style.flexWrap = 'wrap';
 
-  // Get unique roles from members
   const roles = Array.from(new Set(members.map(m => m.role).filter(Boolean)));
   let roleOptions = '<option value="">All Roles</option>';
   roles.forEach(role => {
@@ -786,7 +788,6 @@ export function renderTeam(members) {
   `;
   container.appendChild(controlsRow);
 
-  // 3. Metrics Grid Row Container
   const metricsContainer = document.createElement('div');
   metricsContainer.className = 'metrics-grid team-metrics-grid';
   metricsContainer.style.padding = '0';
@@ -796,60 +797,63 @@ export function renderTeam(members) {
   metricsContainer.style.gap = 'var(--space-md)';
   container.appendChild(metricsContainer);
 
-  // 4. Team Cards Grid Container
+  const cols = Math.ceil(members.length / 2);
   const grid = document.createElement('div');
   grid.className = 'team-grid';
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
   container.appendChild(grid);
 
-  // Function to filter members and render active components
   function updateFilteredView() {
+    const tasks = Object.values(MOCK_DATA.tasks || {});
+    members.forEach(m => {
+      const assigned = tasks.filter(t => t.assignee === m.id);
+      m.tasksInProgress = assigned.filter(t => t.status !== 'done').length;
+      m.tasksCompleted = assigned.filter(t => t.status === 'done').length;
+    });
+
     const searchVal = document.getElementById('team-search-input')?.value.toLowerCase().trim() || '';
     const roleVal = document.getElementById('team-role-filter')?.value || '';
     const workloadVal = document.getElementById('team-workload-filter')?.value || '';
 
-    // Filter list
     const filtered = members.filter(member => {
       const nameMatch = member.name.toLowerCase().includes(searchVal) || member.role.toLowerCase().includes(searchVal);
       const roleMatch = !roleVal || member.role === roleVal;
-      
-      const mMetrics = getMemberMetrics(member.id, MOCK_DATA.tasks);
+
       let workload = 'low';
-      if (mMetrics.active >= 4) workload = 'high';
-      else if (mMetrics.active >= 2) workload = 'medium';
+      if (member.tasksInProgress >= 4) workload = 'high';
+      else if (member.tasksInProgress >= 2) workload = 'medium';
       const workloadMatch = !workloadVal || workload === workloadVal;
 
       return nameMatch && roleMatch && workloadMatch;
     });
 
-    // Render Metrics based on filtered list!
-    const activeCount = filtered.filter(m => getMemberMetrics(m.id, MOCK_DATA.tasks).active > 0).length;
-    const highWorkloadCount = filtered.filter(m => getMemberMetrics(m.id, MOCK_DATA.tasks).active >= 3).length;
-    const totalTasksCount = filtered.reduce((sum, m) => sum + getMemberMetrics(m.id, MOCK_DATA.tasks).active, 0);
+    const activeCount = filtered.filter(m => m.tasksInProgress > 0).length;
+    const highWorkloadCount = filtered.filter(m => m.tasksInProgress >= 3).length;
+    const totalTasksCount = filtered.reduce((sum, m) => sum + m.tasksInProgress, 0);
 
     metricsContainer.innerHTML = `
-      <div class="metric-card" style="min-height: 100px;">
+      <div class="metric-card" data-type="members">
         <div class="metric-label">Filtered Members</div>
         <div class="metric-value">${filtered.length}</div>
         <span class="metric-badge neutral">Registered profiles</span>
       </div>
-      <div class="metric-card" style="min-height: 100px;">
+      <div class="metric-card" data-type="active">
         <div class="metric-label">Active Members</div>
         <div class="metric-value">${activeCount}</div>
         <span class="metric-badge success">Assigned to tasks</span>
       </div>
-      <div class="metric-card" style="min-height: 100px;">
+      <div class="metric-card" data-type="workload">
         <div class="metric-label">High Workload</div>
         <div class="metric-value">${highWorkloadCount}</div>
         <span class="metric-badge danger">Needs attention</span>
       </div>
-      <div class="metric-card" style="min-height: 100px;">
+      <div class="metric-card" data-type="tasks">
         <div class="metric-label">Assigned Tasks</div>
         <div class="metric-value">${totalTasksCount}</div>
         <span class="metric-badge info">Active board tasks</span>
       </div>
     `;
 
-    // Render Team Cards Grid
     grid.innerHTML = '';
 
     if (filtered.length === 0) {
@@ -878,25 +882,23 @@ export function renderTeam(members) {
       card.style.animationDelay = `${idx * 0.03}s`;
       card.dataset.memberId = member.id;
 
-      // Workload assessment
-      const mMetrics = getMemberMetrics(member.id, MOCK_DATA.tasks);
       let workloadClass = 'low';
       let workloadText = 'Low Workload';
-      if (mMetrics.active >= 4) {
+      if (member.tasksInProgress >= 4) {
         workloadClass = 'high';
         workloadText = 'High Workload';
-      } else if (mMetrics.active >= 2) {
+      } else if (member.tasksInProgress >= 2) {
         workloadClass = 'medium';
         workloadText = 'Moderate Workload';
       }
 
-      const totalTasks = mMetrics.total;
-      const pct = mMetrics.completionPercentage;
+      const totalTasks = member.tasksCompleted + member.tasksInProgress;
+      const pct = totalTasks > 0 ? Math.round((member.tasksCompleted / totalTasks) * 100) : 0;
 
       card.innerHTML = `
         <div class="team-card-header" style="position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; gap: var(--space-sm);">
           <div class="team-card-avatar-placeholder"></div>
-          <button class="btn-icon team-github-btn" data-member-id="${member.id}" style="position: absolute; top: -6px; right: -6px; border-radius: 50%; border: 1px solid var(--color-border); background: var(--color-surface); width: 28px; height: 28px;" title="${member.githubId ? 'Edit GitHub ID' : 'Link GitHub'}">
+          <button class="btn-icon team-github-btn" data-member-id="${member.id}" style="position: absolute; top: -6px; right: -6px; border-radius: 50%; border: 1px solid var(--color-border); background: var(--color-surface); width: 28px; height: 28px;" title="${member.githubId ? 'Edit GitHub ID' : 'Add GitHub ID'}">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           </button>
         </div>
@@ -905,14 +907,14 @@ export function renderTeam(members) {
           <div class="team-card-role">${member.role}</div>
           <div style="margin-top: var(--space-sm); display: flex; justify-content: center; gap: var(--space-xs); flex-wrap: wrap;">
             <span class="workload-badge ${workloadClass}">${workloadText}</span>
-            ${member.githubId ? `<span class="workload-badge low" style="background: var(--color-accent-soft); color: var(--color-accent);" title="GitHub user: ${member.githubId}">@${member.githubId}</span>` : ''}
+            ${member.githubId ? `<span class="team-card-github" title="GitHub user: ${member.githubId}">@${member.githubId}</span>` : ''}
           </div>
         </div>
         <div class="team-card-stats" style="width: 100%; border-top: 1px solid var(--color-border); padding-top: var(--space-md); margin-top: auto;">
           <div class="progress-cell" style="flex-direction: column; align-items: stretch; width: 100%; gap: var(--space-xs);">
-            <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
-              <span style="color: var(--color-text-muted);">Assigned Tasks</span>
-              <span style="font-weight: 600; color: var(--color-text-muted);">${mMetrics.completed}/${totalTasks} completed</span>
+<div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                <span class="team-card-stat-value" style="color: var(--color-text-muted);">Assigned Tasks</span>
+                <span class="team-card-stat-value" style="font-weight: 600; color: var(--color-text-muted);">${member.tasksCompleted}/${totalTasks} completed</span>
             </div>
             <div class="progress-bar" style="height: 6px; width: 100%; background: var(--color-border);">
               <div class="progress-bar-fill" style="width: ${pct}%; background: var(--color-accent);"></div>
@@ -931,140 +933,28 @@ export function renderTeam(members) {
 
       grid.appendChild(card);
     });
+
+    const remainder = filtered.length % cols;
+    if (remainder > 0) {
+      const fillers = cols - remainder;
+      for (let i = 0; i < fillers; i++) {
+        const filler = document.createElement('div');
+        filler.style.visibility = 'hidden';
+        filler.style.height = '0';
+        filler.style.overflow = 'hidden';
+        grid.appendChild(filler);
+      }
+    }
   }
 
-  // Bind controls listeners
   setTimeout(() => {
     document.getElementById('team-search-input')?.addEventListener('input', updateFilteredView);
     document.getElementById('team-role-filter')?.addEventListener('change', updateFilteredView);
     document.getElementById('team-workload-filter')?.addEventListener('change', updateFilteredView);
   }, 10);
 
-  // Initial render
   updateFilteredView();
 }
-
-export function updateDashboardMetrics() {
-  const totalTasksEl = document.getElementById('db-total-tasks');
-  const completedTasksEl = document.getElementById('db-completed-tasks');
-  const inProgressTasksEl = document.getElementById('db-inprogress-tasks');
-  const overdueTasksEl = document.getElementById('db-overdue-tasks');
-
-  if (!totalTasksEl) return;
-
-  const tasksList = Object.values(MOCK_DATA.tasks || {});
-  
-  // 1. Total tasks
-  const totalTasks = tasksList.length;
-  totalTasksEl.textContent = totalTasks;
-
-  // 2. Completed tasks
-  const completedTasks = tasksList.filter(t => t.status === 'col-done').length;
-  completedTasksEl.textContent = completedTasks;
-
-  // 3. In progress tasks
-  const inProgressTasks = tasksList.filter(t => t.status === 'col-in-progress').length;
-  inProgressTasksEl.textContent = inProgressTasks;
-
-  // 4. Overdue tasks
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const overdueTasks = tasksList.filter(t => t.status !== 'col-done' && t.dueDate && (new Date(t.dueDate) < today)).length;
-  overdueTasksEl.textContent = overdueTasks;
-
-  // 5. Update Active Team Members list
-  const memberListEl = document.getElementById('db-member-list');
-  if (memberListEl) {
-    memberListEl.innerHTML = '';
-    const sortedMembers = [...TEAM_MEMBERS].map(m => {
-      const metrics = getMemberMetrics(m.id, MOCK_DATA.tasks);
-      return { ...m, activeTasksCount: metrics.active };
-    }).sort((a, b) => b.activeTasksCount - a.activeTasksCount);
-
-    sortedMembers.slice(0, 4).forEach(m => {
-      const div = document.createElement('div');
-      div.className = 'dashboard-member-item';
-      
-      const avatarEl = createAvatar(m, { size: 'xs' });
-      avatarEl.className = 'task-avatar';
-
-      const infoDiv = document.createElement('div');
-      infoDiv.style.flex = '1';
-      infoDiv.style.minWidth = '0';
-      infoDiv.innerHTML = `
-        <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">${m.name}</div>
-        <div class="member-status ${m.activeTasksCount > 0 ? 'active' : 'idle'}">
-          ${m.activeTasksCount > 0 ? `Active on ${m.activeTasksCount} task${m.activeTasksCount > 1 ? 's' : ''}` : 'Idle'}
-        </div>
-      `;
-
-      div.appendChild(avatarEl);
-      div.appendChild(infoDiv);
-      memberListEl.appendChild(div);
-    });
-  }
-
-  // 6. Update Workload by Member chart
-  const workloadChartEl = document.getElementById('db-workload-chart');
-  if (workloadChartEl) {
-    workloadChartEl.innerHTML = '';
-    const activeMembers = TEAM_MEMBERS.map(m => {
-      const metrics = getMemberMetrics(m.id, MOCK_DATA.tasks);
-      return { ...m, activeTasksCount: metrics.active };
-    }).filter(m => m.activeTasksCount > 0).sort((a, b) => b.activeTasksCount - a.activeTasksCount);
-
-    if (activeMembers.length === 0) {
-      workloadChartEl.innerHTML = '<p style="color:var(--color-text-muted);font-size:0.85rem;padding:var(--space-sm) 0;text-align:center;">No members assigned to active tasks.</p>';
-    } else {
-      const maxActive = Math.max(...activeMembers.map(m => m.activeTasksCount), 1);
-      
-      activeMembers.slice(0, 4).forEach(m => {
-        const pct = Math.round((m.activeTasksCount / maxActive) * 100);
-        const div = document.createElement('div');
-        div.innerHTML = `
-          <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
-            <span style="font-weight:500;color:var(--color-text)">${m.name}</span>
-            <span style="color:var(--color-text-muted)">${m.activeTasksCount} task${m.activeTasksCount > 1 ? 's' : ''}</span>
-          </div>
-          <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
-            <div style="width:${pct}%;height:100%;background:${m.color || '#4F46E5'};border-radius:999px"></div>
-          </div>
-        `;
-        workloadChartEl.appendChild(div);
-      });
-    }
-  }
-
-  // 7. Update Member Stats Table
-  const statsTbodyEl = document.getElementById('db-stats-tbody') || document.getElementById('member-stats-body');
-  if (statsTbodyEl) {
-    statsTbodyEl.innerHTML = '';
-    const sortedStats = TEAM_MEMBERS.map(m => {
-      const metrics = getMemberMetrics(m.id, MOCK_DATA.tasks);
-      return { ...m, metrics };
-    }).sort((a, b) => b.metrics.completed - a.metrics.completed || b.metrics.completionPercentage - a.metrics.completionPercentage);
-
-    sortedStats.slice(0, 4).forEach(m => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><strong>${m.name}</strong></td>
-        <td>${m.metrics.completed}</td>
-        <td>${m.metrics.inProgress}</td>
-        <td>
-          <div class="progress-cell">
-            <div class="progress-bar">
-              <div class="progress-bar-fill" style="width:${m.metrics.completionPercentage}%;background:${m.color || 'var(--color-accent)'}"></div>
-            </div>
-            ${m.metrics.completionPercentage}%
-          </div>
-        </td>
-      `;
-      statsTbodyEl.appendChild(tr);
-    });
-  }
-}
-
-// ======= DEVELOP ANALYTICS / CHARTS MODULES =====================================
 
 export function renderQuickStats(data) {
   const container = document.getElementById('quick-stats');
