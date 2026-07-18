@@ -361,78 +361,57 @@
 
         <section class="view-container analytics-view" id="analytics-view" role="region" aria-label="Analytics view">
           <div class="analytics-wrapper">
-            <h3 class="analytics-metrics-title">Key Metrics</h3>
-            <div class="analytics-metrics-grid" id="analytics-metrics-grid">
-              <div class="metric-card"><div class="metric-label">Total Tasks</div><div class="metric-value" id="kpi-total-tasks">0</div></div>
-              <div class="metric-card"><div class="metric-label">Completed %</div><div class="metric-value" id="kpi-completed-pct">0%</div></div>
-              <div class="metric-card"><div class="metric-label">Avg Priority</div><div class="metric-value" id="kpi-avg-priority">—</div></div>
-            </div>
-            <div class="analytics-filters">
-              <select id="filter-status" aria-label="Filter by column status">
-                <option value="all">All Columns</option>
-              </select>
-              <select id="filter-priority" aria-label="Filter by priority">
-                <option value="all">All Priorities</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </select>
+            <div class="analytics-header">
+              <div class="analytics-header-left">
+                <h1 class="analytics-title">Analytics</h1>
+                <p class="analytics-subtitle">Project insights and team workload trends</p>
+              </div>
+              <div class="analytics-header-right">
+                <div class="analytics-filters">
+                  <select id="filter-status" aria-label="Filter by column status">
+                    <option value="all">All Columns</option>
+                  </select>
+                  <select id="filter-priority" aria-label="Filter by priority">
+                    <option value="all">All Priorities</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                  </select>
+                </div>
+              </div>
             </div>
             <div class="charts-grid">
               <div class="chart-card" id="status-distribution-card">
-                <div class="chart-card-title">Task Status Distribution</div>
-                <svg class="chart-svg" viewBox="0 0 320 200" role="img" aria-label="Task status distribution chart">
-                  <title>Task Status Distribution</title>
-                  <desc>Bars represent the number of tasks in each column.</desc>
-                </svg>
+                <div class="chart-card-title">Task Pipeline</div>
+                <div class="status-hbars" id="status-hbars"></div>
               </div>
               <div class="chart-card" id="priority-doughnut-card">
                 <div class="chart-card-title">Priority Distribution</div>
-                <svg class="chart-svg doughnut-chart" viewBox="0 0 200 200" role="img" aria-label="Priority distribution doughnut chart">
-                  <title>Priority Distribution</title>
-                  <desc>Shows proportion of high, medium and low priority tasks.</desc>
-                </svg>
+                <div class="doughnut-wrapper">
+                  <svg class="chart-svg doughnut-chart" viewBox="0 0 200 200" role="img" aria-label="Priority distribution doughnut chart">
+                    <title>Priority Distribution</title>
+                    <desc>Shows proportion of high, medium and low priority tasks.</desc>
+                  </svg>
+                </div>
+                <div class="chart-legend" id="priority-legend"></div>
               </div>
               <div class="chart-card" id="workload-member-card">
                 <div class="chart-card-title">Workload by Member</div>
                 <div class="member-bar-chart"></div>
               </div>
             </div>
+            <div class="analytics-section-heading">Member Performance</div>
             <div class="member-stats-table">
               <table>
                 <thead>
                   <tr>
                     <th>Member</th>
-                    <th>Completed</th>
-                    <th>In Progress</th>
-                    <th>Completion Rate</th>
+                    <th>Tasks</th>
+                    <th>Done</th>
+                    <th>Progress</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td><strong>Alice Chen</strong></td>
-                    <td>3</td>
-                    <td>1</td>
-                    <td><div class="progress-cell"><div class="progress-bar"><div class="progress-bar-fill" style="width:75%;background:var(--color-accent)"></div></div>75%</div></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Carol Davis</strong></td>
-                    <td>2</td>
-                    <td>1</td>
-                    <td><div class="progress-cell"><div class="progress-bar"><div class="progress-bar-fill" style="width:67%;background:#10B981"></div></div>67%</div></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Bob Smith</strong></td>
-                    <td>1</td>
-                    <td>0</td>
-                    <td><div class="progress-cell"><div class="progress-bar"><div class="progress-bar-fill" style="width:50%;background:#3B82F6"></div></div>50%</div></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Dave Wilson</strong></td>
-                    <td>0</td>
-                    <td>1</td>
-                    <td><div class="progress-cell"><div class="progress-bar"><div class="progress-bar-fill" style="width:25%;background:#F59E0B"></div></div>25%</div></td>
-                  </tr>
+                <tbody id="member-stats-body">
                 </tbody>
               </table>
             </div>

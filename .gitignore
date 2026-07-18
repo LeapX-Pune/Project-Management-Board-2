@@ -2,7 +2,7 @@ node_modules/
 .DS_Store
 project-docs/
 .vscode/
-.agents/
+.opencode/
 .claude/
 graphify-out
 skills-lock.json

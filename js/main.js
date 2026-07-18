@@ -1,5 +1,5 @@
 import { MOCK_DATA, TEAM_MEMBERS } from './data.js';
-import { renderBoard, renderActivity, renderTable, renderList, renderTeam, getInitials, formatTimestamp, getSubtaskProgress, renderQuickStats, renderByDate, renderWeeklyLineGraph, renderRecentActivity, renderKPICards, renderAnalyticsKPIs, renderStatusDistribution, renderPriorityDoughnut, renderMemberWorkload, initAnalyticsFilters } from './ui.js';
+import { renderBoard, renderActivity, renderTable, renderList, renderTeam, getInitials, formatTimestamp, getSubtaskProgress, renderQuickStats, renderByDate, renderWeeklyLineGraph, renderRecentActivity, renderKPICards, renderStatusDistribution, renderPriorityDoughnut, renderMemberWorkload, renderMemberStatsTable, initAnalyticsFilters } from './ui.js';
 import { initDragDrop } from './dragdrop.js';
 
 function init() {
@@ -13,10 +13,10 @@ function init() {
   renderWeeklyLineGraph(MOCK_DATA);
   renderRecentActivity(MOCK_DATA);
   renderKPICards(MOCK_DATA);
-  renderAnalyticsKPIs(MOCK_DATA);
   renderStatusDistribution(MOCK_DATA);
   renderPriorityDoughnut(MOCK_DATA);
   renderMemberWorkload(MOCK_DATA);
+  renderMemberStatsTable(MOCK_DATA);
   initAnalyticsFilters(MOCK_DATA);
   initDragDrop();
   wireEventListeners();

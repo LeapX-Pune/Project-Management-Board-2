@@ -278,8 +278,10 @@ export function renderTeam(members) {
   header.innerHTML = '<h2>Team Members</h2>';
   container.appendChild(header);
 
+  const cols = Math.ceil(members.length / 2);
   const grid = document.createElement('div');
   grid.className = 'team-grid';
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
   members.forEach((member, idx) => {
     const card = document.createElement('div');
@@ -321,6 +323,18 @@ export function renderTeam(members) {
 
     grid.appendChild(card);
   });
+
+  const remainder = members.length % cols;
+  if (remainder > 0) {
+    const fillers = cols - remainder;
+    for (let i = 0; i < fillers; i++) {
+      const filler = document.createElement('div');
+      filler.style.visibility = 'hidden';
+      filler.style.height = '0';
+      filler.style.overflow = 'hidden';
+      grid.appendChild(filler);
+    }
+  }
 
   container.appendChild(grid);
 }
@@ -519,166 +533,194 @@ export function renderKPICards(data) {
   document.getElementById('kpi-avg').textContent = '—';
 }
 
-export function renderAnalyticsKPIs(data) {
-  const total = Object.values(data.tasks).length;
-  const completed = Object.values(data.tasks).filter(t => t.status === 'done').length;
-  const completedPct = total ? Math.round((completed / total) * 100) + '%' : '0%';
-  const priorityMap = { high: 3, medium: 2, low: 1 };
-  const prioritySum = Object.values(data.tasks).reduce((s, t) => s + (priorityMap[t.priority] || 0), 0);
-  const avgPriority = total ? (prioritySum / total).toFixed(1) : '—';
-  document.getElementById('kpi-total-tasks').textContent = total;
-  document.getElementById('kpi-completed-pct').textContent = completedPct;
-  document.getElementById('kpi-avg-priority').textContent = avgPriority;
-}
+const STATUS_COLORS = {
+  'col-backlog': '#9CA3AF',
+  'col-todo': '#3B82F6',
+  'col-in-progress': '#F59E0B',
+  'col-review': '#8B5CF6',
+  'col-done': '#10B981',
+};
 
 export function renderStatusDistribution(data) {
-  const svg = document.querySelector('#status-distribution-card .chart-svg');
-  if (!svg) return;
+  const container = document.getElementById('status-hbars');
+  if (!container) return;
   const cols = data.columns;
-  const maxTasks = Math.max(...cols.map(c => c.taskIds.length), 1);
-  const barWidth = 28;
-  const gap = 48;
-  const chartHeight = 150;
-  svg.innerHTML = '<title>Task Status Distribution</title><desc>Bars represent task counts per column.</desc>';
-  cols.forEach((col, idx) => {
+  const total = cols.reduce((s, c) => s + c.taskIds.length, 0);
+  const nonZero = cols.filter(c => c.taskIds.length > 0);
+  const bar = nonZero.map(col => {
+    const color = STATUS_COLORS[col.id] || 'var(--color-accent)';
+    return `<div class="stacked-segment" style="flex:${col.taskIds.length};background:${color}" title="${col.title}: ${col.taskIds.length} task${col.taskIds.length !== 1 ? 's' : ''}"></div>`;
+  }).join('');
+  const legend = cols.map(col => {
     const count = col.taskIds.length;
-    const barHeight = (count / maxTasks) * chartHeight;
-    const x = 30 + idx * gap;
-    const y = chartHeight + 20 - barHeight;
-    const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    bar.setAttribute('class', 'status-bar');
-    bar.setAttribute('x', x);
-    bar.setAttribute('y', y);
-    bar.setAttribute('width', barWidth);
-    bar.setAttribute('height', barHeight);
-    bar.setAttribute('fill', 'var(--color-accent)');
-    bar.setAttribute('rx', '4');
-    svg.appendChild(bar);
-    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    label.setAttribute('class', 'status-label');
-    label.setAttribute('x', x + barWidth / 2);
-    label.setAttribute('y', chartHeight + 38);
-    label.setAttribute('text-anchor', 'middle');
-    label.textContent = col.title;
-    svg.appendChild(label);
-    const cntLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    cntLabel.setAttribute('class', 'status-label');
-    cntLabel.setAttribute('x', x + barWidth / 2);
-    cntLabel.setAttribute('y', y - 6);
-    cntLabel.setAttribute('text-anchor', 'middle');
-    cntLabel.setAttribute('font-size', '12');
-    cntLabel.setAttribute('font-weight', '600');
-    cntLabel.setAttribute('fill', 'var(--text-main)');
-    cntLabel.textContent = count;
-    svg.appendChild(cntLabel);
-  });
+    const color = STATUS_COLORS[col.id] || 'var(--color-accent)';
+    return `<span class="stacked-legend-item"><span class="stacked-legend-dot" style="background:${color}"></span>${col.title} ${count}</span>`;
+  }).join('');
+  const doneCol = cols.find(c => c.id === 'col-done');
+  const progressCol = cols.find(c => c.id === 'col-in-progress');
+  const doneCount = doneCol ? doneCol.taskIds.length : 0;
+  const inProgressCount = progressCol ? progressCol.taskIds.length : 0;
+  const pct = total ? Math.round((doneCount / total) * 100) : 0;
+  const pendingCount = cols.reduce((s, c) => {
+    if (['col-backlog', 'col-todo'].includes(c.id)) return s + c.taskIds.length;
+    return s;
+  }, 0);
+  container.innerHTML = `
+    <div class="stacked-bar">${bar || `<div class="stacked-segment" style="flex:1;background:var(--color-muted)"></div>`}</div>
+    <div class="stacked-legend">${legend}</div>
+    <div class="status-details">
+      <div class="status-detail-item">
+        <span class="status-detail-value">${total}</span>
+        <span class="status-detail-label">Total</span>
+      </div>
+      <div class="status-detail-item">
+        <span class="status-detail-value">${inProgressCount}</span>
+        <span class="status-detail-label">Active</span>
+      </div>
+      <div class="status-detail-item">
+        <span class="status-detail-value">${doneCount}</span>
+        <span class="status-detail-label">Done</span>
+      </div>
+      <div class="status-detail-item">
+        <span class="status-detail-value">${pct}%</span>
+        <span class="status-detail-label">Rate</span>
+      </div>
+      <div class="status-detail-item">
+        <span class="status-detail-value">${pendingCount}</span>
+        <span class="status-detail-label">Pending</span>
+      </div>
+    </div>`;
+}
+
+const PRIORITY_CONFIG = {
+  high:   { color: 'var(--priority-high-text)',   label: 'High' },
+  medium: { color: 'var(--priority-medium-text)', label: 'Medium' },
+  low:    { color: 'var(--priority-low-text)',    label: 'Low' },
+};
+const PRIORITY_ORDER = ['high', 'medium', 'low'];
+
+function polarToCartesian(cx, cy, r, angleDeg) {
+  const rad = (angleDeg - 90) * Math.PI / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
+function makeArcPath(cx, cy, r, startAngle, endAngle) {
+  const start = polarToCartesian(cx, cy, r, startAngle);
+  const end = polarToCartesian(cx, cy, r, endAngle);
+  const large = endAngle - startAngle > 180 ? 1 : 0;
+  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${large} 1 ${end.x} ${end.y}`;
 }
 
 export function renderPriorityDoughnut(data) {
   const svg = document.querySelector('#priority-doughnut-card .chart-svg');
+  const legend = document.getElementById('priority-legend');
   if (!svg) return;
   const total = Object.values(data.tasks).length || 1;
   const counts = { high: 0, medium: 0, low: 0 };
   Object.values(data.tasks).forEach(t => {
     if (t.priority && counts[t.priority] !== undefined) counts[t.priority]++;
   });
-  const radius = 70;
-  const stroke = 28;
-  const colors = {
-    high: 'var(--priority-high-text)',
-    medium: 'var(--priority-medium-text)',
-    low: 'var(--priority-low-text)'
-  };
+
   while (svg.firstChild) svg.removeChild(svg.firstChild);
-  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  bg.setAttribute('cx', '100'); bg.setAttribute('cy', '100'); bg.setAttribute('r', String(radius));
-  bg.setAttribute('fill', 'none'); bg.setAttribute('stroke', 'var(--color-muted)'); bg.setAttribute('stroke-width', String(stroke));
-  svg.appendChild(bg);
-  let cumulative = 0;
-  const order = ['high', 'medium', 'low'];
-  order.forEach(prio => {
-    const segment = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    segment.setAttribute('cx', '100'); segment.setAttribute('cy', '100'); segment.setAttribute('r', String(radius));
-    segment.setAttribute('fill', 'none');
-    segment.setAttribute('stroke', colors[prio]);
-    segment.setAttribute('stroke-width', String(stroke));
-    const dashArray = 2 * Math.PI * radius;
-    const portion = counts[prio] / total;
-    const dash = dashArray * portion;
-    const offset = dashArray * cumulative;
-    segment.setAttribute('stroke-dasharray', `${dash} ${dashArray - dash}`);
-    segment.setAttribute('stroke-dashoffset', String(-offset));
-    segment.setAttribute('transform', 'rotate(-90 100 100)');
-    svg.appendChild(segment);
-    cumulative += portion;
+
+  const cx = 100, cy = 100, r = 68, sw = 24, innerR = r - sw / 2;
+
+  const segs = [];
+  PRIORITY_ORDER.forEach(prio => {
+    if (counts[prio] > 0) {
+      segs.push({ prio, count: counts[prio] });
+    }
   });
+  if (segs.length === 0) {
+    segs.push({ prio: 'low', count: 0 });
+  }
+
+  const totalSeg = segs.reduce((s, c) => s + c.count, 0) || 1;
+  let currentAngle = 0;
+  segs.forEach((seg, i) => {
+    const sweep = (seg.count / totalSeg) * 360;
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', makeArcPath(cx, cy, r, currentAngle, currentAngle + sweep));
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', seg.count > 0 ? PRIORITY_CONFIG[seg.prio].color : 'var(--color-muted)');
+    path.setAttribute('stroke-width', String(sw));
+    path.setAttribute('stroke-linecap', 'butt');
+    svg.appendChild(path);
+    currentAngle += sweep;
+  });
+
+  const hole = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  hole.setAttribute('cx', String(cx)); hole.setAttribute('cy', String(cy));
+  hole.setAttribute('r', String(innerR + 0.5));
+  hole.setAttribute('fill', 'var(--bg-surface)');
+  svg.appendChild(hole);
+
+  const holeStroke = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  holeStroke.setAttribute('cx', String(cx)); holeStroke.setAttribute('cy', String(cy));
+  holeStroke.setAttribute('r', String(innerR - 0.5));
+  holeStroke.setAttribute('fill', 'none');
+  holeStroke.setAttribute('stroke', 'var(--border-subtle)');
+  holeStroke.setAttribute('stroke-width', '1');
+  holeStroke.setAttribute('opacity', '0.5');
+  svg.appendChild(holeStroke);
+
   const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-  txt.setAttribute('x', '100'); txt.setAttribute('y', '105'); txt.setAttribute('text-anchor', 'middle');
-  txt.setAttribute('font-size', '24'); txt.setAttribute('font-weight', '700');
+  txt.setAttribute('x', String(cx)); txt.setAttribute('y', String(cy - 7));
+  txt.setAttribute('text-anchor', 'middle');
+  txt.setAttribute('dominant-baseline', 'central');
+  txt.setAttribute('font-size', '24'); txt.setAttribute('font-weight', '800');
   txt.setAttribute('fill', 'var(--text-main)');
   txt.textContent = total;
   svg.appendChild(txt);
+
   const sub = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-  sub.setAttribute('x', '100'); sub.setAttribute('y', '125'); sub.setAttribute('text-anchor', 'middle');
+  sub.setAttribute('x', String(cx)); sub.setAttribute('y', String(cy + 11));
+  sub.setAttribute('text-anchor', 'middle');
+  sub.setAttribute('dominant-baseline', 'central');
   sub.setAttribute('font-size', '10'); sub.setAttribute('fill', 'var(--text-muted)');
+  sub.setAttribute('letter-spacing', '0.06em');
   sub.textContent = 'tasks';
   svg.appendChild(sub);
+
+  if (legend) {
+    legend.innerHTML = PRIORITY_ORDER.map(prio => {
+      const c = PRIORITY_CONFIG[prio];
+      const count = counts[prio];
+      return `
+        <span class="chart-legend-item">
+          <span class="chart-legend-dot" style="background:${c.color}"></span>
+          ${c.label} (${count})
+        </span>`;
+    }).join('');
+  }
 }
 
 export function renderMemberWorkload(data) {
   const container = document.querySelector('#workload-member-card .member-bar-chart');
   if (!container) return;
-  const memberTasks = {};
-  Object.values(data.members).forEach(m => { memberTasks[m.name] = 0; });
+  const taskCounts = {};
+  Object.values(data.members).forEach(m => { taskCounts[m.name] = 0; });
   Object.values(data.tasks).forEach(t => {
     if (t.assignee && data.members[t.assignee]) {
-      const name = data.members[t.assignee].name;
-      memberTasks[name] = (memberTasks[name] || 0) + 1;
+      taskCounts[data.members[t.assignee].name] = (taskCounts[data.members[t.assignee].name] || 0) + 1;
     }
   });
-  const max = Math.max(...Object.values(memberTasks), 1);
+  const max = Math.max(...Object.values(taskCounts), 1);
   container.innerHTML = '';
-  Object.entries(memberTasks).forEach(([name, count]) => {
+  Object.entries(taskCounts).forEach(([name, count]) => {
+    const pct = (count / max) * 100;
+    const hue = 140 - (count / max) * 120;
     const row = document.createElement('div');
-    row.style.display = 'flex';
-    row.style.justifyContent = 'space-between';
-    row.style.alignItems = 'center';
-    const label = document.createElement('span');
-    label.textContent = name;
-    label.style.fontSize = '0.8125rem';
-    label.style.fontWeight = '500';
-    label.style.color = 'var(--text-main)';
-    const cnt = document.createElement('span');
-    cnt.textContent = `${count} task${count !== 1 ? 's' : ''}`;
-    cnt.style.color = 'var(--text-muted)';
-    cnt.style.fontSize = '0.75rem';
-    const barWrapper = document.createElement('div');
-    barWrapper.style.flex = '1';
-    barWrapper.style.margin = '0 var(--space-sm)';
-    barWrapper.style.height = '8px';
-    barWrapper.style.background = 'var(--color-muted)';
-    barWrapper.style.borderRadius = '999px';
-    barWrapper.style.overflow = 'hidden';
-    const bar = document.createElement('div');
-    bar.style.width = `${(count / max) * 100}%`;
-    bar.style.height = '100%';
-    bar.style.background = `hsl(${120 - (count / max) * 120}, 70%, 50%)`;
-    bar.style.borderRadius = '999px';
-    bar.style.transition = 'width 0.3s ease';
-    barWrapper.appendChild(bar);
-    row.appendChild(label);
-    row.appendChild(cnt);
-    const wrapper = document.createElement('div');
-    wrapper.style.display = 'flex';
-    wrapper.style.alignItems = 'center';
-    wrapper.appendChild(barWrapper);
-    const containerRow = document.createElement('div');
-    containerRow.style.display = 'flex';
-    containerRow.style.flexDirection = 'column';
-    containerRow.style.gap = 'var(--space-xs)';
-    containerRow.appendChild(row);
-    containerRow.appendChild(wrapper);
-    container.appendChild(containerRow);
+    row.className = 'member-bar-row';
+    row.innerHTML = `
+      <div class="member-bar-row-top">
+        <span class="member-bar-name">${name}</span>
+        <span class="member-bar-count">${count} task${count !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="member-bar-track">
+        <div class="member-bar-fill" style="width:${pct}%;background:hsl(${hue},65%,50%)"></div>
+      </div>`;
+    container.appendChild(row);
   });
 }
 
@@ -708,10 +750,52 @@ export function initAnalyticsFilters(data) {
     renderStatusDistribution(filtered);
     renderPriorityDoughnut(filtered);
     renderMemberWorkload(filtered);
+    renderMemberStatsTable(filtered);
   };
 
   statusSelect.addEventListener('change', applyFilters);
   prioritySelect.addEventListener('change', applyFilters);
+}
+
+export function renderMemberStatsTable(data) {
+  const tbody = document.getElementById('member-stats-body');
+  if (!tbody) return;
+  const memberData = {};
+  Object.values(data.members).forEach(m => {
+    memberData[m.name] = { color: m.color, total: 0, done: 0 };
+  });
+  Object.values(data.tasks).forEach(t => {
+    if (t.assignee && data.members[t.assignee]) {
+      const name = data.members[t.assignee].name;
+      if (!memberData[name]) memberData[name] = { color: data.members[t.assignee].color, total: 0, done: 0 };
+      memberData[name].total++;
+      if (t.status === 'done') memberData[name].done++;
+    }
+  });
+  tbody.innerHTML = Object.entries(memberData).map(([name, info]) => {
+    const pct = info.total ? Math.round((info.done / info.total) * 100) : 0;
+    const initials = getInitials(name);
+    const color = info.color || getColorForUser(name);
+    return `
+      <tr>
+        <td>
+          <div class="member-stats-name-cell">
+            <span class="member-stats-avatar" style="background:${color}">${initials}</span>
+            <span class="member-stats-name">${name}</span>
+          </div>
+        </td>
+        <td class="member-stats-tasks-cell">${info.total}</td>
+        <td class="member-stats-tasks-cell">${info.done}</td>
+        <td>
+          <div class="member-stats-progress-cell">
+            <div class="member-stats-progress-track">
+              <div class="member-stats-progress-fill" style="width:${pct}%;background:${color}"></div>
+            </div>
+            <span class="member-stats-pct">${pct}%</span>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
 }
 
 export function renderRecentActivity(data) {
