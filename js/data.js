@@ -347,9 +347,13 @@ export function saveTeamMembers() {
 
 export function saveMockData() {
   try {
-    localStorage.setItem(STORAGE_KEY_MOCK_DATA, JSON.stringify(MOCK_DATA));
+    const dataToSave = JSON.stringify(MOCK_DATA);
+    localStorage.setItem(STORAGE_KEY_MOCK_DATA, dataToSave);
   } catch (error) {
     console.error('Failed to save mock data:', error);
+    document.dispatchEvent(new CustomEvent('app:save-error', {
+      detail: { error: error.message, type: 'mock-data' }
+    }));
   }
 }
 
@@ -510,33 +514,42 @@ export function addActivityLogEntry(user, action, type, area = 'Board') {
 
 /**
  * Updates a task in MOCK_DATA and persists to localStorage.
- * Returns true if successful, false if task not found.
+ * Returns the updated task or null if not found.
  */
 export function updateTask(taskId, updates) {
   if (!MOCK_DATA.tasks[taskId]) {
     console.error('Task not found:', taskId);
-    return false;
+    return null;
   }
+
+  // Store original for comparison
+  const original = { ...MOCK_DATA.tasks[taskId] };
 
   // Apply updates to the task
   Object.assign(MOCK_DATA.tasks[taskId], updates);
 
   // If status changed, move task between columns
-  if (updates.status) {
-    const targetColumn = MOCK_DATA.columns.find(col => col.id === `col-${updates.status}` || col.title.toLowerCase().replace(/\s+/g, '-') === updates.status);
+  if (updates.status && updates.status !== original.status) {
+    const targetColumn = MOCK_DATA.columns.find(col => col.id === `col-${updates.status}`);
     const currentColumn = MOCK_DATA.columns.find(col => col.taskIds.includes(taskId));
 
     if (targetColumn && currentColumn && currentColumn.id !== targetColumn.id) {
       // Remove from current column
       currentColumn.taskIds = currentColumn.taskIds.filter(id => id !== taskId);
-      // Add to target column
+      // Add to target column at the end
       targetColumn.taskIds.push(taskId);
     }
   }
 
   // Persist to localStorage
   saveMockData();
-  return true;
+
+  // Dispatch real-time sync event
+  document.dispatchEvent(new CustomEvent('app:task-updated', {
+    detail: { taskId, task: MOCK_DATA.tasks[taskId], original, updates }
+  }));
+
+  return MOCK_DATA.tasks[taskId];
 }
 
 /**
@@ -544,6 +557,11 @@ export function updateTask(taskId, updates) {
  * Returns the new task object or null on failure.
  */
 export function createTask(taskData) {
+  // Normalize status: accept either a status key ("backlog") or a column id ("col-backlog")
+  const rawStatus = taskData.status || 'todo';
+  const statusKey = rawStatus.startsWith('col-') ? rawStatus.slice(4) : rawStatus;
+  const columnId = `col-${statusKey}`;
+
   const newTask = {
     id: `task-${Date.now()}`,
     title: taskData.title || 'Untitled Task',
@@ -551,19 +569,26 @@ export function createTask(taskData) {
     assignee: taskData.assignee || '',
     dueDate: taskData.dueDate || '',
     priority: taskData.priority || 'medium',
-    status: taskData.status || 'todo',
-    subtasks: taskData.subtasks || []
+    status: statusKey,
+    subtasks: taskData.subtasks || [],
+    createdAt: new Date().toISOString()
   };
 
   MOCK_DATA.tasks[newTask.id] = newTask;
 
   // Add to appropriate column
-  const targetColumn = MOCK_DATA.columns.find(col => col.id === `col-${newTask.status}` || col.title.toLowerCase().replace(/\s+/g, '-') === newTask.status);
+  const targetColumn = MOCK_DATA.columns.find(col => col.id === columnId);
   if (targetColumn) {
     targetColumn.taskIds.push(newTask.id);
   }
 
   saveMockData();
+
+  // Dispatch event
+  document.dispatchEvent(new CustomEvent('app:task-created', {
+    detail: { task: newTask }
+  }));
+
   return newTask;
 }
 
@@ -577,6 +602,8 @@ export function deleteTask(taskId) {
     return false;
   }
 
+  const deletedTask = MOCK_DATA.tasks[taskId];
+
   // Remove from column
   MOCK_DATA.columns.forEach(col => {
     col.taskIds = col.taskIds.filter(id => id !== taskId);
@@ -586,6 +613,12 @@ export function deleteTask(taskId) {
   delete MOCK_DATA.tasks[taskId];
 
   saveMockData();
+
+  // Dispatch event
+  document.dispatchEvent(new CustomEvent('app:task-deleted', {
+    detail: { taskId, task: deletedTask }
+  }));
+
   return true;
 }// ======= DATA LAYER: MIGRATION / QUERIES / RESET =================================
 

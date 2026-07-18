@@ -1,4 +1,4 @@
-import { MOCK_DATA, TEAM_MEMBERS, addMember, updateMember, deleteMember, getMemberById, saveMockData, saveTeamMembers, addActivityLogEntry, createTask } from './data.js';
+import { MOCK_DATA, TEAM_MEMBERS, addMember, updateMember, deleteMember, getMemberById, saveMockData, saveTeamMembers, addActivityLogEntry, createTask, updateTask, deleteTask } from './data.js';
 import {
   renderBoard,
   renderActivity,
@@ -28,6 +28,7 @@ import {
 } from './ui.js';
 import { initDragDrop } from './dragdrop.js';
 import { initCalendar, refreshCalendar } from './calendar.js';
+import { openTaskEditor } from './task-editor-modal.js';
 
 // Modal elements cache
 let memberModal, idInput, nameInput, emailInput, roleInput, avatarInput;
@@ -234,62 +235,9 @@ function init() {
 
 function openSidePeek(card) {
   const taskId = card.dataset.taskId;
-  const task = MOCK_DATA.tasks[taskId];
-  if (!task) return;
-
-  const sidePeek = document.getElementById('side-peek');
-  sidePeek.dataset.taskId = taskId;
-
-  const peekBody = sidePeek.querySelector('.side-peek-body');
-  if (peekBody && originalSidePeekBodyHTML) {
-    peekBody.innerHTML = originalSidePeekBodyHTML;
+  if (taskId) {
+    openTaskEditor(taskId);
   }
-
-  const peekTitle = document.getElementById('peek-title');
-  const peekDesc = document.querySelector('.peek-textarea');
-  const peekSelects = document.querySelectorAll('.peek-select');
-  const peekDate = document.querySelector('.peek-date');
-
-  if (peekTitle) peekTitle.value = task.title || '';
-  if (peekDesc) peekDesc.value = task.description || '';
-  if (peekDate) peekDate.value = task.dueDate || '';
-
-  const statusSelect = peekSelects[0];
-  const prioritySelect = peekSelects[1];
-  const assigneeSelect = peekSelects[2];
-
-  if (statusSelect) {
-    const column = MOCK_DATA.columns.find(col => col.taskIds.includes(taskId));
-    statusSelect.value = column ? column.title : 'Backlog';
-  }
-  if (prioritySelect) {
-    prioritySelect.value = task.priority ? task.priority.charAt(0).toUpperCase() + task.priority.slice(1) : 'Medium';
-  }
-  if (assigneeSelect) {
-    assigneeSelect.value = task.assignee || 'sankalp';
-  }
-
-  const subtaskList = document.getElementById('peek-subtask-list');
-  if (subtaskList) {
-    subtaskList.innerHTML = '';
-    (task.subtasks || []).forEach(sub => {
-      const li = document.createElement('li');
-      li.className = 'peek-subtask-item';
-      li.innerHTML = `
-        <label class="peek-subtask-checkbox">
-          <input type="checkbox" ${sub.completed ? 'checked' : ''} data-sub-id="${sub.id}">
-          <span class="peek-subtask-text">${sub.text}</span>
-        </label>
-        <button class="peek-subtask-remove" aria-label="Remove subtask">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3H10M4.5 3V1.5C4.5 1.22386 4.72386 1 5 1H7C7.27614 1 7.5 1.22386 7.5 1.5V3M3 3L3.5 10.5H8.5L9 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-        </button>
-      `;
-      subtaskList.appendChild(li);
-    });
-  }
-  updateSubtaskProgress();
-
-  sidePeek.classList.add('open');
 }
 
 function syncBoardDOMToState() {
