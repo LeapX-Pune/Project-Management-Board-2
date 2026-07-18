@@ -21,14 +21,14 @@
     flex-direction: column;
     gap: var(--spacing-xs);
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(-4px) scale(0.98);
     pointer-events: none;
-    transition: opacity var(--transition-fast), transform var(--transition-fast);
+    transition: opacity 120ms var(--ease-out-quart), transform 120ms var(--ease-out-quart);
 }
 
 .dropdown.active {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     pointer-events: auto;
 }
 

@@ -15,7 +15,7 @@
   z-index: 1000;
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--transition-base);
+  transition: opacity 200ms var(--ease-out-quart);
 }
 
 .modal-overlay.active {
@@ -30,16 +30,41 @@
   max-width: 680px;
   max-height: 85vh;
   box-shadow: var(--shadow-lg);
-  transform: scale(0.96);
-  transition: transform var(--transition-base);
+  transform: scale(0.96) translateY(8px);
+  opacity: 0;
+  animation: modalEnter 200ms var(--ease-out-quart) forwards;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--color-border);
+  will-change: transform, opacity;
 }
 
-.modal-overlay.active .modal-container {
-  transform: scale(1);
+.modal-overlay:not(.active) .modal-container {
+  animation: modalExit 150ms var(--ease-in-out-quart) forwards;
+}
+
+@keyframes modalEnter {
+  from {
+    transform: scale(0.96) translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes modalExit {
+  from {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.96) translateY(-8px);
+    opacity: 0;
+  }
+>>>>>>> origin/develop
 }
 
 .modal-header {

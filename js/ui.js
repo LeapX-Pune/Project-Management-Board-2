@@ -1036,7 +1036,7 @@ export function updateDashboardMetrics() {
   }
 
   // 7. Update Member Stats Table
-  const statsTbodyEl = document.getElementById('db-stats-tbody');
+  const statsTbodyEl = document.getElementById('db-stats-tbody') || document.getElementById('member-stats-body');
   if (statsTbodyEl) {
     statsTbodyEl.innerHTML = '';
     const sortedStats = TEAM_MEMBERS.map(m => {
@@ -1064,3 +1064,629 @@ export function updateDashboardMetrics() {
   }
 }
 
+// ======= DEVELOP ANALYTICS / CHARTS MODULES =====================================
+
+export function renderQuickStats(data) {
+  const container = document.getElementById('quick-stats');
+  if (!container) return;
+
+  const tasks = Object.values(data.tasks);
+  const totalTasks = tasks.length;
+  const completed = tasks.filter(t => t.status === 'done').length;
+  const inProgress = tasks.filter(t => t.status === 'in-progress').length;
+  const overdue = tasks.filter(t => new Date(t.dueDate) < new Date()).length;
+  const memberCount = data.members ? Object.keys(data.members).length : 0;
+  const activityCount = data.activityLog ? data.activityLog.length : 0;
+  const latestEntry = data.activityLog?.length
+    ? data.activityLog.reduce((latest, cur) =>
+        new Date(cur.timestamp) > new Date(latest.timestamp) ? cur : latest
+      )
+    : null;
+  const latestDate = latestEntry ? new Date(latestEntry.timestamp).toLocaleDateString() : '—';
+
+  const cards = [
+    { label: 'Total Tasks', value: totalTasks },
+    { label: 'Completed', value: completed },
+    { label: 'In Progress', value: inProgress },
+    { label: 'Overdue', value: overdue },
+    { label: 'Members', value: memberCount },
+    { label: 'Activity entries', value: activityCount },
+    { label: 'Last activity', value: latestDate },
+  ];
+
+  container.innerHTML = `
+    <div class="quick-stats-header">Quick Stats</div>
+    <div class="quick-stats-grid">
+      ${cards.map(c => `
+        <div class="metric-card">
+          <div class="metric-label">${c.label}</div>
+          <div class="metric-value">${c.value}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+export function renderByDate(data) {
+  const container = document.getElementById('bydate-view');
+  if (!container) return;
+
+  const toMidnight = iso => {
+    const d = new Date(iso);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+
+  const dayOfWeek = now.getDay();
+  const diffToMon = (dayOfWeek + 6) % 7;
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - diffToMon);
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+  const startOfNextWeek = new Date(endOfWeek);
+  startOfNextWeek.setDate(endOfWeek.getDate() + 1);
+  const endOfNextWeek = new Date(startOfNextWeek);
+  endOfNextWeek.setDate(startOfNextWeek.getDate() + 6);
+
+  const buckets = {
+    today: [],
+    tomorrow: [],
+    thisWeek: [],
+    nextWeek: [],
+    later: []
+  };
+
+  Object.values(data.tasks).forEach(task => {
+    if (!task.dueDate) {
+      buckets.later.push(task);
+      return;
+    }
+    const d = toMidnight(task.dueDate);
+    if (d.getTime() === now.getTime()) buckets.today.push(task);
+    else if (d.getTime() === tomorrow.getTime()) buckets.tomorrow.push(task);
+    else if (d >= startOfWeek && d <= endOfWeek) buckets.thisWeek.push(task);
+    else if (d >= startOfNextWeek && d <= endOfNextWeek) buckets.nextWeek.push(task);
+    else buckets.later.push(task);
+  });
+
+  const sections = [
+    { key: 'today', label: 'Today' },
+    { key: 'tomorrow', label: 'Tomorrow' },
+    { key: 'thisWeek', label: 'This Week' },
+    { key: 'nextWeek', label: 'Next Week' },
+    { key: 'later', label: 'Later' }
+  ];
+
+  const html = sections.map(sec => {
+    const tasks = buckets[sec.key];
+    if (tasks.length === 0) return '';
+    const taskList = tasks
+      .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+      .map(task => {
+        const li = createTaskCard(task, data.members);
+        return li.outerHTML;
+      })
+      .join('');
+    return `
+      <section class="bydate-section" data-section="${sec.key}">
+        <h2 class="bydate-section-title">${sec.label}</h2>
+        <div class="bydate-tasks">${taskList}</div>
+      </section>
+    `;
+  }).join('');
+
+  container.innerHTML = html;
+}
+
+export function renderWeeklyLineGraph(data) {
+  const svg = document.querySelector('#dashboard-view .chart-svg.line-graph');
+  if (!svg) return;
+
+  const today = new Date();
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const stored = localStorage.getItem('dashboard-weekly-data');
+  let series = stored ? JSON.parse(stored) : null;
+
+  if (!series) {
+    series = Array(7).fill(0);
+    data.activityLog.forEach(entry => {
+      const d = new Date(entry.timestamp);
+      const diff = Math.floor((today - d) / msPerDay);
+      if (diff >= 0 && diff < 7) {
+        const idx = (today.getDay() + 6 - diff) % 7;
+        series[idx] += 1;
+      }
+    });
+    localStorage.setItem('dashboard-weekly-data', JSON.stringify(series));
+  }
+
+  const maxVal = Math.max(...series, 1);
+  const margin = 20;
+  const chartW = 280;
+  const chartH = 120;
+
+  const pts = series.map((v, i) => {
+    const x = margin + i * (chartW / 6);
+    const y = margin + chartH - (v / maxVal) * chartH;
+    return { x, y };
+  });
+
+  const linePoints = pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+  const poly = svg.querySelector('.line-path');
+  if (poly) poly.setAttribute('points', linePoints);
+
+  const area = svg.querySelector('.area-fill');
+  if (area) {
+    const areaPts = [
+      `${pts[0].x.toFixed(1)},${(margin + chartH).toFixed(1)}`,
+      ...pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`),
+      `${pts[pts.length - 1].x.toFixed(1)},${(margin + chartH).toFixed(1)}`
+    ].join(' ');
+    area.setAttribute('points', areaPts);
+  }
+
+  const dots = svg.querySelector('.dot-markers');
+  if (dots) {
+    dots.innerHTML = pts.map(p =>
+      `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" stroke="var(--bg-surface)" stroke-width="2"/>`
+    ).join('');
+  }
+}
+
+export function renderDashboardMetrics(data) {
+  const tasks = Object.values(data.tasks);
+  const doneCol = data.columns.find(c => c.id === 'col-done');
+  const inProgressCols = data.columns.filter(c => c.id === 'col-in-progress' || c.id === 'col-review');
+  const doneIds = new Set(doneCol?.taskIds || []);
+  const inProgressIds = new Set(inProgressCols.flatMap(c => c.taskIds));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let overdue = 0;
+  tasks.forEach(t => {
+    if (doneIds.has(t.id)) return;
+    if (!t.dueDate) return;
+    const due = new Date(t.dueDate + 'T00:00:00');
+    if (due < today) overdue++;
+  });
+
+  const setValue = (metric, val) => {
+    const el = document.querySelector(`.metric-card[data-metric="${metric}"] .metric-value`);
+    if (el) el.textContent = val;
+  };
+
+  setValue('total', tasks.length);
+  setValue('completed', doneIds.size);
+  setValue('in-progress', inProgressIds.size);
+  setValue('overdue', overdue);
+}
+
+export function renderKPICards(data) {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  const toMidnight = iso => {
+    const d = new Date(iso);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+  const doneCol = data.columns.find(c => c.id === 'col-done');
+  const doneIds = new Set(doneCol ? doneCol.taskIds : []);
+
+  const completedToday = Object.values(data.tasks).filter(t =>
+    doneIds.has(t.id) && t.dueDate && toMidnight(t.dueDate).getTime() === today.getTime()
+  ).length;
+
+  const completedYesterday = Object.values(data.tasks).filter(t =>
+    doneIds.has(t.id) && t.dueDate && toMidnight(t.dueDate).getTime() === yesterday.getTime()
+  ).length;
+
+  const dueTomorrow = Object.values(data.tasks).filter(
+    t => t.dueDate && toMidnight(t.dueDate).getTime() === tomorrow.getTime()
+  ).length;
+
+  const dueToday = Object.values(data.tasks).filter(
+    t => t.dueDate && toMidnight(t.dueDate).getTime() === today.getTime()
+  ).length;
+
+  animateValue('kpi-today', completedToday);
+  animateValue('kpi-tomorrow', dueTomorrow);
+
+  const avgEl = document.getElementById('kpi-avg');
+  if (avgEl) {
+    const doneCount = doneIds.size;
+    avgEl.textContent = doneCount > 0 ? `${doneCount}` : '—';
+  }
+
+  updateTrend('kpi-today-trend', completedToday, completedYesterday);
+  updateTrend('kpi-tomorrow-trend', dueTomorrow, dueToday, true);
+}
+
+function animateValue(elementId, newValue) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  
+  const current = parseInt(el.textContent) || 0;
+  if (current === newValue) return;
+  
+  const duration = 500;
+  const start = performance.now();
+  
+  function update(timestamp) {
+    const elapsed = timestamp - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const value = Math.round(current + (newValue - current) * eased);
+    el.textContent = value;
+    
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    }
+  }
+  
+  requestAnimationFrame(update);
+}
+
+function updateTrend(elementId, current, previous, invertColors = false) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  
+  let trendClass = 'kpi-trend--neutral';
+  let arrow = '';
+  
+  if (current > previous) {
+    trendClass = invertColors ? 'kpi-trend--warning' : 'kpi-trend--up';
+    arrow = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 8L6 4L10 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  } else if (current < previous) {
+    trendClass = invertColors ? 'kpi-trend--up' : 'kpi-trend--down';
+    arrow = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  } else {
+    arrow = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+  }
+  
+  el.className = `kpi-trend ${trendClass}`;
+  el.innerHTML = arrow;
+}
+
+const STATUS_COLORS = {
+  'col-backlog': '#9CA3AF',
+  'col-todo': '#3B82F6',
+  'col-in-progress': '#F59E0B',
+  'col-review': '#8B5CF6',
+  'col-done': '#10B981',
+};
+
+export function renderStatusDistribution(data) {
+  const container = document.getElementById('status-hbars');
+  if (!container) return;
+  const cols = data.columns;
+  const total = cols.reduce((s, c) => s + c.taskIds.length, 0);
+  const nonZero = cols.filter(c => c.taskIds.length > 0);
+  const bar = nonZero.map(col => {
+    const color = STATUS_COLORS[col.id] || 'var(--color-accent)';
+    return `<div class="stacked-segment" style="flex:${col.taskIds.length};background:${color}" title="${col.title}: ${col.taskIds.length} task${col.taskIds.length !== 1 ? 's' : ''}"></div>`;
+  }).join('');
+  const legend = cols.map(col => {
+    const count = col.taskIds.length;
+    const color = STATUS_COLORS[col.id] || 'var(--color-accent)';
+    return `<span class="stacked-legend-item"><span class="stacked-legend-dot" style="background:${color}"></span>${col.title} ${count}</span>`;
+  }).join('');
+  const doneCol = cols.find(c => c.id === 'col-done');
+  const progressCol = cols.find(c => c.id === 'col-in-progress');
+  const doneCount = doneCol ? doneCol.taskIds.length : 0;
+  const inProgressCount = progressCol ? progressCol.taskIds.length : 0;
+  const pct = total ? Math.round((doneCount / total) * 100) : 0;
+  const pendingCount = cols.reduce((s, c) => {
+    if (['col-backlog', 'col-todo'].includes(c.id)) return s + c.taskIds.length;
+    return s;
+  }, 0);
+  container.innerHTML = `
+    <div class="stacked-bar">${bar || `<div class="stacked-segment" style="flex:1;background:var(--color-muted)"></div>`}</div>
+    <div class="stacked-legend">${legend}</div>
+    <div class="status-details">
+      <div class="status-detail-item">
+        <span class="status-detail-value">${total}</span>
+        <span class="status-detail-label">Total</span>
+      </div>
+      <div class="status-detail-item">
+        <span class="status-detail-value">${inProgressCount}</span>
+        <span class="status-detail-label">Active</span>
+      </div>
+      <div class="status-detail-item">
+        <span class="status-detail-value">${doneCount}</span>
+        <span class="status-detail-label">Done</span>
+      </div>
+      <div class="status-detail-item">
+        <span class="status-detail-value">${pct}%</span>
+        <span class="status-detail-label">Rate</span>
+      </div>
+      <div class="status-detail-item">
+        <span class="status-detail-value">${pendingCount}</span>
+        <span class="status-detail-label">Pending</span>
+      </div>
+    </div>`;
+}
+
+const PRIORITY_CONFIG = {
+  high:   { color: 'var(--priority-high-text)',   label: 'High' },
+  medium: { color: 'var(--priority-medium-text)', label: 'Medium' },
+  low:    { color: 'var(--priority-low-text)',    label: 'Low' },
+};
+const PRIORITY_ORDER = ['high', 'medium', 'low'];
+
+function polarToCartesian(cx, cy, r, angleDeg) {
+  const rad = (angleDeg - 90) * Math.PI / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
+function makeArcPath(cx, cy, r, startAngle, endAngle) {
+  const start = polarToCartesian(cx, cy, r, startAngle);
+  const end = polarToCartesian(cx, cy, r, endAngle);
+  const large = endAngle - startAngle > 180 ? 1 : 0;
+  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${large} 1 ${end.x} ${end.y}`;
+}
+
+export function renderPriorityDoughnut(data) {
+  const svg = document.querySelector('#priority-doughnut-card .chart-svg');
+  const legend = document.getElementById('priority-legend');
+  if (!svg) return;
+  const total = Object.values(data.tasks).length || 1;
+  const counts = { high: 0, medium: 0, low: 0 };
+  Object.values(data.tasks).forEach(t => {
+    if (t.priority && counts[t.priority] !== undefined) counts[t.priority]++;
+  });
+
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+  const cx = 100, cy = 100, r = 68, sw = 24, innerR = r - sw / 2;
+
+  const segs = [];
+  PRIORITY_ORDER.forEach(prio => {
+    if (counts[prio] > 0) {
+      segs.push({ prio, count: counts[prio] });
+    }
+  });
+  if (segs.length === 0) {
+    segs.push({ prio: 'low', count: 0 });
+  }
+
+  const totalSeg = segs.reduce((s, c) => s + c.count, 0) || 1;
+  let currentAngle = 0;
+  segs.forEach((seg, i) => {
+    const sweep = (seg.count / totalSeg) * 360;
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', makeArcPath(cx, cy, r, currentAngle, currentAngle + sweep));
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', seg.count > 0 ? PRIORITY_CONFIG[seg.prio].color : 'var(--color-muted)');
+    path.setAttribute('stroke-width', String(sw));
+    path.setAttribute('stroke-linecap', 'butt');
+    svg.appendChild(path);
+    currentAngle += sweep;
+  });
+
+  const hole = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  hole.setAttribute('cx', String(cx)); hole.setAttribute('cy', String(cy));
+  hole.setAttribute('r', String(innerR + 0.5));
+  hole.setAttribute('fill', 'var(--bg-surface)');
+  svg.appendChild(hole);
+
+  const holeStroke = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  holeStroke.setAttribute('cx', String(cx)); holeStroke.setAttribute('cy', String(cy));
+  holeStroke.setAttribute('r', String(innerR - 0.5));
+  holeStroke.setAttribute('fill', 'none');
+  holeStroke.setAttribute('stroke', 'var(--border-subtle)');
+  holeStroke.setAttribute('stroke-width', '1');
+  holeStroke.setAttribute('opacity', '0.5');
+  svg.appendChild(holeStroke);
+
+  const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  txt.setAttribute('x', String(cx)); txt.setAttribute('y', String(cy - 7));
+  txt.setAttribute('text-anchor', 'middle');
+  txt.setAttribute('dominant-baseline', 'central');
+  txt.setAttribute('font-size', '24'); txt.setAttribute('font-weight', '800');
+  txt.setAttribute('fill', 'var(--text-main)');
+  txt.textContent = total;
+  svg.appendChild(txt);
+
+  const sub = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  sub.setAttribute('x', String(cx)); sub.setAttribute('y', String(cy + 11));
+  sub.setAttribute('text-anchor', 'middle');
+  sub.setAttribute('dominant-baseline', 'central');
+  sub.setAttribute('font-size', '10'); sub.setAttribute('fill', 'var(--text-muted)');
+  sub.setAttribute('letter-spacing', '0.06em');
+  sub.textContent = 'tasks';
+  svg.appendChild(sub);
+
+  if (legend) {
+    legend.innerHTML = PRIORITY_ORDER.map(prio => {
+      const c = PRIORITY_CONFIG[prio];
+      const count = counts[prio];
+      return `
+        <span class="chart-legend-item">
+          <span class="chart-legend-dot" style="background:${c.color}"></span>
+          ${c.label} (${count})
+        </span>`;
+    }).join('');
+  }
+}
+
+export function renderMemberWorkload(data) {
+  const container = document.querySelector('#workload-member-card .member-bar-chart');
+  if (!container) return;
+  const taskCounts = {};
+  Object.values(data.members).forEach(m => { taskCounts[m.name] = 0; });
+  Object.values(data.tasks).forEach(t => {
+    if (t.assignee && data.members[t.assignee]) {
+      taskCounts[data.members[t.assignee].name] = (taskCounts[data.members[t.assignee].name] || 0) + 1;
+    }
+  });
+  const max = Math.max(...Object.values(taskCounts), 1);
+  container.innerHTML = '';
+  Object.entries(taskCounts).forEach(([name, count]) => {
+    const pct = (count / max) * 100;
+    const hue = 140 - (count / max) * 120;
+    const row = document.createElement('div');
+    row.className = 'member-bar-row';
+    row.innerHTML = `
+      <div class="member-bar-row-top">
+        <span class="member-bar-name">${name}</span>
+        <span class="member-bar-count">${count} task${count !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="member-bar-track">
+        <div class="member-bar-fill" style="width:${pct}%;background:hsl(${hue},65%,50%)"></div>
+      </div>`;
+    container.appendChild(row);
+  });
+}
+
+export function initAnalyticsFilters(data) {
+  const statusSelect = document.getElementById('filter-status');
+  const prioritySelect = document.getElementById('filter-priority');
+  if (!statusSelect || !prioritySelect) return;
+
+  const prevStatus = statusSelect.value;
+  const prevPriority = prioritySelect.value;
+
+  Array.from(statusSelect.options).forEach(opt => {
+    if (opt.value !== 'all') opt.remove();
+  });
+
+  data.columns.forEach(col => {
+    const opt = document.createElement('option');
+    opt.value = col.id;
+    opt.textContent = col.title;
+    statusSelect.appendChild(opt);
+  });
+
+  if (prevStatus && [...statusSelect.options].some(o => o.value === prevStatus)) {
+    statusSelect.value = prevStatus;
+  }
+  if (prevPriority) prioritySelect.value = prevPriority;
+
+  const applyFilters = () => {
+    const status = statusSelect.value;
+    const priority = prioritySelect.value;
+    const filtered = { ...data };
+    filtered.columns = status === 'all' ? data.columns : data.columns.filter(c => c.id === status);
+    if (priority !== 'all') {
+      filtered.tasks = Object.fromEntries(
+        Object.entries(data.tasks).filter(([, task]) => task.priority === priority)
+      );
+    }
+    renderStatusDistribution(filtered);
+    renderPriorityDoughnut(filtered);
+    renderMemberWorkload(filtered);
+    renderMemberStatsTable(filtered);
+  };
+
+  statusSelect.addEventListener('change', applyFilters);
+  prioritySelect.addEventListener('change', applyFilters);
+
+  applyFilters();
+}
+
+export function renderMemberStatsTable(data) {
+  const tbody = document.getElementById('member-stats-body');
+  if (!tbody) return;
+  const memberData = {};
+  Object.values(data.members).forEach(m => {
+    memberData[m.name] = { color: m.color, total: 0, done: 0 };
+  });
+  Object.values(data.tasks).forEach(t => {
+    if (t.assignee && data.members[t.assignee]) {
+      const name = data.members[t.assignee].name;
+      if (!memberData[name]) memberData[name] = { color: data.members[t.assignee].color, total: 0, done: 0 };
+      memberData[name].total++;
+      if (t.status === 'done') memberData[name].done++;
+    }
+  });
+  tbody.innerHTML = Object.entries(memberData).map(([name, info]) => {
+    const pct = info.total ? Math.round((info.done / info.total) * 100) : 0;
+    const initials = getInitials(name);
+    const color = info.color || getColorForUser(name);
+    return `
+      <tr>
+        <td>
+          <div class="member-stats-name-cell">
+            <span class="member-stats-avatar" style="background:${color}">${initials}</span>
+            <span class="member-stats-name">${name}</span>
+          </div>
+        </td>
+        <td class="member-stats-tasks-cell">${info.total}</td>
+        <td class="member-stats-tasks-cell">${info.done}</td>
+        <td>
+          <div class="member-stats-progress-cell">
+            <div class="member-stats-progress-track">
+              <div class="member-stats-progress-fill" style="width:${pct}%;background:${color}"></div>
+            </div>
+            <span class="member-stats-pct">${pct}%</span>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function getRelativeTime(dateStr) {
+  const now = Date.now();
+  const diff = now - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+function getTypeIcon(type) {
+  const icons = {
+    created: '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+    moved: '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M4 4h8v8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    edited: '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5a1.414 1.414 0 112 2L5 13l-3 1 1-3 8.5-8.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  };
+  return icons[type] || icons.created;
+}
+
+export function renderRecentActivity(data) {
+  const list = document.getElementById('recent-activity-list');
+  if (!list) return;
+  const recent = data.activityLog
+    .slice()
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    .slice(0, 6);
+
+  list.innerHTML = recent.map(entry => {
+    const color = getColorForUser(entry.user);
+    const initials = getInitials(entry.user);
+    return `
+      <div class="recent-activity-item">
+        <span class="recent-activity-dot" style="background:${color}"></span>
+        <div class="recent-activity-avatar-wrap">
+          <span class="recent-activity-avatar" style="background:${color}">${initials}</span>
+          <span class="recent-activity-type-icon">${getTypeIcon(entry.type)}</span>
+        </div>
+        <div class="recent-activity-body">
+          <span class="recent-activity-text"><strong>${escapeHtml(entry.user)}</strong> ${escapeHtml(entry.action)}</span>
+          <span class="recent-activity-area">${escapeHtml(entry.area || 'Board')}</span>
+        </div>
+        <span class="recent-activity-time">${getRelativeTime(entry.timestamp)}</span>
+      </div>`;
+  }).join('');
+}

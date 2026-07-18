@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="css/member-modal.css">
   <link rel="stylesheet" href="css/dropdown.css">
   <link rel="stylesheet" href="css/other-views.css">
+  <link rel="stylesheet" href="css/task-editor-modal.css">
   
   <!-- Responsive overrides -->
   <link rel="stylesheet" href="css/responsive.css">
@@ -90,6 +91,7 @@
         </a>
       </nav>
       <div class="sidebar-footer">
+        <div class="quick-stats" id="quick-stats" aria-label="Quick project statistics"></div>
       </div>
     </aside>
 
@@ -98,47 +100,14 @@
         <div class="header-left">
           <div class="breadcrumb">
             <span>Workspace</span>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-              <path d="M5 3L9 7L5 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span class="breadcrumb-current">Project Management Board</span>
           </div>
         </div>
-        <div class="header-center">
-          <div class="search-bar">
-            <svg class="search-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-              <circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M12 12L16 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            <input type="text" class="search-input" id="search-input" placeholder="Search tasks..." aria-label="Search tasks">
-          </div>
-          <div class="view-toggle" role="tablist" aria-label="View selector">
-            <button class="view-btn active" data-view="board" role="tab" aria-selected="true" aria-label="Board view">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <rect x="1" y="2" width="4" height="12" rx="1" stroke="currentColor" stroke-width="1.5"/>
-                <rect x="6" y="2" width="4" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/>
-                <rect x="11" y="2" width="4" height="10" rx="1" stroke="currentColor" stroke-width="1.5"/>
-              </svg>
-              <span>Board</span>
-            </button>
-            <button class="view-btn" data-view="table" role="tab" aria-selected="false" aria-label="Table view">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <rect x="1" y="1" width="14" height="14" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
-                <path d="M1 5H15" stroke="currentColor" stroke-width="1.5"/>
-                <path d="M5 1V15" stroke="currentColor" stroke-width="1.5"/>
-                <path d="M11 1V15" stroke="currentColor" stroke-width="1.5"/>
-              </svg>
-              <span>Table</span>
-            </button>
-            <button class="view-btn" data-view="list" role="tab" aria-selected="false" aria-label="List view">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M2 4H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                <path d="M2 8H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                <path d="M2 12H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-              <span>List</span>
-            </button>
-          </div>
+        <div class="search-bar">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M12 12L16 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <input type="text" class="search-input" id="search-input" placeholder="Search tasks..." aria-label="Search tasks">
         </div>
         <div class="header-right">
           <!-- Dynamically populated team avatars list in header -->
@@ -178,87 +147,151 @@
       </header>
 
       <div class="main-area">
+        <div class="board-header">
+          <h1 class="board-title">Project Management Board</h1>
+          <div class="board-view-controls" role="tablist" aria-label="View selector">
+            <button class="view-btn active" data-view="board" role="tab" aria-selected="true" aria-label="Board view">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <rect x="1" y="2" width="4" height="12" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                <rect x="6" y="2" width="4" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                <rect x="11" y="2" width="4" height="10" rx="1" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+              <span>Board</span>
+            </button>
+            <button class="view-btn" data-view="table" role="tab" aria-selected="false" aria-label="Table view">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <rect x="1" y="1" width="14" height="14" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M1 5H15" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M5 1V15" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M11 1V15" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+              <span>Table</span>
+            </button>
+            <button class="view-btn" data-view="list" role="tab" aria-selected="false" aria-label="List view">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M2 4H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M2 8H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M2 12H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <span>List</span>
+            </button>
+            <button class="view-btn" data-view="bydate" role="tab" aria-selected="false" aria-label="By-Date view">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M1 6H15" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M5 1V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M11 1V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <span>By-Date</span>
+            </button>
+          </div>
+        </div>
         <section class="view-container dashboard-view" id="dashboard-view" role="region" aria-label="Dashboard view">
+          <div class="dashboard-metrics-header">
+            <h3 class="dashboard-metrics-title">Overview</h3>
+          </div>
           <div class="metrics-grid" id="metrics-grid">
-            <div class="metric-card">
+            <div class="metric-card" data-metric="total">
               <div class="metric-label">Total Tasks</div>
-              <div class="metric-value" id="db-total-tasks">24</div>
+              <div class="metric-value" id="db-total-tasks">—</div>
               <span class="metric-badge neutral">All projects</span>
             </div>
-            <div class="metric-card">
+            <div class="metric-card" data-metric="completed">
               <div class="metric-label">Completed</div>
-              <div class="metric-value" id="db-completed-tasks">12</div>
-              <span class="metric-badge success">+12% this week</span>
+              <div class="metric-value" id="db-completed-tasks">—</div>
+              <span class="metric-badge success">Done</span>
             </div>
-            <div class="metric-card">
+            <div class="metric-card" data-metric="in-progress">
               <div class="metric-label">In Progress</div>
-              <div class="metric-value" id="db-inprogress-tasks">7</div>
+              <div class="metric-value" id="db-inprogress-tasks">—</div>
               <span class="metric-badge info">Active tasks</span>
             </div>
-            <div class="metric-card">
+            <div class="metric-card" data-metric="overdue">
               <div class="metric-label">Overdue</div>
-              <div class="metric-value" id="db-overdue-tasks">3</div>
+              <div class="metric-value" id="db-overdue-tasks">—</div>
               <span class="metric-badge danger">Needs attention</span>
             </div>
           </div>
           <div class="dashboard-split">
             <div class="dashboard-card">
               <div class="dashboard-card-title">Weekly Completion</div>
-              <svg class="chart-svg" viewBox="0 0 320 160" xmlns="http://www.w3.org/2000/svg" aria-label="Weekly completion bar chart">
-                <text x="0" y="12" font-size="10" fill="var(--color-text-muted)">Mon</text>
-                <rect class="bar" x="0" y="18" width="30" height="80" rx="4" fill="var(--color-accent)" opacity="0.2"/>
-                <rect class="bar" x="0" y="58" width="30" height="40" rx="4" fill="var(--color-accent)"/>
-                <text x="45" y="12" font-size="10" fill="var(--color-text-muted)">Tue</text>
-                <rect class="bar" x="45" y="18" width="30" height="95" rx="4" fill="var(--color-accent)" opacity="0.2"/>
-                <rect class="bar" x="45" y="43" width="30" height="70" rx="4" fill="var(--color-accent)"/>
-                <text x="90" y="12" font-size="10" fill="var(--color-text-muted)">Wed</text>
-                <rect class="bar" x="90" y="18" width="30" height="60" rx="4" fill="var(--color-accent)" opacity="0.2"/>
-                <rect class="bar" x="90" y="38" width="30" height="40" rx="4" fill="var(--color-accent)"/>
-                <text x="135" y="12" font-size="10" fill="var(--color-text-muted)">Thu</text>
-                <rect class="bar" x="135" y="18" width="30" height="110" rx="4" fill="var(--color-accent)" opacity="0.2"/>
-                <rect class="bar" x="135" y="28" width="30" height="100" rx="4" fill="var(--color-accent)"/>
-                <text x="180" y="12" font-size="10" fill="var(--color-text-muted)">Fri</text>
-                <rect class="bar" x="180" y="18" width="30" height="70" rx="4" fill="var(--color-accent)" opacity="0.2"/>
-                <rect class="bar" x="180" y="58" width="30" height="30" rx="4" fill="var(--color-accent)"/>
-                <text x="225" y="12" font-size="10" fill="var(--color-text-muted)">Sat</text>
-                <rect class="bar" x="225" y="18" width="30" height="40" rx="4" fill="var(--color-accent)" opacity="0.2"/>
-                <rect class="bar" x="225" y="48" width="30" height="10" rx="4" fill="var(--color-accent)"/>
-                <text x="270" y="12" font-size="10" fill="var(--color-text-muted)">Sun</text>
-                <rect class="bar" x="270" y="18" width="30" height="30" rx="4" fill="var(--color-accent)" opacity="0.2"/>
-                <rect class="bar" x="270" y="38" width="30" height="10" rx="4" fill="var(--color-accent)"/>
+              <svg class="chart-svg line-graph" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" aria-label="Weekly completion line chart" style="overflow:visible">
+                <g class="grid-lines" stroke="var(--border-subtle)" stroke-width="1" stroke-dasharray="3,3">
+                  <line x1="20" y1="20" x2="300" y2="20"/>
+                  <line x1="20" y1="60" x2="300" y2="60"/>
+                  <line x1="20" y1="100" x2="300" y2="100"/>
+                  <line x1="20" y1="140" x2="300" y2="140"/>
+                </g>
+                <g class="axis-labels" font-size="10" fill="var(--color-text-muted)" text-anchor="middle">
+                  <text x="20" y="176">Mon</text>
+                  <text x="66.7" y="176">Tue</text>
+                  <text x="113.3" y="176">Wed</text>
+                  <text x="160" y="176">Thu</text>
+                  <text x="206.7" y="176">Fri</text>
+                  <text x="253.3" y="176">Sat</text>
+                  <text x="300" y="176">Sun</text>
+                </g>
+                <polygon class="area-fill" fill="var(--color-accent)" opacity="0.08"/>
+                <polyline points="" class="line-path" fill="none" stroke="var(--color-accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <g class="dot-markers" fill="var(--color-accent)"></g>
               </svg>
             </div>
             <div class="dashboard-card">
               <div class="dashboard-card-title">Active Team Members</div>
               <div class="dashboard-member-list" id="db-member-list">
-                <div class="dashboard-member-item">
-                  <div class="task-avatar" style="background:#4F46E5">ST</div>
-                  <div style="flex:1;min-width:0">
-                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Sankalp Tiwari</div>
-                    <div class="member-status active">Active on 3 tasks</div>
-                  </div>
+              </div>
+            </div>
+            <div class="dashboard-card" id="dashboard-recent-activity">
+              <div class="dashboard-card-title">Recent Activity</div>
+              <div class="recent-activity-list" id="recent-activity-list">
+              </div>
+            </div>
+          </div>
+          <div class="kpi-section">
+            <h3 class="kpi-section-title">Quick Metrics</h3>
+            <div class="kpi-grid">
+              <div class="kpi-card kpi-card--tasks-done">
+                <div class="kpi-icon-wrap">
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path d="M4 10L8 14L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
                 </div>
-                <div class="dashboard-member-item">
-                  <div class="task-avatar" style="background:#3B82F6">AV</div>
-                  <div style="flex:1;min-width:0">
-                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Aditya Vawhal</div>
-                    <div class="member-status active">Active on 2 tasks</div>
-                  </div>
+                <div class="kpi-content">
+                  <div class="kpi-value" id="kpi-today">0</div>
+                  <div class="kpi-label">Completed Today</div>
                 </div>
-                <div class="dashboard-member-item">
-                  <div class="task-avatar" style="background:#06B6D4">KD</div>
-                  <div style="flex:1;min-width:0">
-                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Kshitij Das</div>
-                    <div class="member-status active">Active on 2 tasks</div>
-                  </div>
+                <span class="kpi-trend kpi-trend--up" id="kpi-today-trend">
+                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 8L6 4L10 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </div>
+              <div class="kpi-card kpi-card--due-soon">
+                <div class="kpi-icon-wrap">
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 4V10L13 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="2"/>
+                  </svg>
                 </div>
-                <div class="dashboard-member-item">
-                  <div class="task-avatar" style="background:#ef4444">MR</div>
-                  <div style="flex:1;min-width:0">
-                    <div style="font-size:0.875rem;font-weight:600;color:var(--color-text)">Mohammed Rehan</div>
-                    <div class="member-status idle">Idle</div>
-                  </div>
+                <div class="kpi-content">
+                  <div class="kpi-value" id="kpi-tomorrow">0</div>
+                  <div class="kpi-label">Due Tomorrow</div>
                 </div>
+                <span class="kpi-trend kpi-trend--warning" id="kpi-tomorrow-trend">
+                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </div>
+              <div class="kpi-card kpi-card--avg-time">
+                <div class="kpi-icon-wrap">
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path d="M4 16V14M8 16V10M12 16V6M16 16V4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div class="kpi-content">
+                  <div class="kpi-value" id="kpi-avg">—</div>
+                  <div class="kpi-label">Avg Completion</div>
+                </div>
+                <span class="kpi-trend kpi-trend--neutral" id="kpi-avg-trend">
+                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </span>
               </div>
             </div>
           </div>
@@ -302,201 +335,100 @@
           </div>
         </section>
 
-        <section class="view-container calendar-view" id="calendar-view" role="region" aria-label="Calendar view">
+        <section class="view-container bydate-view" id="bydate-view" role="region" aria-label="By-Date view">
+        </section>
+
+<section class="view-container calendar-view" id="calendar-view" role="region" aria-label="Calendar view">
           <div class="calendar-wrapper">
             <div class="calendar-header">
               <div class="calendar-nav">
-                <button class="calendar-nav-btn" aria-label="Previous month">
+                <button class="calendar-nav-btn calendar-nav-prev" aria-label="Previous">
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 4L6 9L11 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
-                <span class="calendar-month-label">July 2026</span>
-                <button class="calendar-nav-btn" aria-label="Next month">
+                <button class="calendar-nav-btn calendar-nav-next" aria-label="Next">
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M7 4L12 9L7 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="btn-secondary btn-sm calendar-today-btn" id="calendar-today-btn">Today</button>
+              </div>
+              <div class="calendar-view-toggles">
+                <button class="view-toggle-btn active" data-view="month">
+                  <span class="gv-label">Month</span>
+                </button>
+                <button class="view-toggle-btn" data-view="week">
+                  <span class="gv-label">Week</span>
+                </button>
+                <button class="view-toggle-btn" data-view="day">
+                  <span class="gv-label">Day</span>
                 </button>
               </div>
             </div>
-            <div class="calendar-weekdays">
-              <div class="calendar-weekday">Sun</div>
-              <div class="calendar-weekday">Mon</div>
-              <div class="calendar-weekday">Tue</div>
-              <div class="calendar-weekday">Wed</div>
-              <div class="calendar-weekday">Thu</div>
-              <div class="calendar-weekday">Fri</div>
-              <div class="calendar-weekday">Sat</div>
-            </div>
-            <div class="calendar-month-grid">
-              <div class="calendar-day other-month"><div class="calendar-day-number">28</div></div>
-              <div class="calendar-day other-month"><div class="calendar-day-number">29</div></div>
-              <div class="calendar-day other-month"><div class="calendar-day-number">30</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">1</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">2</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">3</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">4</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">5</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">6</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">7</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">8</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">9</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">10</div>
-                <div class="calendar-event high">Implement auth cookies</div>
+            <div class="calendar-body">
+              <div class="calendar-content" id="calendar-content-month">
               </div>
-              <div class="calendar-day"><div class="calendar-day-number">11</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">12</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">13</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">14</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">15</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">16</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">17</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">18</div>
-                <div class="calendar-event medium">Review billing PR</div>
+              <div class="calendar-content" id="calendar-content-week" style="display: none;">
               </div>
-              <div class="calendar-day"><div class="calendar-day-number">19</div></div>
-              <div class="calendar-day today"><div class="calendar-day-number">20</div>
-                <div class="calendar-event high">Impl. auth cookies</div>
+              <div class="calendar-content" id="calendar-content-day" style="display: none;">
               </div>
-              <div class="calendar-day"><div class="calendar-day-number">21</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">22</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">23</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">24</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">25</div>
-                <div class="calendar-event medium">Configure CI/CD</div>
+              <div class="calendar-day-panel" id="calendar-day-panel">
+                <div class="calendar-day-panel-empty">Click a day to see tasks</div>
               </div>
-              <div class="calendar-day"><div class="calendar-day-number">26</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">27</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">28</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">29</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">30</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">31</div></div>
-              <div class="calendar-day other-month"><div class="calendar-day-number">1</div></div>
             </div>
           </div>
         </section>
 
         <section class="view-container analytics-view" id="analytics-view" role="region" aria-label="Analytics view">
           <div class="analytics-wrapper">
-            <div class="charts-grid">
-              <div class="chart-card">
-                <div class="chart-card-title">Task Status Distribution</div>
-                <svg class="chart-svg" viewBox="0 0 320 260" xmlns="http://www.w3.org/2000/svg" aria-label="Task status bar chart">
-                  <text x="10" y="20" font-size="12" fill="var(--color-text-muted)">Backlog</text>
-                  <rect class="bar chart-bar-info" x="90" y="4" width="180" height="24" rx="4"/>
-                  <text x="280" y="21" font-size="12" fill="var(--color-text-muted)">2 tasks</text>
-                  <text x="10" y="68" font-size="12" fill="var(--color-text-muted)">To Do</text>
-                  <rect class="bar chart-bar-warning" x="90" y="52" width="90" height="24" rx="4"/>
-                  <text x="190" y="69" font-size="12" fill="var(--color-text-muted)">1 task</text>
-                  <text x="10" y="116" font-size="12" fill="var(--color-text-muted)">In Progress</text>
-                  <rect class="bar chart-bar-accent" x="90" y="100" width="90" height="24" rx="4"/>
-                  <text x="190" y="117" font-size="12" fill="var(--color-text-muted)">1 task</text>
-                  <text x="10" y="164" font-size="12" fill="var(--color-text-muted)">Review</text>
-                  <rect class="bar chart-bar-danger" x="90" y="148" width="90" height="24" rx="4"/>
-                  <text x="190" y="165" font-size="12" fill="var(--color-text-muted)">1 task</text>
-                  <text x="10" y="212" font-size="12" fill="var(--color-text-muted)">Done</text>
-                  <rect class="bar chart-bar-success" x="90" y="196" width="90" height="24" rx="4"/>
-                  <text x="190" y="213" font-size="12" fill="var(--color-text-muted)">1 task</text>
-                </svg>
+            <div class="analytics-header">
+              <div class="analytics-header-left">
+                <h1 class="analytics-title">Analytics</h1>
+                <p class="analytics-subtitle">Project insights and team workload trends</p>
               </div>
-              <div class="chart-card">
-                <div class="chart-card-title">Priority Distribution</div>
-                <svg class="chart-svg doughnut-chart" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Priority doughnut chart">
-                  <circle class="doughnut-bg" cx="100" cy="100" r="70" fill="none" stroke="var(--color-muted)" stroke-width="28"/>
-                  <circle class="doughnut-segment-high" cx="100" cy="100" r="70" fill="none" stroke="var(--priority-high-text)" stroke-width="28" stroke-dasharray="110 330" stroke-dashoffset="0" transform="rotate(-90 100 100)"/>
-                  <circle class="doughnut-segment-medium" cx="100" cy="100" r="70" fill="none" stroke="var(--priority-medium-text)" stroke-width="28" stroke-dasharray="110 330" stroke-dashoffset="-110" transform="rotate(-90 100 100)"/>
-                  <circle class="doughnut-segment-low" cx="100" cy="100" r="70" fill="none" stroke="var(--priority-low-text)" stroke-width="28" stroke-dasharray="110 330" stroke-dashoffset="-220" transform="rotate(-90 100 100)"/>
-                  <text x="100" y="95" text-anchor="middle" font-size="24" font-weight="700" fill="var(--color-text)">6</text>
-                  <text x="100" y="112" text-anchor="middle" font-size="10" fill="var(--text-muted)">tasks</text>
-                </svg>
-                <div class="chart-legend">
-                  <div class="chart-legend-item">
-                    <div class="chart-legend-dot" style="background:var(--priority-high-text)"></div>
-                    <span>High (2)</span>
-                  </div>
-                  <div class="chart-legend-item">
-                    <div class="chart-legend-dot" style="background:var(--priority-medium-text)"></div>
-                    <span>Medium (2)</span>
-                  </div>
-                  <div class="chart-legend-item">
-                    <div class="chart-legend-dot" style="background:var(--priority-low-text)"></div>
-                    <span>Low (2)</span>
-                  </div>
-                </div>
-              </div>
-              <div class="chart-card">
-                <div class="chart-card-title">Workload by Member</div>
-                <div id="db-workload-chart" style="display:flex;flex-direction:column;gap:var(--space-md)">
-                  <div>
-                    <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
-                      <span style="font-weight:500;color:var(--color-text)">Sankalp Tiwari</span>
-                      <span style="color:var(--text-muted)">3 tasks</span>
-                    </div>
-                    <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
-                      <div style="width:100%;height:100%;background:#4F46E5;border-radius:999px"></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
-                      <span style="font-weight:500;color:var(--color-text)">Aditya Vawhal</span>
-                      <span style="color:var(--text-muted)">2 tasks</span>
-                    </div>
-                    <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
-                      <div style="width:67%;height:100%;background:#3B82F6;border-radius:999px"></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
-                      <span style="font-weight:500;color:var(--color-text)">Kshitij Das</span>
-                      <span style="color:var(--text-muted)">2 tasks</span>
-                    </div>
-                    <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
-                      <div style="width:67%;height:100%;background:#06B6D4;border-radius:999px"></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8125rem">
-                      <span style="font-weight:500;color:var(--color-text)">Sai Shendge</span>
-                      <span style="color:var(--text-muted)">1 task</span>
-                    </div>
-                    <div style="height:8px;background:var(--color-muted);border-radius:999px;overflow:hidden">
-                      <div style="width:33%;height:100%;background:#7C3AED;border-radius:999px"></div>
-                    </div>
-                  </div>
+              <div class="analytics-header-right">
+                <div class="analytics-filters">
+                  <select id="filter-status" aria-label="Filter by column status">
+                    <option value="all">All Columns</option>
+                  </select>
+                  <select id="filter-priority" aria-label="Filter by priority">
+                    <option value="all">All Priorities</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                  </select>
                 </div>
               </div>
             </div>
+            <div class="charts-grid">
+              <div class="chart-card" id="status-distribution-card">
+                <div class="chart-card-title">Task Pipeline</div>
+                <div class="status-hbars" id="status-hbars"></div>
+              </div>
+              <div class="chart-card" id="priority-doughnut-card">
+                <div class="chart-card-title">Priority Distribution</div>
+                <div class="doughnut-wrapper">
+                  <svg class="chart-svg doughnut-chart" viewBox="0 0 200 200" role="img" aria-label="Priority distribution doughnut chart">
+                    <title>Priority Distribution</title>
+                    <desc>Shows proportion of high, medium and low priority tasks.</desc>
+                  </svg>
+                </div>
+                <div class="chart-legend" id="priority-legend"></div>
+              </div>
+              <div class="chart-card" id="workload-member-card">
+                <div class="chart-card-title">Workload by Member</div>
+                <div class="member-bar-chart"></div>
+              </div>
+            </div>
+            <div class="analytics-section-heading">Member Performance</div>
             <div class="member-stats-table">
               <table>
                 <thead>
                   <tr>
                     <th>Member</th>
-                    <th>Completed</th>
-                    <th>In Progress</th>
-                    <th>Completion Rate</th>
+                    <th>Tasks</th>
+                    <th>Done</th>
+                    <th>Progress</th>
                   </tr>
                 </thead>
-                <tbody id="db-stats-tbody">
-                  <tr>
-                    <td><strong>Sankalp Tiwari</strong></td>
-                    <td>5</td>
-                    <td>3</td>
-                    <td><div class="progress-cell"><div class="progress-bar"><div class="progress-bar-fill" style="width:63%;background:#4F46E5"></div></div>63%</div></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Ankit Bhalke</strong></td>
-                    <td>5</td>
-                    <td>1</td>
-                    <td><div class="progress-cell"><div class="progress-bar"><div class="progress-bar-fill" style="width:83%;background:#10B981"></div></div>83%</div></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Sai Shendge</strong></td>
-                    <td>4</td>
-                    <td>1</td>
-                    <td><div class="progress-cell"><div class="progress-bar"><div class="progress-bar-fill" style="width:80%;background:#7C3AED"></div></div>80%</div></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Devansh Mittal</strong></td>
-                    <td>6</td>
-                    <td>0</td>
-                    <td><div class="progress-cell"><div class="progress-bar"><div class="progress-bar-fill" style="width:100%;background:#EC4899"></div></div>100%</div></td>
-                  </tr>
+                <tbody id="member-stats-body">
                 </tbody>
               </table>
             </div>

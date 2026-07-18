@@ -1,4 +1,4 @@
-import { MOCK_DATA, TEAM_MEMBERS, addMember, updateMember, deleteMember, getMemberById, saveMockData, saveTeamMembers, addActivityLogEntry } from './data.js';
+import { MOCK_DATA, TEAM_MEMBERS, addMember, updateMember, deleteMember, getMemberById, saveMockData, saveTeamMembers, addActivityLogEntry, createTask, updateTask, deleteTask } from './data.js';
 import { 
   renderBoard, 
   renderActivity, 
@@ -16,10 +16,23 @@ import {
   showAssignDropdown,
   closeDropdown,
   populateAssigneeSelects,
-  updateDashboardMetrics
+  updateDashboardMetrics,
+  renderQuickStats,
+  renderByDate,
+  renderWeeklyLineGraph,
+  renderRecentActivity,
+  renderKPICards,
+  renderDashboardMetrics,
+  renderStatusDistribution,
+  renderPriorityDoughnut,
+  renderMemberWorkload,
+  renderMemberStatsTable,
+  initAnalyticsFilters
 } from './ui.js';
 import { initDragDrop } from './dragdrop.js';
 import { appState, saveState, addTask } from './state.js';
+import { initCalendar, refreshCalendar } from './calendar.js';
+import { openTaskEditor } from './task-editor-modal.js';
 
 // Modal elements cache
 let memberModal, idInput, nameInput, emailInput, roleInput, avatarInput;
@@ -208,12 +221,25 @@ function init() {
     saveState(appState);
   }
 
-  renderBoard(appState);
-  renderActivity(appState.activityLog);
-  renderTable(appState);
-  renderList(appState);
+  renderBoard(MOCK_DATA);
+  renderActivity(MOCK_DATA.activityLog);
+  renderTable(MOCK_DATA);
+  renderList(MOCK_DATA);
   renderTeam(TEAM_MEMBERS);
   updateDashboardMetrics();
+
+  // Initialize develop view widgets
+  renderQuickStats(MOCK_DATA);
+  renderByDate(MOCK_DATA);
+  renderWeeklyLineGraph(MOCK_DATA);
+  renderRecentActivity(MOCK_DATA);
+  renderDashboardMetrics(MOCK_DATA);
+  renderKPICards(MOCK_DATA);
+  renderStatusDistribution(MOCK_DATA);
+  renderPriorityDoughnut(MOCK_DATA);
+  renderMemberWorkload(MOCK_DATA);
+  renderMemberStatsTable(MOCK_DATA);
+  initAnalyticsFilters(MOCK_DATA);
   
   // Cache original side-peek body html
   const peekBody = document.querySelector('#side-peek .side-peek-body');
@@ -228,7 +254,9 @@ function init() {
   populateAssigneeSelects(TEAM_MEMBERS);
 
   initDragDrop();
+  initCalendar();
   wireEventListeners();
+  restorePersistedState();
 
   window.addEventListener('boardStateChanged', () => {
     renderBoard(MOCK_DATA);
@@ -237,6 +265,21 @@ function init() {
     renderList(MOCK_DATA);
     renderTeam(TEAM_MEMBERS);
     updateDashboardMetrics();
+
+    // Refresh calendar and charts
+    renderRecentActivity(MOCK_DATA);
+    refreshCalendar();
+    localStorage.removeItem('dashboard-weekly-data');
+    renderDashboardMetrics(MOCK_DATA);
+    renderQuickStats(MOCK_DATA);
+    renderByDate(MOCK_DATA);
+    renderWeeklyLineGraph(MOCK_DATA);
+    renderKPICards(MOCK_DATA);
+    renderStatusDistribution(MOCK_DATA);
+    renderPriorityDoughnut(MOCK_DATA);
+    renderMemberWorkload(MOCK_DATA);
+    renderMemberStatsTable(MOCK_DATA);
+    initAnalyticsFilters(MOCK_DATA);
   });
 
   window.addEventListener('activityLogUpdated', () => {
@@ -246,64 +289,9 @@ function init() {
 
 function openSidePeek(card) {
   const taskId = card.dataset.taskId;
-  const task = MOCK_DATA.tasks[taskId];
-  if (!task) return;
-
-  const sidePeek = document.getElementById('side-peek');
-  sidePeek.dataset.taskId = taskId;
-
-  // Restore original HTML if we altered it!
-  const peekBody = sidePeek.querySelector('.side-peek-body');
-  if (peekBody && originalSidePeekBodyHTML) {
-    peekBody.innerHTML = originalSidePeekBodyHTML;
+  if (taskId) {
+    openTaskEditor(taskId);
   }
-
-  const peekTitle = document.getElementById('peek-title');
-  const peekDesc = document.querySelector('.peek-textarea');
-  const peekSelects = document.querySelectorAll('.peek-select');
-  const peekDate = document.querySelector('.peek-date');
-
-  if (peekTitle) peekTitle.value = task.title || '';
-  if (peekDesc) peekDesc.value = task.description || '';
-  if (peekDate) peekDate.value = task.dueDate || '';
-
-  const statusSelect = peekSelects[0];
-  const prioritySelect = peekSelects[1];
-  const assigneeSelect = peekSelects[2];
-
-  if (statusSelect) {
-    const column = MOCK_DATA.columns.find(col => col.taskIds.includes(taskId));
-    statusSelect.value = column ? column.title : 'Backlog';
-  }
-  if (prioritySelect) {
-    prioritySelect.value = task.priority ? task.priority.charAt(0).toUpperCase() + task.priority.slice(1) : 'Medium';
-  }
-  if (assigneeSelect) {
-    assigneeSelect.value = task.assignee || '';
-  }
-
-  // Render subtasks
-  const subtaskList = document.getElementById('peek-subtask-list');
-  if (subtaskList) {
-    subtaskList.innerHTML = '';
-    (task.subtasks || []).forEach(sub => {
-      const li = document.createElement('li');
-      li.className = 'peek-subtask-item';
-      li.innerHTML = `
-        <label class="peek-subtask-checkbox">
-          <input type="checkbox" ${sub.completed ? 'checked' : ''} data-sub-id="${sub.id}">
-          <span class="peek-subtask-text">${sub.text}</span>
-        </label>
-        <button class="peek-subtask-remove" aria-label="Remove subtask">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3H10M4.5 3V1.5C4.5 1.22386 4.72386 1 5 1H7C7.27614 1 7.5 1.22386 7.5 1.5V3M3 3L3.5 10.5H8.5L9 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-        </button>
-      `;
-      subtaskList.appendChild(li);
-    });
-  }
-  updateSubtaskProgress();
-
-  sidePeek.classList.add('open');
 }
 
 function syncBoardDOMToState() {
@@ -452,6 +440,8 @@ function handleMemberFormSubmit(e) {
     renderTeam(TEAM_MEMBERS);
     populateAssigneeSelects(TEAM_MEMBERS);
     updateDashboardMetrics();
+    renderMemberWorkload(MOCK_DATA);
+    renderMemberStatsTable(MOCK_DATA);
   } catch (err) {
     emailError.textContent = err.message;
     emailError.style.display = 'block';
@@ -544,6 +534,8 @@ function wireEventListeners() {
           renderList(MOCK_DATA);
           populateAssigneeSelects(TEAM_MEMBERS);
           updateDashboardMetrics();
+          renderMemberWorkload(MOCK_DATA);
+          renderMemberStatsTable(MOCK_DATA);
           showToast(`${member.name} removed from team`, 'danger');
         } catch (err) {
           alert('Error deleting member: ' + err.message);
@@ -656,6 +648,7 @@ function wireEventListeners() {
       const view = btn.dataset.view;
       document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
       document.getElementById(`${view}-view`).classList.add('active');
+      localStorage.setItem('boardSubView', view);
     });
   });
 
@@ -674,23 +667,24 @@ function wireEventListeners() {
       item.classList.add('active-view');
       
       const section = item.dataset.section;
-      const viewToggle = document.querySelector('.view-toggle');
+      const boardHeader = document.querySelector('.board-header');
       
       document.querySelectorAll('.view-container').forEach(v => {
         v.classList.remove('active');
       });
       
       if (section === 'board') {
-        if (viewToggle) viewToggle.style.display = '';
+        if (boardHeader) boardHeader.style.display = '';
         const activeSubViewBtn = document.querySelector('.view-btn.active');
         const activeSubView = activeSubViewBtn ? activeSubViewBtn.dataset.view : 'board';
         const subViewEl = document.getElementById(`${activeSubView}-view`);
         if (subViewEl) subViewEl.classList.add('active');
       } else {
-        if (viewToggle) viewToggle.style.display = 'none';
+        if (boardHeader) boardHeader.style.display = 'none';
         const viewEl = document.getElementById(`${section}-view`);
         if (viewEl) viewEl.classList.add('active');
       }
+      localStorage.setItem('sidebarSection', section);
     });
   });
 
@@ -896,7 +890,7 @@ function wireEventListeners() {
         setTimeout(() => {
           const taskTitle = MOCK_DATA.tasks[taskId]?.title || 'Task';
           card.remove();
-          delete MOCK_DATA.tasks[taskId];
+          deleteTask(taskId);
           addActivityLogEntry('Sankalp Tiwari', `deleted task '${taskTitle}'`, 'edited', 'Board');
           syncBoardDOMToState();
           window.dispatchEvent(new CustomEvent('boardStateChanged'));
@@ -911,8 +905,7 @@ function wireEventListeners() {
         setTimeout(() => {
           column.parentElement?.removeChild(column);
           syncBoardDOMToState();
-          renderTable(MOCK_DATA);
-          renderList(MOCK_DATA);
+          window.dispatchEvent(new CustomEvent('boardStateChanged'));
         }, 300);
         return;
       }
@@ -927,8 +920,7 @@ function wireEventListeners() {
         titleEl.classList.remove('hidden');
         e.target.classList.add('hidden');
         syncBoardDOMToState();
-        renderTable(MOCK_DATA);
-        renderList(MOCK_DATA);
+        window.dispatchEvent(new CustomEvent('boardStateChanged'));
       }
     }
   });
@@ -1322,6 +1314,37 @@ function updateSubtaskProgress() {
   const pct = total > 0 ? Math.round((checked / total) * 100) : 0;
   progressText.textContent = `${checked}/${total}`;
   progressFill.style.width = `${pct}%`;
+}
+
+function restorePersistedState() {
+  const savedSection = localStorage.getItem('sidebarSection');
+  if (!savedSection) return;
+
+  const navItem = document.querySelector(`.sidebar-nav .nav-item[data-section="${savedSection}"]`);
+  if (!navItem) return;
+
+  document.querySelectorAll('.sidebar-nav .nav-item').forEach(b => b.classList.remove('active-view'));
+  navItem.classList.add('active-view');
+
+  const boardHeader = document.querySelector('.board-header');
+
+  document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+
+  if (savedSection === 'board') {
+    if (boardHeader) boardHeader.style.display = '';
+    const savedSubView = localStorage.getItem('boardSubView') || 'board';
+    document.querySelectorAll('.view-btn').forEach(b => {
+      const isActive = b.dataset.view === savedSubView;
+      b.classList.toggle('active', isActive);
+      b.setAttribute('aria-selected', String(isActive));
+    });
+    const subViewEl = document.getElementById(`${savedSubView}-view`);
+    if (subViewEl) subViewEl.classList.add('active');
+  } else {
+    if (boardHeader) boardHeader.style.display = 'none';
+    const viewEl = document.getElementById(`${savedSection}-view`);
+    if (viewEl) viewEl.classList.add('active');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);

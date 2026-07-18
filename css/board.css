@@ -2,10 +2,12 @@
   display: flex;
   gap: var(--space-md);
   padding: var(--space-lg);
-  height: 100%;
   overflow-x: auto;
-  overflow-y: hidden;
   align-items: flex-start;
+  opacity: 0;
+  transform: translateX(16px);
+  animation: boardFadeInRight var(--duration-base) var(--ease-out-quart) forwards;
+  will-change: opacity, transform;
 }
 
 .board::-webkit-scrollbar {
@@ -35,6 +37,16 @@
   flex-direction: column;
   max-height: 100%;
   flex-shrink: 0;
+  transition: 
+    background-color 200ms var(--ease-out-quart),
+    box-shadow 200ms var(--ease-out-quart),
+    box-shadow 200ms var(--ease-out-quart),
+    transform 200ms var(--ease-out-quart);
+  will-change: background-color, box-shadow, transform;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: columnFadeInUp var(--duration-base) var(--ease-out-quart) forwards;
+  will-change: opacity, transform;
 }
 
 .column[data-column-id="col-backlog"] {
@@ -63,6 +75,13 @@
   justify-content: space-between;
   padding: var(--space-md);
   flex-shrink: 0;
+  transition: 
+    background-color 150ms var(--ease-out-quart),
+    padding 150ms var(--ease-out-quart);
+}
+
+.column-header:hover {
+  background-color: transparent;
 }
 
 .column-header-left {
@@ -110,12 +129,19 @@
   height: 28px;
   border-radius: var(--radius-sm);
   color: var(--text-muted);
-  transition: var(--transition-fast);
+  transition: all 150ms var(--ease-out-quart);
+  will-change: background-color, color, transform;
 }
 
 .column-option-btn:hover {
   background: var(--bg-surface);
   color: var(--color-foreground);
+  transform: scale(1.05);
+}
+
+.column-option-btn:active {
+  transform: scale(0.95);
+  transition-duration: 75ms;
 }
 
 .column-option-btn.destructive:hover {
@@ -130,6 +156,10 @@
   flex-direction: column;
   gap: var(--space-sm);
   min-height: 48px;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: taskListFadeInUp var(--duration-base) var(--ease-out-quart) forwards;
+  will-change: opacity, transform;
 }
 
 .task-list::-webkit-scrollbar {
@@ -160,7 +190,11 @@
   border-radius: var(--radius-lg);
   color: var(--text-muted);
   font-weight: 500;
-  transition: var(--transition-base);
+  transition: 
+    border-color 150ms var(--ease-out-quart),
+    color 150ms var(--ease-out-quart-out-quart),
+    transform 150ms var(--ease-out-quart);
+  will-change: border-color, color, background-color, transform;
   background: transparent;
 }
 
@@ -168,6 +202,12 @@
   border-color: var(--color-accent);
   color: var(--color-accent);
   background: var(--color-accent-light);
+  transform: scale(1.02);
+}
+
+.add-column-btn:active {
+  transform: scale(0.98);
+  transition-duration: 75ms;
 }
 
 .add-column-btn:focus-visible {
@@ -222,4 +262,37 @@
 .add-column-input.hidden,
 .add-column-btn.hidden {
   display: none;
+}
+
+@keyframes boardFadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes columnFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes taskListFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

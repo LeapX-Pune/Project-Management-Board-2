@@ -215,6 +215,7 @@ export function initData() {
       Object.assign(MOCK_DATA, DEFAULT_MOCK_DATA);
       saveMockData();
     }
+    migrateData();
   } catch (error) {
     console.error('Failed to initialize local data, resetting defaults:', error);
     TEAM_MEMBERS.length = 0;
@@ -236,9 +237,13 @@ export function saveTeamMembers() {
 
 export function saveMockData() {
   try {
-    localStorage.setItem(STORAGE_KEY_MOCK_DATA, JSON.stringify(MOCK_DATA));
+    const dataToSave = JSON.stringify(MOCK_DATA);
+    localStorage.setItem(STORAGE_KEY_MOCK_DATA, dataToSave);
   } catch (error) {
     console.error('Failed to save mock data:', error);
+    document.dispatchEvent(new CustomEvent('app:save-error', {
+      detail: { error: error.message, type: 'mock-data' }
+    }));
   }
 }
 
@@ -321,7 +326,9 @@ export function updateMember(id, updates) {
     role: updates.role !== undefined ? updates.role.trim() : original.role,
     avatarUrl: updates.avatarUrl !== undefined ? updates.avatarUrl.trim() : original.avatarUrl,
     color: updates.bgColor !== undefined ? updates.bgColor : original.color,
-    githubId: updates.githubId !== undefined ? updates.githubId.trim() : original.githubId
+    githubId: updates.githubId !== undefined ? updates.githubId.trim() : original.githubId,
+    tasksCompleted: original.tasksCompleted,
+    tasksInProgress: original.tasksInProgress
   };
   updatedMember.initials = getInitials(updatedMember.name);
 
@@ -390,4 +397,190 @@ export function addActivityLogEntry(user, action, type, area = 'Board') {
   MOCK_DATA.activityLog.push(newEntry);
   window.dispatchEvent(new CustomEvent('activityLogUpdated', { detail: newEntry }));
   return newEntry;
+}
+
+export function updateTask(taskId, updates) {
+  if (!MOCK_DATA.tasks[taskId]) {
+    console.error('Task not found:', taskId);
+    return null;
+  }
+
+  // Store original for comparison
+  const original = { ...MOCK_DATA.tasks[taskId] };
+
+  // Apply updates to the task
+  Object.assign(MOCK_DATA.tasks[taskId], updates);
+
+  // If status changed, move task between columns
+  if (updates.status && updates.status !== original.status) {
+    const targetColumn = MOCK_DATA.columns.find(col => col.id === `col-${updates.status}`);
+    const currentColumn = MOCK_DATA.columns.find(col => col.taskIds.includes(taskId));
+
+    if (targetColumn && currentColumn && currentColumn.id !== targetColumn.id) {
+      // Remove from current column
+      currentColumn.taskIds = currentColumn.taskIds.filter(id => id !== taskId);
+      // Add to target column at the end
+      targetColumn.taskIds.push(taskId);
+    }
+  }
+
+  // Persist to localStorage
+  saveMockData();
+
+  // Dispatch real-time sync event
+  document.dispatchEvent(new CustomEvent('app:task-updated', {
+    detail: { taskId, task: MOCK_DATA.tasks[taskId], original, updates }
+  }));
+
+  return MOCK_DATA.tasks[taskId];
+}
+
+export function createTask(taskData) {
+  // Normalize status: accept either a status key ("backlog") or a column id ("col-backlog")
+  const rawStatus = taskData.status || 'todo';
+  const statusKey = rawStatus.startsWith('col-') ? rawStatus.slice(4) : rawStatus;
+  const columnId = `col-${statusKey}`;
+
+  const newTask = {
+    id: `task-${Date.now()}`,
+    title: taskData.title || 'Untitled Task',
+    description: taskData.description || '',
+    assignee: taskData.assignee || '',
+    dueDate: taskData.dueDate || '',
+    priority: taskData.priority || 'medium',
+    status: statusKey,
+    subtasks: taskData.subtasks || [],
+    createdAt: new Date().toISOString()
+  };
+
+  MOCK_DATA.tasks[newTask.id] = newTask;
+
+  // Add to appropriate column
+  const targetColumn = MOCK_DATA.columns.find(col => col.id === columnId);
+  if (targetColumn) {
+    targetColumn.taskIds.push(newTask.id);
+  }
+
+  saveMockData();
+
+  // Dispatch event
+  document.dispatchEvent(new CustomEvent('app:task-created', {
+    detail: { task: newTask }
+  }));
+
+  return newTask;
+}
+
+export function deleteTask(taskId) {
+  if (!MOCK_DATA.tasks[taskId]) {
+    console.error('Task not found:', taskId);
+    return false;
+  }
+
+  const deletedTask = MOCK_DATA.tasks[taskId];
+
+  // Remove from column
+  MOCK_DATA.columns.forEach(col => {
+    col.taskIds = col.taskIds.filter(id => id !== taskId);
+  });
+
+  // Remove task
+  delete MOCK_DATA.tasks[taskId];
+
+  saveMockData();
+
+  // Dispatch event
+  document.dispatchEvent(new CustomEvent('app:task-deleted', {
+    detail: { taskId, task: deletedTask }
+  }));
+
+  return true;
+}
+
+// ======= DATA LAYER: MIGRATION / QUERIES / RESET =================================
+
+/**
+ * Run any schema migrations when the stored version lags behind CURRENT_DATA_VERSION.
+ * Each migration step is idempotent.
+ */
+export function migrateData() {
+  const storedVersion = parseInt(localStorage.getItem(STORAGE_KEY_VERSION) || '0', 10);
+  if (storedVersion >= CURRENT_DATA_VERSION) {
+    localStorage.setItem(STORAGE_KEY_VERSION, String(CURRENT_DATA_VERSION));
+    return;
+  }
+  for (let v = storedVersion + 1; v <= CURRENT_DATA_VERSION; v++) {
+    switch (v) {
+      case 1:
+        if (Array.isArray(MOCK_DATA.activityLog) && MOCK_DATA.activityLog.length > MAX_ACTIVITY_LOG) {
+          MOCK_DATA.activityLog = MOCK_DATA.activityLog.slice(-MAX_ACTIVITY_LOG);
+          saveMockData();
+        }
+        break;
+    }
+  }
+  localStorage.setItem(STORAGE_KEY_VERSION, String(CURRENT_DATA_VERSION));
+}
+
+try {
+  function hasRealData() {
+    const raw = localStorage.getItem(STORAGE_KEY_MOCK_DATA);
+    if (!raw) return false;
+    try { const p = JSON.parse(raw); return Boolean(p && typeof p === 'object' && p.tasks); } catch { return false; }
+  }
+  if (!hasRealData()) {
+    localStorage.setItem(STORAGE_KEY_MOCK_DATA, JSON.stringify(DEFAULT_MOCK_DATA));
+  }
+  if (!localStorage.getItem(STORAGE_KEY_MEMBERS)) {
+    localStorage.setItem(STORAGE_KEY_MEMBERS, JSON.stringify(DEFAULT_TEAM_MEMBERS));
+  }
+  if (!localStorage.getItem(STORAGE_KEY_VERSION)) {
+    localStorage.setItem(STORAGE_KEY_VERSION, String(CURRENT_DATA_VERSION));
+  }
+} catch {}
+
+/**
+ * Return all tasks whose column matches the given status (id or title, with or without "col-" prefix).
+ */
+export function getTasksByStatus(status) {
+  const key = String(status || '').trim().toLowerCase();
+  if (!key) return [];
+  return Object.values(MOCK_DATA.tasks).filter(task => {
+    const col = MOCK_DATA.columns.find(c => c.taskIds.includes(task.id));
+    if (!col) return false;
+    const colId = col.id.toLowerCase();
+    const colTitle = col.title.toLowerCase();
+    const q = key.replace(/^col-/, '');
+    return colId === key || colId === `col-${q}` || colTitle === q || colTitle === key;
+  });
+}
+
+/**
+ * Return tasks assigned to the given member id.
+ */
+export function getTasksByAssignee(assigneeId) {
+  if (!assigneeId) return [];
+  return Object.values(MOCK_DATA.tasks).filter(t => t.assignee === assigneeId);
+}
+
+/**
+ * Wipe stored local data and reload defaults. Useful for development / debug workflows.
+ */
+export function resetData() {
+  try {
+    localStorage.removeItem(STORAGE_KEY_MEMBERS);
+    localStorage.removeItem(STORAGE_KEY_MOCK_DATA);
+    localStorage.removeItem(STORAGE_KEY_VERSION);
+    TEAM_MEMBERS.length = 0;
+    TEAM_MEMBERS.push(...DEFAULT_TEAM_MEMBERS);
+    Object.keys(MOCK_DATA).forEach(k => delete MOCK_DATA[k]);
+    Object.assign(MOCK_DATA, DEFAULT_MOCK_DATA);
+    saveTeamMembers();
+    saveMockData();
+    localStorage.setItem(STORAGE_KEY_VERSION, String(CURRENT_DATA_VERSION));
+    return true;
+  } catch (error) {
+    console.error('Failed to reset data:', error);
+    return false;
+  }
 }
