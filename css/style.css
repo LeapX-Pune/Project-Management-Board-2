@@ -117,6 +117,32 @@
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Professional easing curves */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Animation durations */
+  --duration-instant: 80ms;
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-smooth: 250ms;
+  --duration-slow: 350ms;
+  --duration-entrance: 400ms;
+
+  /* Animation tokens */
+  --anim-fade-in: fadeIn var(--duration-fast) var(--ease-out-quart);
+  --anim-fade-out: fadeOut var(--duration-fast) var(--ease-in-out-quart);
+  --anim-slide-up: slideUp var(--duration-smooth) var(--ease-out-quart);
+  --anim-slide-down: slideDown var(--duration-smooth) var(--ease-out-quart);
+  --anim-slide-in-right: slideInRight var(--duration-smooth) var(--ease-out-quart);
+  --anim-slide-out-right: slideOutRight var(--duration-smooth) var(--ease-in-out-quart);
+  --anim-scale-in: scaleIn var(--duration-fast) var(--ease-out-quart);
+  --anim-scale-out: scaleOut var(--duration-fast) var(--ease-in-out-quart);
+  --anim-bounce-in: bounceIn var(--duration-entrance) var(--ease-spring);
 }
 
 html {
@@ -184,16 +210,26 @@ kbd {
   border-radius: var(--radius-md);
   font-weight: 500;
   font-size: 0.875rem;
-  transition: var(--transition-base);
+  transition: background-color var(--transition-fast) var(--ease-out-quart),
+              box-shadow var(--transition-fast) var(--ease-out-quart),
+              transform var(--transition-fast) var(--ease-out-quart),
+              color var(--transition-fast) var(--ease-out-quart);
   white-space: nowrap;
+  will-change: transform, box-shadow;
+}
+
+.btn:hover {
+  transform: translateY(-1px) scale(1.02);
 }
 
 .btn:active {
-  transform: translateY(1px);
+  transform: translateY(0) scale(0.98);
+  transition-duration: 0.05s;
 }
 
-.btn svg {
-  flex-shrink: 0;
+.btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 .btn-primary {
@@ -207,11 +243,6 @@ kbd {
   box-shadow: var(--shadow-card-hover);
 }
 
-.btn-primary:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
-
 .btn-ghost {
   background: transparent;
   color: var(--color-text-muted);
@@ -223,9 +254,8 @@ kbd {
   color: var(--color-text);
 }
 
-.btn-ghost:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+.btn-ghost:active {
+  transform: scale(0.98);
 }
 
 :focus-visible {
@@ -302,12 +332,12 @@ body.dark-theme {
   --color-muted: var(--color-surface-3);
 
   /* Priority tokens */
-  --priority-high-bg: rgba(248, 113, 113, 0.12);
-  --priority-high-text: #FCA5A5;
-  --priority-medium-bg: rgba(251, 191, 36, 0.12);
-  --priority-medium-text: #FCD34D;
-  --priority-low-bg: rgba(52, 211, 153, 0.12);
-  --priority-low-text: #6EE7B7;
+  --priority-high-bg: rgba(224, 101, 101, 0.12);
+  --priority-high-text: #E06565;
+  --priority-medium-bg: rgba(212, 160, 48, 0.12);
+  --priority-medium-text: #D4A030;
+  --priority-low-bg: rgba(48, 184, 128, 0.12);
+  --priority-low-text: #30B880;
 
   /* Shadow aliases */
   --shadow-card: 0px 1px 2px rgba(0, 0, 0, 0.3);
@@ -400,15 +430,19 @@ body.dark-theme .doughnut-bg {
 }
 
 body.dark-theme .doughnut-segment-high {
-  stroke: #F87171;
+  stroke: #E06565;
 }
 
 body.dark-theme .doughnut-segment-medium {
-  stroke: #FBBF24;
+  stroke: #D4A030;
 }
 
 body.dark-theme .doughnut-segment-low {
-  stroke: #34D399;
+  stroke: #30B880;
+}
+
+body.dark-theme #priority-doughnut-card .chart-svg text {
+  fill: var(--text-main) !important;
 }
 
 body.dark-theme .calendar-event {
@@ -459,4 +493,118 @@ body.dark-theme .search-bar:focus-within {
 @keyframes slideInRight {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideOutRight {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes scaleOut {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.95); }
+}
+
+@keyframes bounceIn {
+  0% { opacity: 0; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.02); }
+  70% { transform: scale(0.99); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focus visible enhancements */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 4px;
+  transition: background var(--transition-fast);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Selection styling */
+::selection {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+/* Loading shimmer for skeleton screens */
+.skeleton {
+  background: linear-gradient(90deg, var(--color-muted) 25%, var(--color-border) 50%, var(--color-muted) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite var(--ease-out-quart);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

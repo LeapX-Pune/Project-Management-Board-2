@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="css/member-modal.css">
   <link rel="stylesheet" href="css/dropdown.css">
   <link rel="stylesheet" href="css/other-views.css">
+  <link rel="stylesheet" href="css/task-editor-modal.css">
   
   <!-- Responsive overrides -->
   <link rel="stylesheet" href="css/responsive.css">
@@ -110,7 +111,7 @@
         </div>
         <div class="header-right">
           <!-- Dynamically populated team avatars list in header -->
-          <div id="header-team-group" class="header-team-group flex-center" style="margin-right: var(--space-sm);"></div>
+          <div id="header-team-group" class="header-team-group flex-center" style="margin-right: 4px;"></div>
           
           <button class="btn-icon" id="header-theme-toggle" aria-label="Toggle dark mode">
             <svg class="theme-icon-light" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -244,17 +245,48 @@
           <div class="kpi-section">
             <h3 class="kpi-section-title">Quick Metrics</h3>
             <div class="kpi-grid">
-              <div class="metric-card">
-                <div class="metric-label">Completed Today</div>
-                <div class="metric-value" id="kpi-today">0</div>
+              <div class="kpi-card kpi-card--tasks-done">
+                <div class="kpi-icon-wrap">
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path d="M4 10L8 14L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <div class="kpi-content">
+                  <div class="kpi-value" id="kpi-today">0</div>
+                  <div class="kpi-label">Completed Today</div>
+                </div>
+                <span class="kpi-trend kpi-trend--up" id="kpi-today-trend">
+                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 8L6 4L10 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
               </div>
-              <div class="metric-card">
-                <div class="metric-label">Due Tomorrow</div>
-                <div class="metric-value" id="kpi-tomorrow">0</div>
+              <div class="kpi-card kpi-card--due-soon">
+                <div class="kpi-icon-wrap">
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 4V10L13 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </div>
+                <div class="kpi-content">
+                  <div class="kpi-value" id="kpi-tomorrow">0</div>
+                  <div class="kpi-label">Due Tomorrow</div>
+                </div>
+                <span class="kpi-trend kpi-trend--warning" id="kpi-tomorrow-trend">
+                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
               </div>
-              <div class="metric-card">
-                <div class="metric-label">Avg Completion (hrs)</div>
-                <div class="metric-value" id="kpi-avg">—</div>
+              <div class="kpi-card kpi-card--avg-time">
+                <div class="kpi-icon-wrap">
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path d="M4 16V14M8 16V10M12 16V6M16 16V4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div class="kpi-content">
+                  <div class="kpi-value" id="kpi-avg">—</div>
+                  <div class="kpi-label">Avg Completion</div>
+                </div>
+                <span class="kpi-trend kpi-trend--neutral" id="kpi-avg-trend">
+                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </span>
               </div>
             </div>
           </div>
@@ -301,72 +333,40 @@
         <section class="view-container bydate-view" id="bydate-view" role="region" aria-label="By-Date view">
         </section>
 
-        <section class="view-container calendar-view" id="calendar-view" role="region" aria-label="Calendar view">
+<section class="view-container calendar-view" id="calendar-view" role="region" aria-label="Calendar view">
           <div class="calendar-wrapper">
             <div class="calendar-header">
               <div class="calendar-nav">
-                <button class="calendar-nav-btn" aria-label="Previous month">
+                <button class="calendar-nav-btn calendar-nav-prev" aria-label="Previous">
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 4L6 9L11 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
-                <span class="calendar-month-label">July 2026</span>
-                <button class="calendar-nav-btn" aria-label="Next month">
+                <button class="calendar-nav-btn calendar-nav-next" aria-label="Next">
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M7 4L12 9L7 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="btn-secondary btn-sm calendar-today-btn" id="calendar-today-btn">Today</button>
+              </div>
+              <div class="calendar-view-toggles">
+                <button class="view-toggle-btn active" data-view="month">
+                  <span class="gv-label">Month</span>
+                </button>
+                <button class="view-toggle-btn" data-view="week">
+                  <span class="gv-label">Week</span>
+                </button>
+                <button class="view-toggle-btn" data-view="day">
+                  <span class="gv-label">Day</span>
                 </button>
               </div>
             </div>
-            <div class="calendar-weekdays">
-              <div class="calendar-weekday">Sun</div>
-              <div class="calendar-weekday">Mon</div>
-              <div class="calendar-weekday">Tue</div>
-              <div class="calendar-weekday">Wed</div>
-              <div class="calendar-weekday">Thu</div>
-              <div class="calendar-weekday">Fri</div>
-              <div class="calendar-weekday">Sat</div>
-            </div>
-            <div class="calendar-month-grid">
-              <div class="calendar-day other-month"><div class="calendar-day-number">28</div></div>
-              <div class="calendar-day other-month"><div class="calendar-day-number">29</div></div>
-              <div class="calendar-day other-month"><div class="calendar-day-number">30</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">1</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">2</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">3</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">4</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">5</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">6</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">7</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">8</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">9</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">10</div>
-                <div class="calendar-event high">Implement auth cookies</div>
+            <div class="calendar-body">
+              <div class="calendar-content" id="calendar-content-month">
               </div>
-              <div class="calendar-day"><div class="calendar-day-number">11</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">12</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">13</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">14</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">15</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">16</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">17</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">18</div>
-                <div class="calendar-event medium">Review billing PR</div>
+              <div class="calendar-content" id="calendar-content-week" style="display: none;">
               </div>
-              <div class="calendar-day"><div class="calendar-day-number">19</div></div>
-              <div class="calendar-day today"><div class="calendar-day-number">20</div>
-                <div class="calendar-event high">Impl. auth cookies</div>
+              <div class="calendar-content" id="calendar-content-day" style="display: none;">
               </div>
-              <div class="calendar-day"><div class="calendar-day-number">21</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">22</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">23</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">24</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">25</div>
-                <div class="calendar-event medium">Configure CI/CD</div>
+              <div class="calendar-day-panel" id="calendar-day-panel">
+                <div class="calendar-day-panel-empty">Click a day to see tasks</div>
               </div>
-              <div class="calendar-day"><div class="calendar-day-number">26</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">27</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">28</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">29</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">30</div></div>
-              <div class="calendar-day"><div class="calendar-day-number">31</div></div>
-              <div class="calendar-day other-month"><div class="calendar-day-number">1</div></div>
             </div>
           </div>
         </section>
@@ -752,9 +752,10 @@
     </div>
   </div>
 
-  <!-- App Toast Alerts container -->
-  <div id="toast-container" class="toast-container"></div>
+<!-- App Toast Alerts container -->
+<div id="toast-container" class="toast-container"></div>
 
-  <script type="module" src="js/main.js"></script>
+
+<script type="module" src="js/main.js"></script>
 </body>
 </html>

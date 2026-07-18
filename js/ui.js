@@ -1,5 +1,5 @@
 // DOM manipulation and UI rendering
-import { TEAM_MEMBERS } from './data.js';
+import { TEAM_MEMBERS, MOCK_DATA } from './data.js';
 
 /**
  * Creates and returns an Avatar DOM element.
@@ -765,6 +765,14 @@ export function renderTeam(members) {
 
   // Function to filter members and render active components
   function updateFilteredView() {
+    // Derive real workload from actual task data
+    const tasks = Object.values(MOCK_DATA.tasks || {});
+    members.forEach(m => {
+      const assigned = tasks.filter(t => t.assignee === m.id);
+      m.tasksInProgress = assigned.filter(t => t.status !== 'done').length;
+      m.tasksCompleted = assigned.filter(t => t.status === 'done').length;
+    });
+
     const searchVal = document.getElementById('team-search-input')?.value.toLowerCase().trim() || '';
     const roleVal = document.getElementById('team-role-filter')?.value || '';
     const workloadVal = document.getElementById('team-workload-filter')?.value || '';
@@ -788,22 +796,22 @@ export function renderTeam(members) {
     const totalTasksCount = filtered.reduce((sum, m) => sum + m.tasksInProgress, 0);
 
     metricsContainer.innerHTML = `
-      <div class="metric-card" style="min-height: 100px;">
+      <div class="metric-card" data-type="members">
         <div class="metric-label">Filtered Members</div>
         <div class="metric-value">${filtered.length}</div>
         <span class="metric-badge neutral">Registered profiles</span>
       </div>
-      <div class="metric-card" style="min-height: 100px;">
+      <div class="metric-card" data-type="active">
         <div class="metric-label">Active Members</div>
         <div class="metric-value">${activeCount}</div>
         <span class="metric-badge success">Assigned to tasks</span>
       </div>
-      <div class="metric-card" style="min-height: 100px;">
+      <div class="metric-card" data-type="workload">
         <div class="metric-label">High Workload</div>
         <div class="metric-value">${highWorkloadCount}</div>
         <span class="metric-badge danger">Needs attention</span>
       </div>
-      <div class="metric-card" style="min-height: 100px;">
+      <div class="metric-card" data-type="tasks">
         <div class="metric-label">Assigned Tasks</div>
         <div class="metric-value">${totalTasksCount}</div>
         <span class="metric-badge info">Active board tasks</span>
@@ -1089,20 +1097,91 @@ export function renderWeeklyLineGraph(data) {
 
 export function renderKPICards(data) {
   const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
 
+  // Completed today
   const completedToday = data.activityLog.filter(
     e => e.type === 'created' && new Date(e.timestamp).toDateString() === today.toDateString()
   ).length;
 
+  // Completed yesterday (for trend)
+  const completedYesterday = data.activityLog.filter(
+    e => e.type === 'created' && new Date(e.timestamp).toDateString() === yesterday.toDateString()
+  ).length;
+
+  // Due tomorrow
   const dueTomorrow = Object.values(data.tasks).filter(
     t => t.dueDate && new Date(t.dueDate).toDateString() === tomorrow.toDateString()
   ).length;
 
-  document.getElementById('kpi-today').textContent = completedToday;
-  document.getElementById('kpi-tomorrow').textContent = dueTomorrow;
-  document.getElementById('kpi-avg').textContent = '—';
+  // Due today (for trend comparison)
+  const dueToday = Object.values(data.tasks).filter(
+    t => t.dueDate && new Date(t.dueDate).toDateString() === today.toDateString()
+  ).length;
+
+  // Calculate average completion time (mock calculation based on activity)
+  const completedTasks = data.activityLog.filter(e => e.type === 'created');
+  const avgCompletion = completedTasks.length > 0 ? Math.round(completedTasks.length * 2.5) : 0;
+
+  // Update values with animation
+  animateValue('kpi-today', completedToday);
+  animateValue('kpi-tomorrow', dueTomorrow);
+  
+  const avgEl = document.getElementById('kpi-avg');
+  if (avgEl) avgEl.textContent = avgCompletion > 0 ? `${avgCompletion}h` : '—';
+
+  // Update trends
+  updateTrend('kpi-today-trend', completedToday, completedYesterday);
+  updateTrend('kpi-tomorrow-trend', dueTomorrow, dueToday, true);
+}
+
+function animateValue(elementId, newValue) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  
+  const current = parseInt(el.textContent) || 0;
+  if (current === newValue) return;
+  
+  const duration = 500;
+  const start = performance.now();
+  
+  function update(timestamp) {
+    const elapsed = timestamp - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const value = Math.round(current + (newValue - current) * eased);
+    el.textContent = value;
+    
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    }
+  }
+  
+  requestAnimationFrame(update);
+}
+
+function updateTrend(elementId, current, previous, invertColors = false) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  
+  let trendClass = 'kpi-trend--neutral';
+  let arrow = '';
+  
+  if (current > previous) {
+    trendClass = invertColors ? 'kpi-trend--warning' : 'kpi-trend--up';
+    arrow = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 8L6 4L10 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  } else if (current < previous) {
+    trendClass = invertColors ? 'kpi-trend--up' : 'kpi-trend--down';
+    arrow = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  } else {
+    arrow = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+  }
+  
+  el.className = `kpi-trend ${trendClass}`;
+  el.innerHTML = arrow;
 }
 
 const STATUS_COLORS = {
@@ -1370,6 +1449,34 @@ export function renderMemberStatsTable(data) {
   }).join('');
 }
 
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function getRelativeTime(dateStr) {
+  const now = Date.now();
+  const diff = now - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+function getTypeIcon(type) {
+  const icons = {
+    created: '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+    moved: '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M4 4h8v8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    edited: '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5a1.414 1.414 0 112 2L5 13l-3 1 1-3 8.5-8.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  };
+  return icons[type] || icons.created;
+}
+
 export function renderRecentActivity(data) {
   const list = document.getElementById('recent-activity-list');
   if (!list) return;
@@ -1379,16 +1486,20 @@ export function renderRecentActivity(data) {
     .slice(0, 6);
 
   list.innerHTML = recent.map(entry => {
-    const time = new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const color = getColorForUser(entry.user);
     const initials = getInitials(entry.user);
     return `
       <div class="recent-activity-item">
-        <span class="recent-activity-avatar" style="background:${color}">${initials}</span>
-        <span class="recent-activity-text">
-          <strong>${entry.user}</strong> ${entry.action}
-        </span>
-        <span class="recent-activity-time">${time}</span>
+        <span class="recent-activity-dot" style="background:${color}"></span>
+        <div class="recent-activity-avatar-wrap">
+          <span class="recent-activity-avatar" style="background:${color}">${initials}</span>
+          <span class="recent-activity-type-icon">${getTypeIcon(entry.type)}</span>
+        </div>
+        <div class="recent-activity-body">
+          <span class="recent-activity-text"><strong>${escapeHtml(entry.user)}</strong> ${escapeHtml(entry.action)}</span>
+          <span class="recent-activity-area">${escapeHtml(entry.area || 'Board')}</span>
+        </div>
+        <span class="recent-activity-time">${getRelativeTime(entry.timestamp)}</span>
       </div>`;
   }).join('');
 }

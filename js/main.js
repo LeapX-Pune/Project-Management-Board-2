@@ -1,4 +1,4 @@
-import { MOCK_DATA, TEAM_MEMBERS, addMember, updateMember, deleteMember, getMemberById, saveMockData, saveTeamMembers, addActivityLogEntry } from './data.js';
+import { MOCK_DATA, TEAM_MEMBERS, addMember, updateMember, deleteMember, getMemberById, saveMockData, saveTeamMembers, addActivityLogEntry, createTask } from './data.js';
 import {
   renderBoard,
   renderActivity,
@@ -27,7 +27,7 @@ import {
   populateAssigneeSelects
 } from './ui.js';
 import { initDragDrop } from './dragdrop.js';
-import { appState, saveState, addTask } from './state.js';
+import { initCalendar, refreshCalendar } from './calendar.js';
 
 // Modal elements cache
 let memberModal, idInput, nameInput, emailInput, roleInput, avatarInput;
@@ -188,18 +188,10 @@ function openMemberProfileDrawer(member) {
 }
 
 function init() {
-  // If no tasks exist, optionally seed from MOCK_DATA to have something to show
-  if (Object.keys(appState.tasks).length === 0) {
-    appState.tasks = MOCK_DATA.tasks;
-    appState.columns = MOCK_DATA.columns;
-    appState.activityLog = MOCK_DATA.activityLog;
-    saveState(appState);
-  }
-
-  renderBoard(appState);
-  renderActivity(appState.activityLog);
-  renderTable(appState);
-  renderList(appState);
+  renderBoard(MOCK_DATA);
+  renderActivity(MOCK_DATA.activityLog);
+  renderTable(MOCK_DATA);
+  renderList(MOCK_DATA);
   renderTeam(TEAM_MEMBERS);
   renderQuickStats(MOCK_DATA);
   renderByDate(MOCK_DATA);
@@ -221,6 +213,7 @@ function init() {
   populateAssigneeSelects(TEAM_MEMBERS);
 
   initDragDrop();
+  initCalendar();
   wireEventListeners();
   restorePersistedState();
 
@@ -229,6 +222,9 @@ function init() {
     renderActivity(MOCK_DATA.activityLog);
     renderTable(MOCK_DATA);
     renderList(MOCK_DATA);
+    renderRecentActivity(MOCK_DATA);
+    renderTeam(TEAM_MEMBERS);
+    refreshCalendar();
   });
 
   window.addEventListener('activityLogUpdated', () => {
@@ -1117,8 +1113,7 @@ function wireEventListeners() {
 
     if (hasError) return;
 
-    // Use the exposed addTask function
-    const newTask = addTask({
+    const newTask = createTask({
       title,
       description: desc,
       assignee,
