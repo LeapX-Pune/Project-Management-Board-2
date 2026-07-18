@@ -139,6 +139,15 @@
   .charts-grid {
     grid-template-columns: 1fr;
   }
+
+  /* Hide header avatar stack to save horizontal space on mobile */
+  .header-team-group {
+    margin-right: 0 !important;
+  }
+
+  .header-team-group .avatar-group {
+    display: none !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -184,6 +193,11 @@
 
   .metrics-grid {
     grid-template-columns: 1fr;
+  }
+
+  #manage-team-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 

@@ -192,11 +192,18 @@
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 60;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-base);
 }
 
 .modal-overlay.open {
   display: flex;
+  pointer-events: auto;
+  opacity: 1;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .modal {

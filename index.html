@@ -7,11 +7,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Core styles -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/layout.css">
+  
+  <!-- Component styles -->
   <link rel="stylesheet" href="css/board.css">
   <link rel="stylesheet" href="css/task.css">
+  <link rel="stylesheet" href="css/avatar.css">
+  <link rel="stylesheet" href="css/member-modal.css">
+  <link rel="stylesheet" href="css/dropdown.css">
   <link rel="stylesheet" href="css/other-views.css">
+  
+  <!-- Responsive overrides -->
   <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
@@ -100,6 +109,9 @@
           <input type="text" class="search-input" id="search-input" placeholder="Search tasks..." aria-label="Search tasks">
         </div>
         <div class="header-right">
+          <!-- Dynamically populated team avatars list in header -->
+          <div id="header-team-group" class="header-team-group flex-center" style="margin-right: var(--space-sm);"></div>
+          
           <button class="btn-icon" id="header-theme-toggle" aria-label="Toggle dark mode">
             <svg class="theme-icon-light" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/>
@@ -498,10 +510,17 @@
           <div class="peek-field">
             <label>Assignee</label>
             <select class="peek-select">
-              <option value="alice">Alice Chen</option>
-              <option value="bob">Bob Smith</option>
-              <option value="carol">Carol Davis</option>
-              <option value="dave">Dave Wilson</option>
+              <option value="sai">Sai Shendge</option>
+              <option value="aditya">Aditya Vawhal</option>
+              <option value="ankit">Ankit Bhalke</option>
+              <option value="devansh">Devansh Mittal</option>
+              <option value="khushi">Khushi Shah</option>
+              <option value="kshitij">Kshitij Das</option>
+              <option value="rehan">Mohammed Rehan</option>
+              <option value="pulak">Pulak Saha</option>
+              <option value="sankalp" selected>Sankalp Tiwari</option>
+              <option value="sauryaman">Sauryaman Bisen</option>
+              <option value="sumit">Sumit Tiwari</option>
             </select>
           </div>
         </div>
@@ -623,10 +642,17 @@
         <div class="form-group">
           <label class="form-label" for="task-assignee">Assignee</label>
           <select class="form-select" id="task-assignee" name="assignee">
-            <option value="alice">Alice Chen</option>
-            <option value="bob">Bob Smith</option>
-            <option value="carol">Carol Davis</option>
-            <option value="dave">Dave Wilson</option>
+            <option value="sai">Sai Shendge</option>
+            <option value="aditya">Aditya Vawhal</option>
+            <option value="ankit">Ankit Bhalke</option>
+            <option value="devansh">Devansh Mittal</option>
+            <option value="khushi">Khushi Shah</option>
+            <option value="kshitij">Kshitij Das</option>
+            <option value="rehan">Mohammed Rehan</option>
+            <option value="pulak">Pulak Saha</option>
+            <option value="sankalp" selected>Sankalp Tiwari</option>
+            <option value="sauryaman">Sauryaman Bisen</option>
+            <option value="sumit">Sumit Tiwari</option>
           </select>
         </div>
         <div class="form-group">
@@ -676,6 +702,58 @@
       </div>
     </div>
   </div>
+
+  <!-- Team Member Management Modal Overlay -->
+  <div id="member-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="modal-title">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2 id="modal-title" class="modal-title">Manage Team Members</h2>
+        <button class="modal-close" id="close-member-modal" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="member-manager">
+          <!-- Left Pane: Member List -->
+          <div class="member-list-pane" id="member-list-container">
+            <!-- Dynamic member items will render here -->
+          </div>
+          
+          <!-- Right Pane: Add/Edit Form -->
+          <div class="member-form-pane">
+            <h3 id="form-action-title" class="member-form-title">Add New Member</h3>
+            <form id="member-form" novalidate>
+              <input type="hidden" id="member-id-input">
+              <div class="form-group" style="margin-bottom: var(--space-sm);">
+                <label for="member-name-input" class="form-label">Full Name</label>
+                <input type="text" id="member-name-input" class="form-input" placeholder="e.g. Sarah Jenkins" required>
+                <span class="form-error-msg" id="name-error">Name is required.</span>
+              </div>
+              <div class="form-group" style="margin-bottom: var(--space-sm);">
+                <label for="member-email-input" class="form-label">Email Address</label>
+                <input type="email" id="member-email-input" class="form-input" placeholder="e.g. sarah.j@example.com" required>
+                <span class="form-error-msg" id="email-error">Please enter a valid email.</span>
+              </div>
+              <div class="form-group" style="margin-bottom: var(--space-sm);">
+                <label for="member-role-input" class="form-label">Role</label>
+                <input type="text" id="member-role-input" class="form-input" placeholder="e.g. Frontend Engineer">
+              </div>
+              <div class="form-group" style="margin-bottom: var(--space-md);">
+                <label for="member-avatar-input" class="form-label">Avatar Photo URL (Optional)</label>
+                <input type="url" id="member-avatar-input" class="form-input" placeholder="e.g. https://images.unsplash.com/...">
+                <span class="form-error-msg" id="avatar-error">Please enter a valid URL.</span>
+              </div>
+              <div class="form-actions">
+                <button type="button" id="btn-cancel-edit" class="btn btn-ghost" style="display: none;">Cancel</button>
+                <button type="submit" id="btn-submit-member" class="btn btn-primary">Save Member</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- App Toast Alerts container -->
+  <div id="toast-container" class="toast-container"></div>
 
   <script type="module" src="js/main.js"></script>
 </body>

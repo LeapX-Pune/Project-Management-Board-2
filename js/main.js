@@ -1,12 +1,205 @@
-import { MOCK_DATA, TEAM_MEMBERS } from './data.js';
-import { renderBoard, renderActivity, renderTable, renderList, renderTeam, getInitials, formatTimestamp, getSubtaskProgress, renderQuickStats, renderByDate, renderWeeklyLineGraph, renderRecentActivity, renderKPICards, renderStatusDistribution, renderPriorityDoughnut, renderMemberWorkload, renderMemberStatsTable, initAnalyticsFilters } from './ui.js';
+import { MOCK_DATA, TEAM_MEMBERS, addMember, updateMember, deleteMember, getMemberById, saveMockData, saveTeamMembers, addActivityLogEntry } from './data.js';
+import {
+  renderBoard,
+  renderActivity,
+  renderTable,
+  renderList,
+  renderTeam,
+  getInitials,
+  formatTimestamp,
+  getSubtaskProgress,
+  renderQuickStats,
+  renderByDate,
+  renderWeeklyLineGraph,
+  renderRecentActivity,
+  renderKPICards,
+  renderStatusDistribution,
+  renderPriorityDoughnut,
+  renderMemberWorkload,
+  renderMemberStatsTable,
+  initAnalyticsFilters,
+  createAvatar,
+  createAvatarGroup,
+  renderMemberList,
+  renderHeaderTeamList,
+  showAssignDropdown,
+  closeDropdown,
+  populateAssigneeSelects
+} from './ui.js';
 import { initDragDrop } from './dragdrop.js';
+import { appState, saveState, addTask } from './state.js';
+
+// Modal elements cache
+let memberModal, idInput, nameInput, emailInput, roleInput, avatarInput;
+let formTitle, cancelEditBtn, submitBtn;
+let nameError, emailError, avatarError;
+
+let originalSidePeekBodyHTML = '';
+
+export function showToast(message, type = 'success') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast--${type}`;
+  toast.innerHTML = `<span>${message}</span>`;
+  container.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.classList.add('active');
+  });
+
+  setTimeout(() => {
+    toast.classList.remove('active');
+    setTimeout(() => {
+      toast.remove();
+    }, 300);
+  }, 3000);
+}
+
+function openMemberProfileDrawer(member) {
+  const sidePeek = document.getElementById('side-peek');
+  const peekBody = sidePeek?.querySelector('.side-peek-body');
+  if (!sidePeek || !peekBody) return;
+
+  // Set accessibility label
+  sidePeek.setAttribute('aria-label', `Member Profile: ${member.name}`);
+
+  // Calculate statistics
+  const totalTasks = member.tasksCompleted + member.tasksInProgress;
+  const pct = totalTasks > 0 ? Math.round((member.tasksCompleted / totalTasks) * 100) : 0;
+
+  // Get assigned tasks list
+  const memberTasks = Object.values(MOCK_DATA.tasks).filter(t => t.assignee === member.id);
+  let tasksHtml = '';
+  if (memberTasks.length === 0) {
+    tasksHtml = '<p style="color: var(--color-text-muted); font-size: 0.85rem; padding: var(--space-sm) 0;">No tasks assigned currently.</p>';
+  } else {
+    memberTasks.forEach(task => {
+      const priorityClass = task.priority === 'high' ? 'high' : task.priority === 'medium' ? 'medium' : 'low';
+      tasksHtml += `
+        <div class="list-item" style="border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-sm); background: var(--color-surface); margin-bottom: var(--space-sm); cursor: pointer;" data-task-link-id="${task.id}">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-weight: 600; color: var(--color-text);">${task.title}</span>
+            <span class="task-priority ${priorityClass}" style="font-size: 0.7rem; padding: 2px 6px;">${task.priority}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-text-muted); margin-top: 4px;">
+            <span>Due: ${task.dueDate || 'No Date'}</span>
+            <span>Status: ${task.status}</span>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  // Get member activity logs
+  const memberActivity = (MOCK_DATA.activityLog || []).filter(entry => 
+    entry.user.toLowerCase().includes(member.name.toLowerCase()) || 
+    (member.githubId && entry.user.toLowerCase().includes(member.githubId.toLowerCase()))
+  );
+  
+  let activityHtml = '';
+  if (memberActivity.length === 0) {
+    activityHtml = '<p style="color: var(--color-text-muted); font-size: 0.85rem; padding: var(--space-sm) 0;">No recent activity logs.</p>';
+  } else {
+    memberActivity.slice(0, 5).forEach(entry => {
+      const timeStr = formatTimestamp(entry.timestamp);
+      activityHtml += `
+        <div style="font-size: 0.8125rem; padding: var(--space-sm) 0; border-bottom: 1px dashed var(--color-border); color: var(--color-text-muted);">
+          <span style="font-weight: 500; color: var(--color-text);">${entry.action}</span> in <span class="activity-entry-area activity-entry-area--${entry.type}" style="font-size: 0.75rem; padding: 1px 4px; border-radius: 4px;">${entry.area}</span>
+          <div style="font-size: 0.7rem; color: var(--color-text-subtle); margin-top: 2px;">${timeStr}</div>
+        </div>
+      `;
+    });
+  }
+
+  // Build the details content
+  peekBody.innerHTML = `
+    <div style="display: flex; flex-direction: column; gap: var(--space-lg); padding-bottom: var(--space-xl);">
+      <div style="display: flex; align-items: center; gap: var(--space-md); border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-md);">
+        <div id="drawer-avatar-placeholder"></div>
+        <div style="min-width: 0;">
+          <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--color-text); line-height: 1.2;">${member.name}</h2>
+          <p style="font-size: 0.875rem; color: var(--color-text-muted);">${member.role}</p>
+          <p style="font-size: 0.75rem; color: var(--color-text-subtle); margin-top: 2px; word-break: break-all;">${member.email}</p>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="font-size: 0.875rem; font-weight: 600; color: var(--color-text); margin-bottom: var(--space-sm);">Workload Summary</h3>
+        <div class="progress-cell" style="flex-direction: column; align-items: stretch; gap: var(--space-xs);">
+          <div style="display: flex; justify-content: space-between; font-size: 0.8125rem;">
+            <span>Completed Tasks</span>
+            <span style="font-weight: 600;">${member.tasksCompleted}/${totalTasks} tasks (${pct}%)</span>
+          </div>
+          <div class="progress-bar" style="height: 8px; background: var(--color-border);">
+            <div class="progress-bar-fill" style="width: ${pct}%; background: var(--color-accent);"></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="font-size: 0.875rem; font-weight: 600; color: var(--color-text); margin-bottom: var(--space-sm);">Assigned Tasks</h3>
+        <div class="drawer-tasks-list" style="max-height: 220px; overflow-y: auto;">
+          ${tasksHtml}
+        </div>
+      </div>
+
+      <div>
+        <h3 style="font-size: 0.875rem; font-weight: 600; color: var(--color-text); margin-bottom: var(--space-sm);">Recent Activity</h3>
+        <div class="drawer-activity-list" style="max-height: 200px; overflow-y: auto;">
+          ${activityHtml}
+        </div>
+      </div>
+
+      <div style="margin-top: var(--space-md);">
+        <button class="btn btn-ghost" id="peek-drawer-close" style="width: 100%;">Close Profile</button>
+      </div>
+    </div>
+  `;
+
+  // Render Avatar
+  const avatarPlaceholder = document.getElementById('drawer-avatar-placeholder');
+  if (avatarPlaceholder) {
+    const avatarEl = createAvatar(member, { size: 'xl' });
+    avatarPlaceholder.replaceWith(avatarEl);
+  }
+
+  // Bind close action
+  document.getElementById('peek-drawer-close')?.addEventListener('click', () => {
+    sidePeek.classList.remove('open');
+  });
+
+  // Task links navigation listener
+  peekBody.querySelectorAll('[data-task-link-id]').forEach(link => {
+    link.addEventListener('click', () => {
+      const taskId = link.getAttribute('data-task-link-id');
+      sidePeek.classList.remove('open');
+      setTimeout(() => {
+        const cardEditBtn = document.querySelector(`.task-card[data-task-id="${taskId}"] [data-action="edit"]`);
+        if (cardEditBtn) {
+          cardEditBtn.click();
+        }
+      }, 350);
+    });
+  });
+
+  sidePeek.classList.add('open');
+}
 
 function init() {
-  renderBoard(MOCK_DATA);
-  renderActivity(MOCK_DATA.activityLog);
-  renderTable(MOCK_DATA);
-  renderList(MOCK_DATA);
+  // If no tasks exist, optionally seed from MOCK_DATA to have something to show
+  if (Object.keys(appState.tasks).length === 0) {
+    appState.tasks = MOCK_DATA.tasks;
+    appState.columns = MOCK_DATA.columns;
+    appState.activityLog = MOCK_DATA.activityLog;
+    saveState(appState);
+  }
+
+  renderBoard(appState);
+  renderActivity(appState.activityLog);
+  renderTable(appState);
+  renderList(appState);
   renderTeam(TEAM_MEMBERS);
   renderQuickStats(MOCK_DATA);
   renderByDate(MOCK_DATA);
@@ -18,13 +211,336 @@ function init() {
   renderMemberWorkload(MOCK_DATA);
   renderMemberStatsTable(MOCK_DATA);
   initAnalyticsFilters(MOCK_DATA);
+
+  const peekBody = document.querySelector('#side-peek .side-peek-body');
+  if (peekBody) {
+    originalSidePeekBodyHTML = peekBody.innerHTML;
+  }
+
+  renderHeaderTeamList('header-team-group', TEAM_MEMBERS);
+  populateAssigneeSelects(TEAM_MEMBERS);
+
   initDragDrop();
   wireEventListeners();
   restorePersistedState();
+
+  window.addEventListener('boardStateChanged', () => {
+    renderBoard(MOCK_DATA);
+    renderActivity(MOCK_DATA.activityLog);
+    renderTable(MOCK_DATA);
+    renderList(MOCK_DATA);
+  });
+
+  window.addEventListener('activityLogUpdated', () => {
+    renderActivity(MOCK_DATA.activityLog);
+  });
+}
+
+function openSidePeek(card) {
+  const taskId = card.dataset.taskId;
+  const task = MOCK_DATA.tasks[taskId];
+  if (!task) return;
+
+  const sidePeek = document.getElementById('side-peek');
+  sidePeek.dataset.taskId = taskId;
+
+  const peekBody = sidePeek.querySelector('.side-peek-body');
+  if (peekBody && originalSidePeekBodyHTML) {
+    peekBody.innerHTML = originalSidePeekBodyHTML;
+  }
+
+  const peekTitle = document.getElementById('peek-title');
+  const peekDesc = document.querySelector('.peek-textarea');
+  const peekSelects = document.querySelectorAll('.peek-select');
+  const peekDate = document.querySelector('.peek-date');
+
+  if (peekTitle) peekTitle.value = task.title || '';
+  if (peekDesc) peekDesc.value = task.description || '';
+  if (peekDate) peekDate.value = task.dueDate || '';
+
+  const statusSelect = peekSelects[0];
+  const prioritySelect = peekSelects[1];
+  const assigneeSelect = peekSelects[2];
+
+  if (statusSelect) {
+    const column = MOCK_DATA.columns.find(col => col.taskIds.includes(taskId));
+    statusSelect.value = column ? column.title : 'Backlog';
+  }
+  if (prioritySelect) {
+    prioritySelect.value = task.priority ? task.priority.charAt(0).toUpperCase() + task.priority.slice(1) : 'Medium';
+  }
+  if (assigneeSelect) {
+    assigneeSelect.value = task.assignee || 'sankalp';
+  }
+
+  const subtaskList = document.getElementById('peek-subtask-list');
+  if (subtaskList) {
+    subtaskList.innerHTML = '';
+    (task.subtasks || []).forEach(sub => {
+      const li = document.createElement('li');
+      li.className = 'peek-subtask-item';
+      li.innerHTML = `
+        <label class="peek-subtask-checkbox">
+          <input type="checkbox" ${sub.completed ? 'checked' : ''} data-sub-id="${sub.id}">
+          <span class="peek-subtask-text">${sub.text}</span>
+        </label>
+        <button class="peek-subtask-remove" aria-label="Remove subtask">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3H10M4.5 3V1.5C4.5 1.22386 4.72386 1 5 1H7C7.27614 1 7.5 1.22386 7.5 1.5V3M3 3L3.5 10.5H8.5L9 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </button>
+      `;
+      subtaskList.appendChild(li);
+    });
+  }
+  updateSubtaskProgress();
+
+  sidePeek.classList.add('open');
+}
+
+function syncBoardDOMToState() {
+  const columns = document.querySelectorAll('.column');
+  const newColumnsState = [];
+
+  columns.forEach(colEl => {
+    const colId = colEl.getAttribute('data-column-id');
+    const colTitleEl = colEl.querySelector('.column-title');
+    const colTitle = colTitleEl ? colTitleEl.textContent.trim() : '';
+    const taskCards = colEl.querySelectorAll('.task-card');
+    const taskIds = Array.from(taskCards).map(card => card.getAttribute('data-task-id'));
+
+    newColumnsState.push({
+      id: colId,
+      title: colTitle,
+      taskIds
+    });
+
+    taskIds.forEach(id => {
+      const task = MOCK_DATA.tasks[id];
+      if (task) {
+        task.status = colId.replace('col-', '');
+      }
+    });
+  });
+
+  MOCK_DATA.columns = newColumnsState;
+  saveMockData();
+}
+
+function openMemberModal() {
+  if (!memberModal) return;
+  memberModal.classList.add('active');
+  memberModal.setAttribute('aria-hidden', 'false');
+  renderMemberList('member-list-container', TEAM_MEMBERS, idInput.value || null);
+  nameInput.focus();
+  document.addEventListener('keydown', trapMemberModalFocus);
+}
+
+function closeMemberModalWindow() {
+  if (!memberModal) return;
+  memberModal.classList.remove('active');
+  memberModal.setAttribute('aria-hidden', 'true');
+  resetMemberForm();
+  document.removeEventListener('keydown', trapMemberModalFocus);
+
+  const manageBtn = document.getElementById('manage-team-btn');
+  if (manageBtn) manageBtn.focus();
+}
+
+function resetMemberForm() {
+  if (idInput) idInput.value = '';
+  const form = document.getElementById('member-form');
+  if (form) form.reset();
+  hideMemberErrors();
+  if (formTitle) formTitle.textContent = 'Add New Member';
+  if (submitBtn) submitBtn.textContent = 'Save Member';
+  if (cancelEditBtn) cancelEditBtn.style.display = 'none';
+  if (memberModal && memberModal.classList.contains('active')) {
+    renderMemberList('member-list-container', TEAM_MEMBERS, null);
+  }
+}
+
+function hideMemberErrors() {
+  if (nameError) nameError.style.display = 'none';
+  if (emailError) emailError.style.display = 'none';
+  if (avatarError) avatarError.style.display = 'none';
+}
+
+function trapMemberModalFocus(e) {
+  if (e.key !== 'Tab') return;
+  const focusableElements = memberModal.querySelectorAll('button, [href], input, select, textarea, [tabindex="0"]');
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+
+  if (e.shiftKey) {
+    if (document.activeElement === firstElement) {
+      lastElement.focus();
+      e.preventDefault();
+    }
+  } else {
+    if (document.activeElement === lastElement) {
+      firstElement.focus();
+      e.preventDefault();
+    }
+  }
+}
+
+function handleMemberFormSubmit(e) {
+  e.preventDefault();
+  hideMemberErrors();
+
+  const nameVal = nameInput.value.trim();
+  const emailVal = emailInput.value.trim();
+  const roleVal = roleInput.value.trim();
+  const avatarVal = avatarInput.value.trim();
+  const memberId = idInput.value;
+
+  let hasError = false;
+  if (!nameVal) {
+    nameError.style.display = 'block';
+    if (!hasError) { nameInput.focus(); hasError = true; }
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailVal || !emailRegex.test(emailVal)) {
+    emailError.textContent = 'Please enter a valid email address.';
+    emailError.style.display = 'block';
+    if (!hasError) { emailInput.focus(); hasError = true; }
+  }
+
+  if (avatarVal) {
+    try {
+      new URL(avatarVal);
+    } catch (_) {
+      avatarError.style.display = 'block';
+      if (!hasError) { avatarInput.focus(); hasError = true; }
+    }
+  }
+
+  if (hasError) return;
+
+  try {
+    if (memberId) {
+      updateMember(memberId, {
+        name: nameVal,
+        email: emailVal,
+        role: roleVal,
+        avatarUrl: avatarVal
+      });
+      showToast('Member details updated successfully', 'success');
+    } else {
+      addMember({
+        name: nameVal,
+        email: emailVal,
+        role: roleVal,
+        avatarUrl: avatarVal
+      });
+      showToast('New team member added successfully', 'success');
+    }
+    resetMemberForm();
+    renderMemberList('member-list-container', TEAM_MEMBERS, null);
+    renderHeaderTeamList('header-team-group', TEAM_MEMBERS);
+    renderTeam(TEAM_MEMBERS);
+    populateAssigneeSelects(TEAM_MEMBERS);
+  } catch (err) {
+    emailError.textContent = err.message;
+    emailError.style.display = 'block';
+    emailInput.focus();
+  }
 }
 
 function wireEventListeners() {
-  document.getElementById('add-task-btn').addEventListener('click', () => {
+  // Cache DOM elements
+  memberModal = document.getElementById('member-modal');
+  idInput = document.getElementById('member-id-input');
+  nameInput = document.getElementById('member-name-input');
+  emailInput = document.getElementById('member-email-input');
+  roleInput = document.getElementById('member-role-input');
+  avatarInput = document.getElementById('member-avatar-input');
+  
+  formTitle = document.getElementById('form-action-title');
+  cancelEditBtn = document.getElementById('btn-cancel-edit');
+  submitBtn = document.getElementById('btn-submit-member');
+  
+  nameError = document.getElementById('name-error');
+  emailError = document.getElementById('email-error');
+  avatarError = document.getElementById('avatar-error');
+
+  // Trigger button to open modal (event delegation because of dynamic rendering inside team-view header)
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#manage-team-btn')) {
+      openMemberModal();
+    }
+  });
+
+  document.getElementById('close-member-modal')?.addEventListener('click', closeMemberModalWindow);
+
+  // Close modal when clicking outside modal-container
+  memberModal?.addEventListener('click', (e) => {
+    if (e.target === memberModal) {
+      closeMemberModalWindow();
+    }
+  });
+
+  // Cancel edit button click
+  cancelEditBtn?.addEventListener('click', resetMemberForm);
+
+  // Form submit
+  document.getElementById('member-form')?.addEventListener('submit', handleMemberFormSubmit);
+
+  // Edit/Delete click delegation in the member list
+  document.getElementById('member-list-container')?.addEventListener('click', (e) => {
+    const actionButton = e.target.closest('button[data-action]');
+    if (!actionButton) return;
+    
+    const action = actionButton.getAttribute('data-action');
+    const memberItem = actionButton.closest('.member-item');
+    if (!memberItem) return;
+    
+    const memberId = memberItem.getAttribute('data-member-id');
+    
+    if (action === 'edit') {
+      const member = getMemberById(memberId);
+      if (!member) return;
+      
+      idInput.value = member.id;
+      nameInput.value = member.name;
+      emailInput.value = member.email;
+      roleInput.value = member.role || '';
+      avatarInput.value = member.avatarUrl || '';
+      
+      formTitle.textContent = 'Edit Member Info';
+      submitBtn.textContent = 'Update Member';
+      cancelEditBtn.style.display = 'inline-flex';
+      hideMemberErrors();
+      
+      renderMemberList('member-list-container', TEAM_MEMBERS, memberId);
+      nameInput.focus();
+    } else if (action === 'delete') {
+      const member = getMemberById(memberId);
+      if (!member) return;
+      
+      if (confirm(`Are you sure you want to delete ${member.name}? This will unassign them from any tasks.`)) {
+        try {
+          deleteMember(memberId);
+          if (idInput.value === memberId) {
+            resetMemberForm();
+          }
+          renderMemberList('member-list-container', TEAM_MEMBERS, idInput.value || null);
+          renderHeaderTeamList('header-team-group', TEAM_MEMBERS);
+          renderTeam(TEAM_MEMBERS);
+          renderBoard(MOCK_DATA);
+          renderTable(MOCK_DATA);
+          renderList(MOCK_DATA);
+          populateAssigneeSelects(TEAM_MEMBERS);
+          showToast(`${member.name} removed from team`, 'danger');
+        } catch (err) {
+          alert('Error deleting member: ' + err.message);
+        }
+      }
+    }
+  });
+
+  // Task creation handler
+  document.getElementById('add-task-btn')?.addEventListener('click', () => {
     document.getElementById('task-modal').classList.add('open');
   });
 
@@ -40,6 +556,76 @@ function wireEventListeners() {
     }
   });
 
+  // Task creation logic (footer submit button)
+  document.querySelector('#task-modal .btn-primary')?.addEventListener('click', () => {
+    const titleEl = document.getElementById('task-title');
+    const descEl = document.getElementById('task-description');
+    const assigneeEl = document.getElementById('task-assignee');
+    const dueDateEl = document.getElementById('task-dueDate');
+    const priorityEl = document.getElementById('task-priority');
+
+    const title = titleEl ? titleEl.value.trim() : '';
+    if (!title) {
+      titleEl?.closest('.form-group')?.classList.add('has-error');
+      return;
+    }
+
+    const id = `task-${Date.now()}`;
+    const newTask = {
+      id,
+      title,
+      description: descEl ? descEl.value.trim() : '',
+      assignee: assigneeEl ? assigneeEl.value : '',
+      dueDate: dueDateEl ? dueDateEl.value : '',
+      priority: priorityEl ? priorityEl.value : 'medium',
+      status: 'backlog',
+      subtasks: []
+    };
+
+    MOCK_DATA.tasks[id] = newTask;
+    const backlogCol = MOCK_DATA.columns.find(c => c.id === 'col-backlog');
+    if (backlogCol) {
+      backlogCol.taskIds.push(id);
+    }
+    saveMockData();
+
+    renderBoard(MOCK_DATA);
+    renderTable(MOCK_DATA);
+    renderList(MOCK_DATA);
+
+    document.getElementById('task-modal').classList.remove('open');
+    
+    // Clear inputs
+    if (titleEl) titleEl.value = '';
+    if (descEl) descEl.value = '';
+    if (assigneeEl) assigneeEl.value = '';
+    if (dueDateEl) dueDateEl.value = '';
+    if (priorityEl) priorityEl.value = 'medium';
+  });
+
+  // Assignee selection dropdown trigger on task cards
+  document.addEventListener('click', (e) => {
+    const avatarEl = e.target.closest('.task-card .task-avatar');
+    if (avatarEl) {
+      const cardEl = avatarEl.closest('.task-card');
+      const taskId = cardEl.getAttribute('data-task-id');
+      const task = MOCK_DATA.tasks[taskId];
+      if (!task) return;
+
+      e.stopPropagation();
+
+      showAssignDropdown(avatarEl, task.assignee ? [task.assignee] : [], (memberId, isSelected) => {
+        task.assignee = isSelected ? memberId : '';
+        saveMockData();
+        renderBoard(MOCK_DATA);
+        renderTable(MOCK_DATA);
+        renderList(MOCK_DATA);
+        closeDropdown();
+      });
+    }
+  });
+
+  // View toggle tabs (Board vs Table vs List)
   document.querySelectorAll('.view-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.view-btn').forEach(b => {
@@ -61,7 +647,7 @@ function wireEventListeners() {
     document.getElementById('sidebar').classList.toggle('collapsed');
   });
 
-  // Sidebar navigation toggling between sections
+  // Sidebar navigation sections toggling
   document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
       e.preventDefault();
@@ -74,22 +660,18 @@ function wireEventListeners() {
       const section = item.dataset.section;
       const boardHeader = document.querySelector('.board-header');
       
-      // Hide all main area view containers
       document.querySelectorAll('.view-container').forEach(v => {
         v.classList.remove('active');
       });
       
       if (section === 'board') {
         if (boardHeader) boardHeader.style.display = '';
-        
-        // Show the active sub-view based on the active header view tab
         const activeSubViewBtn = document.querySelector('.view-btn.active');
         const activeSubView = activeSubViewBtn ? activeSubViewBtn.dataset.view : 'board';
         const subViewEl = document.getElementById(`${activeSubView}-view`);
         if (subViewEl) subViewEl.classList.add('active');
       } else {
         if (boardHeader) boardHeader.style.display = 'none';
-        
         const viewEl = document.getElementById(`${section}-view`);
         if (viewEl) viewEl.classList.add('active');
       }
@@ -98,6 +680,7 @@ function wireEventListeners() {
     });
   });
 
+  // Command palette triggers and filters
   document.querySelectorAll('[data-action="add-task"]').forEach(el => {
     el.addEventListener('click', () => {
       document.getElementById('command-palette').classList.remove('open');
@@ -147,6 +730,9 @@ function wireEventListeners() {
       document.getElementById('command-palette').classList.remove('open');
       document.getElementById('side-peek').classList.remove('open');
       document.getElementById('task-modal').classList.remove('open');
+      if (memberModal && memberModal.classList.contains('active')) {
+        closeMemberModalWindow();
+      }
       if (activityPanel?.classList.contains('open')) setPanelOpen(false);
       commandPaletteOpen = false;
     }
@@ -226,7 +812,7 @@ function wireEventListeners() {
     setPanelOpen(true);
   }
 
-  // Resizer
+  // Resizer for activity log
   const resizer = document.getElementById('activity-resizer');
   let startY = undefined;
   let startHeight = 0;
@@ -267,6 +853,14 @@ function wireEventListeners() {
     });
   });
 
+  // Custom board mutation sync
+  document.addEventListener('app:board-mutated', () => {
+    syncBoardDOMToState();
+    renderTable(MOCK_DATA);
+    renderList(MOCK_DATA);
+  });
+
+  // Column operations (rename, delete, add)
   document.addEventListener('click', (e) => {
     const renameBtn = e.target.closest('[data-action="rename"]');
     if (renameBtn) {
@@ -288,10 +882,17 @@ function wireEventListeners() {
     if (deleteBtn) {
       const card = deleteBtn.closest('.task-card');
       if (card) {
+        const taskId = card.getAttribute('data-task-id');
         card.style.transition = 'all 0.3s ease';
         card.style.transform = 'translateX(100%)';
         card.style.opacity = '0';
-        setTimeout(() => card.remove(), 300);
+        setTimeout(() => {
+          card.remove();
+          delete MOCK_DATA.tasks[taskId];
+          syncBoardDOMToState();
+          renderTable(MOCK_DATA);
+          renderList(MOCK_DATA);
+        }, 300);
         return;
       }
       const column = deleteBtn.closest('.column');
@@ -301,7 +902,9 @@ function wireEventListeners() {
         column.style.opacity = '0';
         setTimeout(() => {
           column.parentElement?.removeChild(column);
-          updateBoardColumnCounts();
+          syncBoardDOMToState();
+          renderTable(MOCK_DATA);
+          renderList(MOCK_DATA);
         }, 300);
         return;
       }
@@ -315,6 +918,9 @@ function wireEventListeners() {
         titleEl.textContent = e.target.value.trim();
         titleEl.classList.remove('hidden');
         e.target.classList.add('hidden');
+        syncBoardDOMToState();
+        renderTable(MOCK_DATA);
+        renderList(MOCK_DATA);
       }
     }
   });
@@ -333,70 +939,211 @@ function wireEventListeners() {
     }
   });
 
+  // Task details editing panel triggers
   document.addEventListener('click', (e) => {
     const editBtn = e.target.closest('[data-action="edit"]');
     if (editBtn) {
       const card = editBtn.closest('.task-card');
       if (card) {
-        const titleEl = card.querySelector('.task-title');
-        const descEl = card.querySelector('.task-description');
-        const priorityEl = card.querySelector('.task-priority');
-        const avatarEl = card.querySelector('.task-avatar');
-        const dueDateEl = card.querySelector('.task-due-date');
-
-        const peekTitle = document.getElementById('peek-title');
-        const peekDesc = document.querySelector('.peek-textarea');
-        const peekPriority = document.querySelector('.peek-select');
-        const peekStatus = document.querySelector('.peek-select');
-        const peekDate = document.querySelector('.peek-date');
-
-        if (peekTitle && titleEl) peekTitle.value = titleEl.textContent;
-        if (peekDesc && descEl) peekDesc.value = descEl.textContent;
-
-        document.getElementById('side-peek').classList.add('open');
+        openSidePeek(card);
       }
       e.stopPropagation();
     }
   });
 
-  document.querySelector('.btn-primary')?.addEventListener('click', (e) => {
+  // Event delegation for subtask additions
+  document.addEventListener('click', (e) => {
+    const addSubtaskBtn = e.target.closest('#peek-add-subtask-btn');
+    if (addSubtaskBtn) {
+      const input = document.getElementById('peek-add-subtask-input');
+      const list = document.getElementById('peek-subtask-list');
+      if (input && list && input.value.trim()) {
+        const li = document.createElement('li');
+        li.className = 'peek-subtask-item';
+        li.innerHTML = `
+          <label class="peek-subtask-checkbox">
+            <input type="checkbox" data-sub-id="sub-new-${Date.now()}">
+            <span class="peek-subtask-text">${input.value.trim()}</span>
+          </label>
+          <button class="peek-subtask-remove" aria-label="Remove subtask">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3H10M4.5 3V1.5C4.5 1.22386 4.72386 1 5 1H7C7.27614 1 7.5 1.22386 7.5 1.5V3M3 3L3.5 10.5H8.5L9 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </button>
+        `;
+        list.appendChild(li);
+        input.value = '';
+        updateSubtaskProgress();
+      }
+    }
+  });
+
+  // Event delegation for subtask checkbox updates
+  document.addEventListener('change', (e) => {
+    if (e.target.closest('#peek-subtask-list') && e.target.type === 'checkbox') {
+      updateSubtaskProgress();
+    }
+  });
+
+  document.querySelector('#side-peek .btn-primary')?.addEventListener('click', (e) => {
     const peekContent = e.target.closest('.side-peek-content');
     if (peekContent) {
-      document.getElementById('side-peek').classList.remove('open');
+      const sidePeek = document.getElementById('side-peek');
+      const taskId = sidePeek.dataset.taskId;
+      const task = MOCK_DATA.tasks[taskId];
+
+      if (task) {
+        const peekTitle = document.getElementById('peek-title');
+        const peekDesc = document.querySelector('.peek-textarea');
+        const peekSelects = document.querySelectorAll('.peek-select');
+        const peekDate = document.querySelector('.peek-date');
+
+        const newTitle = peekTitle ? peekTitle.value.trim() : task.title;
+        const newDesc = peekDesc ? peekDesc.value.trim() : task.description;
+        const newDate = peekDate ? peekDate.value : task.dueDate;
+
+        const statusSelect = peekSelects[0];
+        const prioritySelect = peekSelects[1];
+        const assigneeSelect = peekSelects[2];
+
+        const newStatusTitle = statusSelect ? statusSelect.value : '';
+        const newPriority = prioritySelect ? prioritySelect.value.toLowerCase() : task.priority;
+        const newAssignee = assigneeSelect ? assigneeSelect.value : task.assignee;
+
+        let hasChanged = false;
+
+        // 1. Check Assignee change
+        if (newAssignee !== task.assignee) {
+          const newName = MOCK_DATA.members[newAssignee]?.name || 'Unassigned';
+          addActivityLogEntry('Sankalp Tiwari', `assigned task '${newTitle}' to ${newName}`, 'edited', 'Team');
+          task.assignee = newAssignee;
+          hasChanged = true;
+        }
+
+        // 2. Check Deadline change
+        if (newDate !== task.dueDate) {
+          addActivityLogEntry('Sankalp Tiwari', `updated deadline on '${newTitle}'`, 'edited', 'Calendar');
+          task.dueDate = newDate;
+          hasChanged = true;
+        }
+
+        // 3. Check Status (Column) change
+        const currentColumn = MOCK_DATA.columns.find(col => col.taskIds.includes(taskId));
+        const targetColumn = MOCK_DATA.columns.find(col => col.title === newStatusTitle);
+        
+        if (currentColumn && targetColumn && currentColumn.id !== targetColumn.id) {
+          currentColumn.taskIds = currentColumn.taskIds.filter(id => id !== taskId);
+          targetColumn.taskIds.push(taskId);
+          task.status = targetColumn.id;
+          
+          addActivityLogEntry('Sankalp Tiwari', `moved '${newTitle}' to ${targetColumn.title}`, 'moved', 'Board');
+          hasChanged = true;
+        }
+
+        // 4. Update basic fields
+        if (task.title !== newTitle || task.description !== newDesc || task.priority !== newPriority) {
+          task.title = newTitle;
+          task.description = newDesc;
+          task.priority = newPriority;
+          hasChanged = true;
+        }
+
+        // 5. Save subtasks
+        const subtaskItems = document.querySelectorAll('.peek-subtask-item');
+        const oldSubtasksJSON = JSON.stringify(task.subtasks || []);
+        task.subtasks = Array.from(subtaskItems).map(item => {
+          const check = item.querySelector('input[type="checkbox"]');
+          const text = item.querySelector('.peek-subtask-text').textContent;
+          return {
+            id: check.getAttribute('data-sub-id') || `sub-${Date.now()}-${Math.random()}`,
+            text,
+            completed: check.checked
+          };
+        });
+        if (JSON.stringify(task.subtasks) !== oldSubtasksJSON) {
+          hasChanged = true;
+        }
+
+        if (hasChanged) {
+          saveMockData();
+          window.dispatchEvent(new CustomEvent('boardStateChanged'));
+        }
+      }
+
+      sidePeek.classList.remove('open');
       e.preventDefault();
     }
   });
 
-  document.getElementById('peek-add-subtask-btn')?.addEventListener('click', () => {
-    const input = document.getElementById('peek-add-subtask-input');
-    const list = document.getElementById('peek-subtask-list');
-    if (input && list && input.value.trim()) {
-      const li = document.createElement('li');
-      li.className = 'peek-subtask-item';
-      li.innerHTML = `
-        <label class="peek-subtask-checkbox">
-          <input type="checkbox">
-          <span class="peek-subtask-text">${input.value.trim()}</span>
-        </label>
-        <button class="peek-subtask-remove" aria-label="Remove subtask">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3H10M4.5 3V1.5C4.5 1.22386 4.72386 1 5 1H7C7.27614 1 7.5 1.22386 7.5 1.5V3M3 3L3.5 10.5H8.5L9 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-        </button>
-      `;
-      list.appendChild(li);
-      input.value = '';
-      updateSubtaskProgress();
+  // Task creation submit listener
+  document.querySelector('#task-modal .modal-footer .btn-primary')?.addEventListener('click', (e) => {
+    const titleInput = document.getElementById('task-title');
+    const descInput = document.getElementById('task-description');
+    const assigneeSelect = document.getElementById('task-assignee');
+    const dateInput = document.getElementById('task-dueDate');
+    const prioritySelect = document.getElementById('task-priority');
+
+    const title = titleInput ? titleInput.value.trim() : '';
+    const desc = descInput ? descInput.value.trim() : '';
+    const assignee = assigneeSelect ? assigneeSelect.value : 'sankalp';
+    const dueDate = dateInput ? dateInput.value : '';
+    const priority = prioritySelect ? prioritySelect.value : 'medium';
+
+    let hasError = false;
+
+    if (!title) {
+      titleInput?.classList.add('error');
+      titleInput?.nextElementSibling?.classList.add('show');
+      hasError = true;
+    } else {
+      titleInput?.classList.remove('error');
+      titleInput?.nextElementSibling?.classList.remove('show');
     }
+
+    if (dueDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDate = new Date(dueDate);
+      if (selectedDate < today) {
+        dateInput?.classList.add('error');
+        dateInput?.nextElementSibling?.classList.add('show');
+        hasError = true;
+      } else {
+        dateInput?.classList.remove('error');
+        dateInput?.nextElementSibling?.classList.remove('show');
+      }
+    } else {
+        dateInput?.classList.remove('error');
+        dateInput?.nextElementSibling?.classList.remove('show');
+    }
+
+    if (hasError) return;
+
+    // Use the exposed addTask function
+    const newTask = addTask({
+      title,
+      description: desc,
+      assignee,
+      dueDate,
+      priority,
+      status: 'col-backlog'
+    });
+
+    addActivityLogEntry('Sankalp Tiwari', `created '${title}'`, 'created', 'Board');
+
+    if (titleInput) titleInput.value = '';
+    if (descInput) descInput.value = '';
+    if (dateInput) dateInput.value = '';
+    if (assigneeSelect) assigneeSelect.value = 'sankalp';
+    if (prioritySelect) prioritySelect.value = 'medium';
+
+    document.getElementById('task-modal').classList.remove('open');
+    window.dispatchEvent(new CustomEvent('boardStateChanged'));
   });
 
-  document.getElementById('peek-subtask-list')?.addEventListener('change', (e) => {
-    if (e.target.type === 'checkbox') {
-      updateSubtaskProgress();
-    }
-  });
-
-  document.getElementById('peek-subtask-list')?.addEventListener('click', (e) => {
-    if (e.target.closest('.peek-subtask-remove')) {
-      const item = e.target.closest('.peek-subtask-item');
+  // Event delegation for subtask removals
+  document.addEventListener('click', (e) => {
+    const removeBtn = e.target.closest('#peek-subtask-list .peek-subtask-remove');
+    if (removeBtn) {
+      const item = removeBtn.closest('.peek-subtask-item');
       if (item) {
         item.style.transition = 'all 0.2s ease';
         item.style.opacity = '0';
@@ -409,6 +1156,7 @@ function wireEventListeners() {
     }
   });
 
+  // Adding new columns
   document.getElementById('add-column-btn')?.addEventListener('click', () => {
     const placeholder = document.getElementById('add-column-placeholder');
     if (placeholder) {
@@ -422,10 +1170,11 @@ function wireEventListeners() {
     const input = document.getElementById('new-column-input');
     const board = document.getElementById('board-container');
     const placeholder = document.getElementById('add-column-placeholder');
-    if (input && input.value.trim()) {
+    if (input && input.value.trim() && board && placeholder) {
+      const colId = 'col-' + input.value.trim().toLowerCase().replace(/\s+/g, '-');
       const newCol = document.createElement('article');
       newCol.className = 'column';
-      newCol.dataset.columnId = 'col-new-' + Date.now();
+      newCol.dataset.columnId = colId;
       newCol.style.animation = 'slideUp 0.3s ease';
       newCol.innerHTML = `
         <div class="column-header">
@@ -449,6 +1198,9 @@ function wireEventListeners() {
       input.value = '';
       placeholder.querySelector('.add-column-btn')?.classList.remove('hidden');
       placeholder.querySelector('.add-column-input')?.classList.add('hidden');
+      syncBoardDOMToState();
+      renderTable(MOCK_DATA);
+      renderList(MOCK_DATA);
     }
   });
 
@@ -461,6 +1213,7 @@ function wireEventListeners() {
     }
   });
 
+  // Search input filtering for tasks, tables, lists
   document.getElementById('search-input')?.addEventListener('input', (e) => {
     const query = e.target.value.toLowerCase().trim();
     document.querySelectorAll('.task-card').forEach(card => {
@@ -482,14 +1235,15 @@ function wireEventListeners() {
     });
   });
 
-  document.querySelectorAll('.task-card').forEach(card => {
-    card.addEventListener('dblclick', () => {
-      document.getElementById('side-peek').classList.add('open');
-    });
+  document.addEventListener('dblclick', (e) => {
+    const card = e.target.closest('.task-card');
+    if (card) {
+      openSidePeek(card);
+    }
   });
 
+  // GitHub Username bind/edit modal toggling on team-view cards
   let selectedMemberId = null;
-
   document.getElementById('team-container')?.addEventListener('click', (e) => {
     const btn = e.target.closest('.team-github-btn');
     if (!btn) return;
@@ -516,12 +1270,12 @@ function wireEventListeners() {
 
   document.getElementById('github-save-btn')?.addEventListener('click', () => {
     const input = document.getElementById('github-id-input');
-    const username = input.value.trim();
+    const username = input ? input.value.trim() : '';
     if (!username) return;
 
     const member = TEAM_MEMBERS.find(m => m.id === selectedMemberId);
     if (member) {
-      member.githubId = username;
+      updateMember(selectedMemberId, { githubId: username });
       renderTeam(TEAM_MEMBERS);
     }
     document.getElementById('github-modal').classList.remove('open');
@@ -530,6 +1284,21 @@ function wireEventListeners() {
   document.getElementById('github-id-input')?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       document.getElementById('github-save-btn')?.click();
+    }
+  });
+
+  // Click listener on team profile cards to open the side drawer profile details
+  document.getElementById('team-container')?.addEventListener('click', (e) => {
+    const githubBtn = e.target.closest('.team-github-btn');
+    if (githubBtn) return; // let GitHub handler manage it
+    
+    const card = e.target.closest('.team-card');
+    if (!card) return;
+    
+    const memberId = card.getAttribute('data-member-id');
+    const member = TEAM_MEMBERS.find(m => m.id === memberId);
+    if (member) {
+      openMemberProfileDrawer(member);
     }
   });
 }
@@ -587,3 +1356,4 @@ function restorePersistedState() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+export { syncBoardDOMToState };
