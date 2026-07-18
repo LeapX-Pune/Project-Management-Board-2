@@ -12,7 +12,11 @@
   display: flex;
   flex-direction: column;
   transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: sticky;
+  top: 0;
+  height: 100dvh;
   z-index: 20;
 }
 
@@ -44,12 +48,16 @@
   color: var(--color-foreground);
 }
 
-.sidebar.collapsed .sidebar-title {
+.sidebar.collapsed .sidebar-logo {
   display: none;
 }
 
 .sidebar.collapsed .breadcrumb {
   display: none;
+}
+
+.sidebar.collapsed .sidebar-header {
+  justify-content: center;
 }
 
 .sidebar-collapse-btn {
@@ -154,27 +162,9 @@
   letter-spacing: -0.02em;
 }
 
-.sidebar.collapsed .quick-stats-header {
-  font-size: 0.5rem;
-  text-align: center;
-}
-
+.sidebar.collapsed .quick-stats-header,
 .sidebar.collapsed .quick-stats-grid {
-  grid-template-columns: 1fr;
-  gap: 2px;
-}
-
-.sidebar.collapsed .quick-stats-grid .metric-card {
-  padding: 2px 4px;
-}
-
-.sidebar.collapsed .quick-stats-grid .metric-label {
   display: none;
-}
-
-.sidebar.collapsed .quick-stats-grid .metric-value {
-  font-size: 0.75rem;
-  text-align: center;
 }
 
 @media (max-width: 500px) {
