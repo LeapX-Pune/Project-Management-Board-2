@@ -2,6 +2,46 @@
 import { TEAM_MEMBERS, MOCK_DATA } from './data.js';
 
 /**
+ * Shows a custom confirmation dialog modal. Returns a Promise that resolves
+ * to true (confirmed) or false (cancelled).
+ */
+export function showConfirmDialog(message) {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('confirm-dialog');
+    const messageEl = document.getElementById('confirm-dialog-message');
+    const okBtn = document.getElementById('confirm-dialog-ok');
+    const cancelBtn = document.getElementById('confirm-dialog-cancel');
+    const closeBtn = document.getElementById('confirm-dialog-close');
+
+    messageEl.textContent = message;
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+
+    function okClick() { cleanup(true); }
+    function cancelClick() { cleanup(false); }
+    function overlayClick(e) { if (e.target === overlay) cleanup(false); }
+    function keydown(e) { if (e.key === 'Escape') cleanup(false); }
+
+    function cleanup(result) {
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      okBtn.removeEventListener('click', okClick);
+      cancelBtn.removeEventListener('click', cancelClick);
+      closeBtn.removeEventListener('click', cancelClick);
+      overlay.removeEventListener('click', overlayClick);
+      document.removeEventListener('keydown', keydown);
+      resolve(result);
+    }
+
+    okBtn.addEventListener('click', okClick);
+    cancelBtn.addEventListener('click', cancelClick);
+    closeBtn.addEventListener('click', cancelClick);
+    overlay.addEventListener('click', overlayClick);
+    document.addEventListener('keydown', keydown);
+  });
+}
+
+/**
  * Creates and returns an Avatar DOM element.
  */
 export function createAvatar(member, options = {}) {

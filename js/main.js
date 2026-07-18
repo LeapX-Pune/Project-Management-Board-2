@@ -25,7 +25,8 @@ import {
   renderHeaderTeamList,
   showAssignDropdown,
   closeDropdown,
-  populateAssigneeSelects
+  populateAssigneeSelects,
+  showConfirmDialog
 } from './ui.js';
 import { initDragDrop } from './dragdrop.js';
 import { initCalendar, refreshCalendar } from './calendar.js';
@@ -449,7 +450,7 @@ function wireEventListeners() {
   document.getElementById('member-form')?.addEventListener('submit', handleMemberFormSubmit);
 
   // Edit/Delete click delegation in the member list
-  document.getElementById('member-list-container')?.addEventListener('click', (e) => {
+  document.getElementById('member-list-container')?.addEventListener('click', async (e) => {
     const actionButton = e.target.closest('button[data-action]');
     if (!actionButton) return;
     
@@ -480,7 +481,7 @@ function wireEventListeners() {
       const member = getMemberById(memberId);
       if (!member) return;
       
-      if (confirm(`Are you sure you want to delete ${member.name}? This will unassign them from any tasks.`)) {
+      if (await showConfirmDialog(`Are you sure you want to delete ${member.name}? This will unassign them from any tasks.`)) {
         try {
           deleteMember(memberId);
           if (idInput.value === memberId) {
@@ -821,7 +822,7 @@ function wireEventListeners() {
   });
 
   // Column operations (rename, delete, add)
-  document.addEventListener('click', (e) => {
+  document.addEventListener('click', async (e) => {
     const renameBtn = e.target.closest('[data-action="rename"]');
     if (renameBtn) {
       const header = renameBtn.closest('.column-header');
@@ -847,7 +848,8 @@ function wireEventListeners() {
       if (card) {
         const taskId = card.getAttribute('data-task-id');
         const taskTitle = card.querySelector('.task-title')?.textContent.trim() || 'this task';
-        if (!window.confirm(`Delete "${taskTitle}"? This cannot be undone.`)) return;
+        const confirmed = await showConfirmDialog(`Delete "${taskTitle}"? This cannot be undone.`);
+        if (!confirmed) return;
         card.style.transition = 'all 0.3s ease';
         card.style.transform = 'translateX(100%)';
         card.style.opacity = '0';
@@ -868,7 +870,8 @@ function wireEventListeners() {
         const confirmMsg = taskCount > 0
           ? `Delete "${colTitle}" and its ${taskCount} task${taskCount === 1 ? '' : 's'}? This cannot be undone.`
           : `Delete "${colTitle}"? This cannot be undone.`;
-        if (!window.confirm(confirmMsg)) return;
+        const confirmedCol = await showConfirmDialog(confirmMsg);
+        if (!confirmedCol) return;
         column.style.transition = 'all 0.3s ease';
         column.style.transform = 'scale(0.95)';
         column.style.opacity = '0';
