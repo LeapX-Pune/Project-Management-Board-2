@@ -470,6 +470,11 @@ function validateField(field, value) {
     if (isNaN(date.getTime())) {
       return { valid: false, message: 'Invalid date' };
     }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (date < today) {
+      return { valid: false, message: 'Due date cannot be in the past' };
+    }
   }
   return { valid: true, message: '' };
 }
@@ -541,6 +546,14 @@ function validateFormData(data) {
     isValid = false;
   } else {
     clearFieldError('task-editor-title');
+  }
+
+  const dateValidation = validateField('dueDate', data.dueDate);
+  if (!dateValidation.valid) {
+    showFieldError('task-editor-due-date', dateValidation.message);
+    isValid = false;
+  } else {
+    clearFieldError('task-editor-due-date');
   }
 
   return isValid;

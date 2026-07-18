@@ -30,7 +30,6 @@ import {
   initAnalyticsFilters
 } from './ui.js';
 import { initDragDrop } from './dragdrop.js';
-import { appState, saveState, addTask } from './state.js';
 import { initCalendar, refreshCalendar } from './calendar.js';
 import { openTaskEditor } from './task-editor-modal.js';
 
@@ -213,14 +212,6 @@ function openMemberProfileDrawer(member) {
 }
 
 function init() {
-  // If no tasks exist, optionally seed from MOCK_DATA to have something to show
-  if (Object.keys(appState.tasks).length === 0) {
-    appState.tasks = MOCK_DATA.tasks;
-    appState.columns = MOCK_DATA.columns;
-    appState.activityLog = MOCK_DATA.activityLog;
-    saveState(appState);
-  }
-
   renderBoard(MOCK_DATA);
   renderActivity(MOCK_DATA.activityLog);
   renderTable(MOCK_DATA);
@@ -1117,8 +1108,8 @@ function wireEventListeners() {
 
     if (hasError) return;
 
-    // Use the exposed addTask function
-    const newTask = addTask({
+    // Use the exposed createTask function from data.js
+    const newTask = createTask({
       title,
       description: desc,
       assignee,
