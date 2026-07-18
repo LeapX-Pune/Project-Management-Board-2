@@ -181,6 +181,12 @@ function openMemberProfileDrawer(member) {
       document.querySelector('.sidebar-nav .nav-item[data-section="board"]')?.click();
       document.querySelector('.view-btn[data-view="board"]')?.click();
 
+      const mainSearchInput = document.getElementById('search-input');
+      if (mainSearchInput && mainSearchInput.value) {
+        mainSearchInput.value = '';
+        mainSearchInput.dispatchEvent(new Event('input'));
+      }
+
       setTimeout(() => {
         const cardEditBtn = document.querySelector(`.task-card[data-task-id="${taskId}"] [data-action="edit"]`);
         if (cardEditBtn) {
@@ -273,7 +279,7 @@ function openSidePeek(card) {
     prioritySelect.value = task.priority ? task.priority.charAt(0).toUpperCase() + task.priority.slice(1) : 'Medium';
   }
   if (assigneeSelect) {
-    assigneeSelect.value = task.assignee || 'sankalp';
+    assigneeSelect.value = task.assignee || '';
   }
 
   // Render subtasks

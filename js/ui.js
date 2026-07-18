@@ -415,9 +415,12 @@ export function getMemberMetrics(memberId, tasks = MOCK_DATA.tasks) {
   
   const activeTasks = memberTasks.filter(t => t.status !== 'col-done');
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const overdueTasks = activeTasks.filter(t => t.dueDate && (new Date(t.dueDate) < today));
+  const now = new Date();
+  const overdueTasks = activeTasks.filter(t => {
+    if (!t.dueDate) return false;
+    const due = new Date(t.dueDate + 'T23:59:59');
+    return due < now;
+  });
 
   const highPriorityTasks = memberTasks.filter(t => t.priority === 'high');
 
