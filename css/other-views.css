@@ -239,16 +239,15 @@
 }
 
 .calendar-body {
-  display: grid;
-  grid-template-columns: 1fr 280px;
+  display: flex;
   gap: var(--space-md);
   flex: 1;
   min-height: 0;
-  grid-auto-rows: 1fr;
 }
 
 .calendar-content {
-  min-height: 0;
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -366,6 +365,16 @@
 .calendar-day.other-month .calendar-day-number {
   color: var(--text-muted);
   opacity: 0.5;
+}
+
+.calendar-day.selected {
+  background: var(--color-accent-light);
+  box-shadow: inset 0 0 0 2px var(--color-accent);
+}
+
+.calendar-day-column.selected {
+  background: var(--color-accent-light);
+  border-radius: var(--radius-lg);
 }
 
 .calendar-day.today {
@@ -1553,6 +1562,12 @@ body.dark-theme .dashboard-view .kpi-card--avg-time .kpi-icon-wrap {
 
 /* === DAY PANEL (vertical sidebar on right) === */
 .calendar-day-panel {
+  width: 280px;
+  flex-shrink: 0;
+  align-self: flex-start;
+  position: sticky;
+  top: calc(56px + var(--space-md));
+  height: calc(100dvh - 160px);
   background: var(--bg-surface);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-subtle);
@@ -1560,8 +1575,6 @@ body.dark-theme .dashboard-view .kpi-card--avg-time .kpi-icon-wrap {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  min-height: 0;
-  height: 100%;
   padding: var(--space-md);
 }
 

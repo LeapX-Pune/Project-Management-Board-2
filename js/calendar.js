@@ -1,4 +1,5 @@
-import { MOCK_DATA } from './data.js';
+import { MOCK_DATA, TEAM_MEMBERS } from './data.js';
+import { openTaskEditor } from './task-editor-modal.js';
 
 let currentYear, currentMonth, selectedDateKey;
 let currentView = 'month';
@@ -73,7 +74,6 @@ function bindContentClicks() {
     if (eventEl) {
       const taskId = eventEl.dataset.taskId;
       if (taskId) openTaskSidePeek(taskId);
-      return;
     }
 
     const dayEl = e.target.closest('.calendar-day, .calendar-week-day, .calendar-day-column');
@@ -130,10 +130,7 @@ function openTaskSidePeek(taskId) {
   const task = MOCK_DATA.tasks[taskId];
   if (!task) return;
 
-  // Use the new task editor modal
-  import('./task-editor-modal.js').then(module => {
-    module.openTaskEditor(taskId);
-  });
+  openTaskEditor(taskId);
 }
 
 const MONTH_NAMES = [

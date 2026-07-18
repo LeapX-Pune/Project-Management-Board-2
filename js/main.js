@@ -13,6 +13,7 @@ import {
   renderWeeklyLineGraph,
   renderRecentActivity,
   renderKPICards,
+  renderDashboardMetrics,
   renderStatusDistribution,
   renderPriorityDoughnut,
   renderMemberWorkload,
@@ -198,6 +199,7 @@ function init() {
   renderByDate(MOCK_DATA);
   renderWeeklyLineGraph(MOCK_DATA);
   renderRecentActivity(MOCK_DATA);
+  renderDashboardMetrics(MOCK_DATA);
   renderKPICards(MOCK_DATA);
   renderStatusDistribution(MOCK_DATA);
   renderPriorityDoughnut(MOCK_DATA);
@@ -226,6 +228,18 @@ function init() {
     renderRecentActivity(MOCK_DATA);
     renderTeam(TEAM_MEMBERS);
     refreshCalendar();
+
+    localStorage.removeItem('dashboard-weekly-data');
+    renderDashboardMetrics(MOCK_DATA);
+    renderQuickStats(MOCK_DATA);
+    renderByDate(MOCK_DATA);
+    renderWeeklyLineGraph(MOCK_DATA);
+    renderKPICards(MOCK_DATA);
+    renderStatusDistribution(MOCK_DATA);
+    renderPriorityDoughnut(MOCK_DATA);
+    renderMemberWorkload(MOCK_DATA);
+    renderMemberStatsTable(MOCK_DATA);
+    initAnalyticsFilters(MOCK_DATA);
   });
 
   window.addEventListener('activityLogUpdated', () => {
@@ -815,40 +829,58 @@ function wireEventListeners() {
         if (titleEl && inputEl) {
           titleEl.classList.add('hidden');
           inputEl.classList.remove('hidden');
-          inputEl.focus();
-          inputEl.select();
+          inputEl.value = titleEl.textContent.trim();
+          // Focus + select after the element is laid out so the existing
+          // title is highlighted and typing replaces it (not appends).
+          requestAnimationFrame(() => {
+            inputEl.focus();
+            inputEl.select();
+          });
         }
       }
       return;
     }
 
-    const deleteBtn = e.target.closest('[data-action="delete"]');
-    if (deleteBtn) {
-      const card = deleteBtn.closest('.task-card');
-      if (card) {
-        const taskId = card.getAttribute('data-task-id');
-        card.style.transition = 'all 0.3s ease';
-        card.style.transform = 'translateX(100%)';
-        card.style.opacity = '0';
-        setTimeout(() => {
-          card.remove();
-          delete MOCK_DATA.tasks[taskId];
-          syncBoardDOMToState();
-          renderTable(MOCK_DATA);
-          renderList(MOCK_DATA);
-        }, 300);
-        return;
-      }
+      const deleteBtn = e.target.closest('[data-action="delete"]');
+      if (deleteBtn) {
+        const card = deleteBtn.closest('.task-card');
+        if (card) {
+          const taskId = card.getAttribute('data-task-id');
+          const taskTitle = card.querySelector('.task-title')?.textContent.trim() || 'this task';
+          if (!window.confirm(`Delete "${taskTitle}"? This cannot be undone.`)) return;
+          card.style.transition = 'all 0.3s ease';
+          card.style.transform = 'translateX(100%)';
+          card.style.opacity = '0';
+          setTimeout(() => {
+            card.remove();
+            delete MOCK_DATA.tasks[taskId];
+            syncBoardDOMToState();
+            renderTable(MOCK_DATA);
+            renderList(MOCK_DATA);
+            window.dispatchEvent(new CustomEvent('boardStateChanged'));
+          }, 300);
+          return;
+        }
       const column = deleteBtn.closest('.column');
       if (column) {
+        const colTitle = column.querySelector('.column-title')?.textContent.trim() || 'this column';
+        const taskCount = column.querySelectorAll('.task-card').length;
+        const confirmMsg = taskCount > 0
+          ? `Delete "${colTitle}" and its ${taskCount} task${taskCount === 1 ? '' : 's'}? This cannot be undone.`
+          : `Delete "${colTitle}"? This cannot be undone.`;
+        if (!window.confirm(confirmMsg)) return;
         column.style.transition = 'all 0.3s ease';
         column.style.transform = 'scale(0.95)';
         column.style.opacity = '0';
         setTimeout(() => {
+          // Remove orphaned tasks that belonged to this column
+          const orphanIds = Array.from(column.querySelectorAll('.task-card')).map(c => c.getAttribute('data-task-id'));
+          orphanIds.forEach(id => { delete MOCK_DATA.tasks[id]; });
           column.parentElement?.removeChild(column);
           syncBoardDOMToState();
           renderTable(MOCK_DATA);
           renderList(MOCK_DATA);
+          window.dispatchEvent(new CustomEvent('boardStateChanged'));
         }, 300);
         return;
       }
@@ -857,17 +889,29 @@ function wireEventListeners() {
 
   document.addEventListener('change', (e) => {
     if (e.target.classList.contains('column-title-input')) {
-      const titleEl = e.target.closest('.column-header')?.querySelector('.column-title');
-      if (titleEl && e.target.value.trim()) {
-        titleEl.textContent = e.target.value.trim();
+      const header = e.target.closest('.column-header');
+      const titleEl = header?.querySelector('.column-title');
+      const newTitle = e.target.value.trim();
+      if (titleEl && newTitle) {
+        titleEl.textContent = newTitle;
         titleEl.classList.remove('hidden');
         e.target.classList.add('hidden');
         syncBoardDOMToState();
+        renderBoard(MOCK_DATA);
         renderTable(MOCK_DATA);
         renderList(MOCK_DATA);
+        window.dispatchEvent(new CustomEvent('boardStateChanged'));
       }
     }
   });
+
+  // Keep the current title selected when the rename input regains focus,
+  // so typing replaces it instead of appending.
+  document.addEventListener('focus', (e) => {
+    if (e.target.classList && e.target.classList.contains('column-title-input')) {
+      e.target.select();
+    }
+  }, true);
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && e.target.classList.contains('column-title-input')) {

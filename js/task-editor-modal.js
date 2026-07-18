@@ -1,8 +1,8 @@
 import { MOCK_DATA, TEAM_MEMBERS, updateTask, deleteTask, addActivityLogEntry } from './data.js';
 
 /**
- * Task Editor Modal Component
- * A modern modal-based editor with inline validation, keyboard shortcuts,
+ * Task Editor Side Peek Component
+ * A modern side-peek editor with inline validation, keyboard shortcuts,
  * auto-save indicator, and proper data persistence.
  */
 
@@ -11,136 +11,125 @@ let isSaving = false;
 let hasUnsavedChanges = false;
 let autoSaveTimeout = null;
 
-const AUTO_SAVE_DELAY = 1500;
-const DEBOUNCE_DELAY = 300;
-
 /**
- * Creates and returns the modal HTML structure.
+ * Creates and returns the side-peek HTML structure.
  */
-function createModalHTML() {
+function createSidePeekHTML() {
   return `
-    <div class="task-editor-modal" id="task-editor-modal" role="dialog" aria-modal="true" aria-label="Edit task">
-      <div class="task-editor-backdrop" id="task-editor-backdrop"></div>
-      <div class="task-editor-container">
-        <div class="task-editor-header">
-          <div class="task-editor-title-section">
-            <input type="text" class="task-editor-title" id="task-editor-title" placeholder="Task title" autocomplete="off" aria-label="Task title">
-            <div class="task-editor-status-badge" id="task-editor-status-badge">To Do</div>
-          </div>
-          <div class="task-editor-header-actions">
-            <div class="task-editor-auto-save" id="task-editor-auto-save">
-              <div class="task-editor-auto-save-dot"></div>
-              <span>Saved</span>
-            </div>
-            <button class="task-editor-btn-icon" id="task-editor-delete" title="Delete task (Cmd+Del)" aria-label="Delete task">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <path d="M4 5H14M6 5V4C6 3.44772 6.44772 3 7 3H11C11.5523 3 12 3.44772 12 4V5M7 8V13M11 8V13M5 5L5.5 14C5.5 14.5523 5.94772 15 6.5 15H11.5C12.0523 15 12.5 14.5523 12.5 14L13 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-            <button class="task-editor-btn-icon" id="task-editor-close" title="Close (Esc)" aria-label="Close editor">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <path d="M4 4L14 14M14 4L4 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-            </button>
-          </div>
+    <div class="task-editor-side-peek" id="task-editor-side-peek" role="dialog" aria-modal="true" aria-label="Edit task">
+      <div class="task-editor-side-peek-backdrop" id="task-editor-side-peek-backdrop"></div>
+      
+      <div class="task-editor-side-peek-header">
+        <div class="task-editor-side-peek-title-section">
+          <input type="text" class="task-editor-side-peek-title" id="task-editor-title" placeholder="Task title" autocomplete="off" aria-label="Task title">
         </div>
-
-        <div class="task-editor-body">
-          <div class="task-editor-section">
-            <h3 class="task-editor-section-title">Details</h3>
-            <div class="task-editor-field-row">
-              <div class="task-editor-field">
-                <label class="task-editor-label" for="task-editor-status">Status</label>
-                <select class="task-editor-select" id="task-editor-status" aria-label="Task status">
-                  <option value="backlog">Backlog</option>
-                  <option value="todo">To Do</option>
-                  <option value="in-progress">In Progress</option>
-                  <option value="review">Review</option>
-                  <option value="done">Done</option>
-                </select>
-              </div>
-              <div class="task-editor-field">
-                <label class="task-editor-label" for="task-editor-priority">Priority</label>
-                <select class="task-editor-select" id="task-editor-priority" aria-label="Task priority">
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
-            </div>
-            <div class="task-editor-field-row">
-              <div class="task-editor-field">
-                <label class="task-editor-label" for="task-editor-assignee">Assignee</label>
-                <select class="task-editor-select" id="task-editor-assignee" aria-label="Task assignee">
-                  <option value="">Unassigned</option>
-                </select>
-              </div>
-              <div class="task-editor-field">
-                <label class="task-editor-label" for="task-editor-due-date">Due Date</label>
-                <input type="date" class="task-editor-input" id="task-editor-due-date" aria-label="Due date">
-              </div>
-            </div>
+        <div class="task-editor-side-peek-header-actions">
+          <div class="task-editor-auto-save" id="task-editor-auto-save">
+            <div class="task-editor-auto-save-dot"></div>
+            <span>Saved</span>
           </div>
-
-          <div class="task-editor-section">
-            <h3 class="task-editor-section-title">Description</h3>
-            <textarea class="task-editor-textarea" id="task-editor-description" rows="3" placeholder="Add a more detailed description..." aria-label="Task description"></textarea>
-          </div>
-
-          <div class="task-editor-section">
-            <div class="task-editor-section-header">
-              <h3 class="task-editor-section-title">Subtasks</h3>
-              <span class="task-editor-subtask-count" id="task-editor-subtask-count">0/0</span>
-            </div>
-            <div class="task-editor-progress-bar">
-              <div class="task-editor-progress-fill" id="task-editor-progress-fill" style="width: 0%"></div>
-            </div>
-            <div class="task-editor-subtask-list" id="task-editor-subtask-list"></div>
-            <div class="task-editor-add-subtask">
-              <input type="text" class="task-editor-input" id="task-editor-new-subtask" placeholder="Add a subtask..." aria-label="New subtask">
-              <button class="task-editor-btn-secondary" id="task-editor-add-subtask-btn" aria-label="Add subtask">Add</button>
-            </div>
-          </div>
-
-          <div class="task-editor-section">
-            <h3 class="task-editor-section-title">Activity</h3>
-            <div class="task-editor-activity-log" id="task-editor-activity-log">
-              <div class="task-editor-activity-empty">No recent activity</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="task-editor-footer">
-          <div class="task-editor-footer-left">
-            <button class="task-editor-btn-danger" id="task-editor-delete-btn" aria-label="Delete task">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M2.5 3.5H11.5M5 3.5V2.5C5 2.22386 5.22386 2 5.5 2H8.5C8.77614 2 9 2.22386 9 2.5V3.5M6 6V10M8 6V10M3.5 3.5L4 12C4 12.2761 4.22386 12.5 4.5 12.5H9.5C9.77614 12.5 10 12.2761 10 12L10.5 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              Delete
-            </button>
-          </div>
-          <div class="task-editor-footer-right">
-            <div class="task-editor-shortcuts-hint">
-              <kbd>Esc</kbd> close &middot; <kbd>Cmd</kbd>+<kbd>Enter</kbd> save
-            </div>
-            <button class="task-editor-btn-secondary" id="task-editor-cancel-btn">Cancel</button>
-            <button class="task-editor-btn-primary" id="task-editor-save-btn" aria-label="Save changes">
-              <svg class="task-editor-btn-icon-svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M3 7L6 10L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span class="task-editor-btn-text">Save Changes</span>
-              <div class="task-editor-spinner" style="display: none;"></div>
-            </button>
-          </div>
-        </div>
-
-        <div class="task-editor-toast" id="task-editor-toast" role="alert" aria-live="polite">
-          <div class="task-editor-toast-content">
-            <svg class="task-editor-toast-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M3 8L7 12L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <button class="task-editor-btn-icon" id="task-editor-close" title="Close (Esc)" aria-label="Close editor">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M4 4L14 14M14 4L4 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
-            <span class="task-editor-toast-message">Changes saved successfully!</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="task-editor-side-peek-meta">
+        <div class="task-editor-meta-row">
+          <div class="task-editor-meta-item">
+            <label class="task-editor-meta-label">Status</label>
+            <select class="task-editor-meta-select" id="task-editor-status" aria-label="Task status">
+              <option value="backlog">Backlog</option>
+              <option value="todo">To Do</option>
+              <option value="in-progress">In Progress</option>
+              <option value="review">Review</option>
+              <option value="done">Done</option>
+            </select>
           </div>
+          <div class="task-editor-meta-item">
+            <label class="task-editor-meta-label">Priority</label>
+            <select class="task-editor-meta-select" id="task-editor-priority" aria-label="Task priority">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+        <div class="task-editor-meta-row">
+          <div class="task-editor-meta-item">
+            <label class="task-editor-meta-label">Assignee</label>
+            <select class="task-editor-meta-select" id="task-editor-assignee" aria-label="Task assignee">
+              <option value="">Unassigned</option>
+            </select>
+          </div>
+          <div class="task-editor-meta-item">
+            <label class="task-editor-meta-label">Due Date</label>
+            <input type="date" class="task-editor-meta-input" id="task-editor-due-date" aria-label="Due date">
+          </div>
+        </div>
+      </div>
+
+      <div class="task-editor-side-peek-body">
+        <div class="task-editor-section">
+          <label class="task-editor-section-label" for="task-editor-description">Description</label>
+          <textarea class="task-editor-textarea" id="task-editor-description" rows="3" placeholder="Add a more detailed description..." aria-label="Task description"></textarea>
+        </div>
+
+        <div class="task-editor-section">
+          <div class="task-editor-section-header">
+            <label class="task-editor-section-label">Subtasks</label>
+            <span class="task-editor-subtask-count" id="task-editor-subtask-count">0/0</span>
+          </div>
+          <div class="task-editor-progress-bar">
+            <div class="task-editor-progress-fill" id="task-editor-progress-fill" style="width: 0%"></div>
+          </div>
+          <div class="task-editor-subtask-list" id="task-editor-subtask-list"></div>
+          <div class="task-editor-add-subtask">
+            <input type="text" class="task-editor-input" id="task-editor-new-subtask" placeholder="Add a subtask..." aria-label="New subtask">
+            <button class="task-editor-btn-secondary" id="task-editor-add-subtask-btn" aria-label="Add subtask">Add</button>
+          </div>
+        </div>
+
+        <div class="task-editor-section">
+          <label class="task-editor-section-label">Activity</label>
+          <div class="task-editor-activity-log" id="task-editor-activity-log">
+            <div class="task-editor-activity-empty">No recent activity</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="task-editor-side-peek-footer">
+        <div class="task-editor-footer-left">
+          <button class="task-editor-btn-danger" id="task-editor-delete-btn" aria-label="Delete task">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M2.5 3.5H11.5M5 3.5V2.5C5 2.22386 5.22386 2 5.5 2H8.5C8.77614 2 9 2.22386 9 2.5V3.5M6 6V10M8 6V10M3.5 3.5L4 12C4 12.2761 4.22386 12.5 4.5 12.5H9.5C9.77614 12.5 10 12.2761 10 12L10.5 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Delete
+          </button>
+        </div>
+        <div class="task-editor-footer-right">
+          <div class="task-editor-shortcuts-hint">
+            <kbd>Esc</kbd> close &middot; <kbd>Cmd</kbd>+<kbd>Enter</kbd> save
+          </div>
+          <button class="task-editor-btn-secondary" id="task-editor-cancel-btn">Cancel</button>
+          <button class="task-editor-btn-primary" id="task-editor-save-btn" aria-label="Save changes">
+            <svg class="task-editor-btn-icon-svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M3 7L6 10L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="task-editor-btn-text">Save</span>
+            <div class="task-editor-spinner" style="display: none;"></div>
+          </button>
+        </div>
+      </div>
+
+      <div class="task-editor-toast" id="task-editor-toast" role="alert" aria-live="polite">
+        <div class="task-editor-toast-content">
+          <svg class="task-editor-toast-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8L7 12L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="task-editor-toast-message">Changes saved successfully!</span>
         </div>
       </div>
     </div>
@@ -165,9 +154,9 @@ function populateAssigneeDropdown() {
 }
 
 /**
- * Populates the modal with task data.
+ * Populates the side-peek with task data.
  */
-function populateModal(taskId) {
+function populateSidePeek(taskId) {
   const task = MOCK_DATA.tasks[taskId];
   if (!task) return;
 
@@ -177,13 +166,11 @@ function populateModal(taskId) {
   const titleInput = document.getElementById('task-editor-title');
   if (titleInput) {
     titleInput.value = task.title || '';
-    titleInput.classList.remove('error', 'touched');
+    titleInput.classList.remove('error');
   }
 
   const statusSelect = document.getElementById('task-editor-status');
   if (statusSelect) statusSelect.value = task.status || 'todo';
-
-  updateStatusBadge(task.status);
 
   const prioritySelect = document.getElementById('task-editor-priority');
   if (prioritySelect) prioritySelect.value = task.priority || 'medium';
@@ -200,17 +187,6 @@ function populateModal(taskId) {
   populateSubtasks(task.subtasks || []);
   populateActivityLog(taskId);
   updateAutoSaveIndicator('saved');
-}
-
-/**
- * Updates the status badge display.
- */
-function updateStatusBadge(status) {
-  const statusBadge = document.getElementById('task-editor-status-badge');
-  if (statusBadge) {
-    statusBadge.textContent = getStatusLabel(status);
-    statusBadge.className = `task-editor-status-badge status-${status}`;
-  }
 }
 
 /**
@@ -412,10 +388,10 @@ function showToast(message, type = 'success') {
   if (toastIcon) {
     if (type === 'success') {
       toastIcon.innerHTML = '<path d="M3 8L7 12L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
-      toastIcon.style.color = '#10b981';
+      toastIcon.style.color = 'var(--color-success)';
     } else if (type === 'error') {
       toastIcon.innerHTML = '<path d="M4 4L14 14M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>';
-      toastIcon.style.color = '#ef4444';
+      toastIcon.style.color = 'var(--color-destructive)';
     }
   }
 
@@ -432,10 +408,9 @@ function updateAutoSaveIndicator(status) {
   const indicator = document.getElementById('task-editor-auto-save');
   if (!indicator) return;
 
-  indicator.classList.remove('saving', 'saved', 'error');
+  indicator.classList.remove('saving', 'saved', 'error', 'unsaved');
   indicator.classList.add(status);
 
-  const dot = indicator.querySelector('.task-editor-auto-save-dot');
   const text = indicator.querySelector('span');
 
   if (status === 'saving') {
@@ -444,6 +419,8 @@ function updateAutoSaveIndicator(status) {
     if (text) text.textContent = 'Saved';
   } else if (status === 'error') {
     if (text) text.textContent = 'Error';
+  } else if (status === 'unsaved') {
+    if (text) text.textContent = 'Unsaved';
   }
 }
 
@@ -532,7 +509,7 @@ function clearFieldError(fieldId) {
 }
 
 /**
- * Collects all form data from the modal.
+ * Collects all form data from the side-peek.
  */
 function collectFormData() {
   const title = document.getElementById('task-editor-title')?.value.trim() || '';
@@ -617,7 +594,7 @@ async function saveTask() {
       
       window.dispatchEvent(new CustomEvent('boardStateChanged'));
       
-      setTimeout(closeModal, 600);
+      setTimeout(closeSidePeek, 600);
     } else {
       showToast('Failed to save changes', 'error');
       updateAutoSaveIndicator('error');
@@ -632,6 +609,84 @@ async function saveTask() {
 }
 
 /**
+ * Shows delete confirmation modal.
+ */
+function showDeleteConfirmation(task) {
+  return new Promise((resolve) => {
+    const modal = document.createElement('div');
+    modal.className = 'task-editor-confirm-modal';
+    modal.tabIndex = -1;
+    modal.innerHTML = `
+      <div class="task-editor-confirm-backdrop"></div>
+      <div class="task-editor-confirm-content">
+        <div class="task-editor-confirm-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 8V12M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3 class="task-editor-confirm-title">Delete Task</h3>
+        <p class="task-editor-confirm-message">Are you sure you want to delete "<strong>${escapeHtml(task.title)}</strong>"? This action cannot be undone.</p>
+        <div class="task-editor-confirm-actions">
+          <button class="task-editor-btn-secondary task-editor-confirm-cancel">Cancel</button>
+          <button class="task-editor-btn-danger task-editor-confirm-delete">Delete</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+    requestAnimationFrame(() => {
+      modal.classList.add('open');
+      modal.focus();
+    });
+
+    const cancelBtn = modal.querySelector('.task-editor-confirm-cancel');
+    const deleteBtn = modal.querySelector('.task-editor-confirm-delete');
+    const backdrop = modal.querySelector('.task-editor-confirm-backdrop');
+
+    let closed = false;
+    const close = (result) => {
+      if (closed) return;
+      closed = true;
+      modal.classList.remove('open');
+      setTimeout(() => {
+        modal.remove();
+        resolve(result);
+      }, 200);
+    };
+
+    cancelBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      close(false);
+    });
+    
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      close(true);
+    });
+    
+    backdrop.addEventListener('click', () => close(false));
+
+    const handleKeyDown = (e) => {
+      if (!modal.classList.contains('open')) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        close(false);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        close(true);
+      }
+    };
+
+    modal.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown, true);
+
+    deleteBtn.focus();
+  });
+}
+
+/**
  * Deletes the current task.
  */
 async function deleteCurrentTask() {
@@ -640,11 +695,12 @@ async function deleteCurrentTask() {
   const task = MOCK_DATA.tasks[currentTaskId];
   if (!task) return;
 
+  const confirmed = await showDeleteConfirmation(task);
+  if (!confirmed) return;
+
   const deleteBtn = document.getElementById('task-editor-delete-btn');
-  const headerDeleteBtn = document.getElementById('task-editor-delete');
   
   if (deleteBtn) deleteBtn.disabled = true;
-  if (headerDeleteBtn) headerDeleteBtn.disabled = true;
 
   try {
     const success = deleteTask(currentTaskId);
@@ -655,7 +711,7 @@ async function deleteCurrentTask() {
       
       window.dispatchEvent(new CustomEvent('boardStateChanged'));
       
-      setTimeout(closeModal, 400);
+      setTimeout(closeSidePeek, 400);
     } else {
       showToast('Failed to delete task', 'error');
     }
@@ -664,12 +720,11 @@ async function deleteCurrentTask() {
     showToast('An error occurred while deleting', 'error');
   } finally {
     if (deleteBtn) deleteBtn.disabled = false;
-    if (headerDeleteBtn) headerDeleteBtn.disabled = false;
   }
 }
 
 /**
- * Opens the modal with a specific task.
+ * Opens the side-peek with a specific task.
  */
 export function openTaskEditor(taskId) {
   const task = MOCK_DATA.tasks[taskId];
@@ -678,19 +733,18 @@ export function openTaskEditor(taskId) {
     return;
   }
 
-  let modal = document.getElementById('task-editor-modal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.innerHTML = createModalHTML();
-    document.body.appendChild(modal.firstElementChild);
+  let sidePeek = document.getElementById('task-editor-side-peek');
+  if (!sidePeek) {
+    sidePeek = document.createElement('div');
+    sidePeek.innerHTML = createSidePeekHTML();
+    document.body.appendChild(sidePeek.firstElementChild);
     bindEventListeners();
   }
 
   populateAssigneeDropdown();
-  populateModal(taskId);
+  populateSidePeek(taskId);
 
-  modal.classList.add('open');
-  document.body.style.overflow = 'hidden';
+  sidePeek.classList.add('open');
 
   setTimeout(() => {
     const titleInput = document.getElementById('task-editor-title');
@@ -702,19 +756,18 @@ export function openTaskEditor(taskId) {
 }
 
 /**
- * Closes the modal.
+ * Closes the side-peek.
  */
-export function closeModal() {
+export function closeSidePeek() {
   if (hasUnsavedChanges) {
     if (!confirm('You have unsaved changes. Are you sure you want to close?')) {
       return;
     }
   }
 
-  const modal = document.getElementById('task-editor-modal');
-  if (modal) {
-    modal.classList.remove('open');
-    document.body.style.overflow = '';
+  const sidePeek = document.getElementById('task-editor-side-peek');
+  if (sidePeek) {
+    sidePeek.classList.remove('open');
     currentTaskId = null;
     hasUnsavedChanges = false;
     
@@ -726,15 +779,14 @@ export function closeModal() {
 }
 
 /**
- * Binds event listeners to modal elements.
+ * Binds event listeners to side-peek elements.
  */
 function bindEventListeners() {
-  document.getElementById('task-editor-close')?.addEventListener('click', closeModal);
-  document.getElementById('task-editor-backdrop')?.addEventListener('click', closeModal);
-  document.getElementById('task-editor-cancel-btn')?.addEventListener('click', closeModal);
+  document.getElementById('task-editor-close')?.addEventListener('click', closeSidePeek);
+  document.getElementById('task-editor-side-peek-backdrop')?.addEventListener('click', closeSidePeek);
+  document.getElementById('task-editor-cancel-btn')?.addEventListener('click', closeSidePeek);
   document.getElementById('task-editor-save-btn')?.addEventListener('click', saveTask);
   document.getElementById('task-editor-delete-btn')?.addEventListener('click', deleteCurrentTask);
-  document.getElementById('task-editor-delete')?.addEventListener('click', deleteCurrentTask);
   document.getElementById('task-editor-add-subtask-btn')?.addEventListener('click', addNewSubtask);
   
   document.getElementById('task-editor-new-subtask')?.addEventListener('keydown', (e) => {
@@ -744,10 +796,7 @@ function bindEventListeners() {
     }
   });
 
-  document.getElementById('task-editor-status')?.addEventListener('change', (e) => {
-    updateStatusBadge(e.target.value);
-    markUnsaved();
-  });
+  document.getElementById('task-editor-status')?.addEventListener('change', markUnsaved);
 
   document.getElementById('task-editor-priority')?.addEventListener('change', markUnsaved);
   document.getElementById('task-editor-assignee')?.addEventListener('change', markUnsaved);
@@ -776,11 +825,11 @@ function bindEventListeners() {
  * Handles keyboard shortcuts.
  */
 function handleKeyboardShortcuts(e) {
-  if (!document.getElementById('task-editor-modal')?.classList.contains('open')) return;
+  if (!document.getElementById('task-editor-side-peek')?.classList.contains('open')) return;
   
   if (e.key === 'Escape') {
     e.preventDefault();
-    closeModal();
+    closeSidePeek();
   } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
     e.preventDefault();
     saveTask();
@@ -799,4 +848,5 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-export { openTaskEditor as openSidePeek };
+// Export for backward compatibility
+export { openTaskEditor as openSidePeek, closeSidePeek as closeModal };

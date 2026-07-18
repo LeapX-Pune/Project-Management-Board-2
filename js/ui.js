@@ -523,8 +523,11 @@ export function createColumn(col, tasks, members) {
         </svg>
       </button>
       <button class="column-option-btn destructive" data-action="delete" aria-label="Delete column">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <path d="M2 3.5H12M5 3.5V2C5 1.72386 5.22386 1.5 5.5 1.5H8.5C8.77614 1.5 9 1.72386 9 2V3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M3 4.5H13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M6 4.5V3.25C6 2.836 6.336 2.5 6.75 2.5H9.25C9.664 2.5 10 2.836 10 3.25V4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M12.5 4.5L12 13C12 13.553 11.553 14 11 14H5C4.447 14 4 13.553 4 13L3.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M6.5 7V11M9.5 7V11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
         </svg>
       </button>
     </div>
@@ -1095,6 +1098,34 @@ export function renderWeeklyLineGraph(data) {
   }
 }
 
+export function renderDashboardMetrics(data) {
+  const tasks = Object.values(data.tasks);
+  const doneCol = data.columns.find(c => c.id === 'col-done');
+  const inProgressCols = data.columns.filter(c => c.id === 'col-in-progress' || c.id === 'col-review');
+  const doneIds = new Set(doneCol?.taskIds || []);
+  const inProgressIds = new Set(inProgressCols.flatMap(c => c.taskIds));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let overdue = 0;
+  tasks.forEach(t => {
+    if (doneIds.has(t.id)) return;
+    if (!t.dueDate) return;
+    const due = new Date(t.dueDate + 'T00:00:00');
+    if (due < today) overdue++;
+  });
+
+  const setValue = (metric, val) => {
+    const el = document.querySelector(`.metric-card[data-metric="${metric}"] .metric-value`);
+    if (el) el.textContent = val;
+  };
+
+  setValue('total', tasks.length);
+  setValue('completed', doneIds.size);
+  setValue('in-progress', inProgressIds.size);
+  setValue('overdue', overdue);
+}
+
 export function renderKPICards(data) {
   const today = new Date();
   const yesterday = new Date(today);
@@ -1102,36 +1133,43 @@ export function renderKPICards(data) {
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
 
-  // Completed today
-  const completedToday = data.activityLog.filter(
-    e => e.type === 'created' && new Date(e.timestamp).toDateString() === today.toDateString()
+  const toMidnight = iso => {
+    const d = new Date(iso);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+  const doneCol = data.columns.find(c => c.id === 'col-done');
+  const doneIds = new Set(doneCol ? doneCol.taskIds : []);
+
+  // Completed today: tasks that are Done and due today (reflects mock-data state)
+  const completedToday = Object.values(data.tasks).filter(t =>
+    doneIds.has(t.id) && t.dueDate && toMidnight(t.dueDate).getTime() === today.getTime()
   ).length;
 
   // Completed yesterday (for trend)
-  const completedYesterday = data.activityLog.filter(
-    e => e.type === 'created' && new Date(e.timestamp).toDateString() === yesterday.toDateString()
+  const completedYesterday = Object.values(data.tasks).filter(t =>
+    doneIds.has(t.id) && t.dueDate && toMidnight(t.dueDate).getTime() === yesterday.getTime()
   ).length;
 
   // Due tomorrow
   const dueTomorrow = Object.values(data.tasks).filter(
-    t => t.dueDate && new Date(t.dueDate).toDateString() === tomorrow.toDateString()
+    t => t.dueDate && toMidnight(t.dueDate).getTime() === tomorrow.getTime()
   ).length;
 
   // Due today (for trend comparison)
   const dueToday = Object.values(data.tasks).filter(
-    t => t.dueDate && new Date(t.dueDate).toDateString() === today.toDateString()
+    t => t.dueDate && toMidnight(t.dueDate).getTime() === today.getTime()
   ).length;
-
-  // Calculate average completion time (mock calculation based on activity)
-  const completedTasks = data.activityLog.filter(e => e.type === 'created');
-  const avgCompletion = completedTasks.length > 0 ? Math.round(completedTasks.length * 2.5) : 0;
 
   // Update values with animation
   animateValue('kpi-today', completedToday);
   animateValue('kpi-tomorrow', dueTomorrow);
-  
+
   const avgEl = document.getElementById('kpi-avg');
-  if (avgEl) avgEl.textContent = avgCompletion > 0 ? `${avgCompletion}h` : '—';
+  if (avgEl) {
+    const doneCount = doneIds.size;
+    avgEl.textContent = doneCount > 0 ? `${doneCount}` : '—';
+  }
 
   // Update trends
   updateTrend('kpi-today-trend', completedToday, completedYesterday);
@@ -1380,13 +1418,27 @@ export function initAnalyticsFilters(data) {
   const prioritySelect = document.getElementById('filter-priority');
   if (!statusSelect || !prioritySelect) return;
 
-  const columns = data.columns;
-  columns.forEach(col => {
+  // Preserve the current selection across re-initialization
+  const prevStatus = statusSelect.value;
+  const prevPriority = prioritySelect.value;
+
+  // Clear stale options (safe to call on every data change)
+  Array.from(statusSelect.options).forEach(opt => {
+    if (opt.value !== 'all') opt.remove();
+  });
+
+  data.columns.forEach(col => {
     const opt = document.createElement('option');
     opt.value = col.id;
     opt.textContent = col.title;
     statusSelect.appendChild(opt);
   });
+
+  // Restore previous selection if it still exists
+  if (prevStatus && [...statusSelect.options].some(o => o.value === prevStatus)) {
+    statusSelect.value = prevStatus;
+  }
+  if (prevPriority) prioritySelect.value = prevPriority;
 
   const applyFilters = () => {
     const status = statusSelect.value;
@@ -1406,6 +1458,9 @@ export function initAnalyticsFilters(data) {
 
   statusSelect.addEventListener('change', applyFilters);
   prioritySelect.addEventListener('change', applyFilters);
+
+  // Apply immediately so the analytics views reflect current data
+  applyFilters();
 }
 
 export function renderMemberStatsTable(data) {
