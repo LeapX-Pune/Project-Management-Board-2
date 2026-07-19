@@ -204,7 +204,7 @@
   }
 
   /* Nearly Full-screen Modals */
-  .modal-container {
+  .modal-container, .side-peek-content {
     width: 100vw;
     max-width: 100vw;
     max-height: 100dvh;
@@ -216,7 +216,7 @@
     animation: bottomSheetEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
   
-  .modal-overlay {
+  .modal-overlay, .side-peek {
     align-items: flex-end;
   }
 
@@ -225,7 +225,8 @@
     to { transform: translateY(0); opacity: 1; }
   }
 
-  .modal-overlay:not(.active) .modal-container {
+  .modal-overlay:not(.active) .modal-container,
+  .side-peek:not(.open) .side-peek-content {
     animation: bottomSheetExit 0.2s ease-in forwards;
   }
 
