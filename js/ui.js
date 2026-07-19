@@ -792,15 +792,11 @@ export function renderTeam(members) {
   metricsContainer.className = 'metrics-grid team-metrics-grid';
   metricsContainer.style.padding = '0';
   metricsContainer.style.marginBottom = 'var(--space-lg)';
-  metricsContainer.style.display = 'grid';
-  metricsContainer.style.gridTemplateColumns = 'repeat(auto-fit, minmax(200px, 1fr))';
   metricsContainer.style.gap = 'var(--space-md)';
   container.appendChild(metricsContainer);
 
-  const cols = Math.ceil(members.length / 2);
   const grid = document.createElement('div');
   grid.className = 'team-grid';
-  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
   container.appendChild(grid);
 
   function updateFilteredView() {
@@ -933,18 +929,6 @@ export function renderTeam(members) {
 
       grid.appendChild(card);
     });
-
-    const remainder = filtered.length % cols;
-    if (remainder > 0) {
-      const fillers = cols - remainder;
-      for (let i = 0; i < fillers; i++) {
-        const filler = document.createElement('div');
-        filler.style.visibility = 'hidden';
-        filler.style.height = '0';
-        filler.style.overflow = 'hidden';
-        grid.appendChild(filler);
-      }
-    }
   }
 
   setTimeout(() => {
