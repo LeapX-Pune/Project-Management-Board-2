@@ -624,17 +624,18 @@ function wireEventListeners() {
 
   sidebarBackdropEl?.addEventListener('click', closeMobileSidebar);
 
-  // Sidebar navigation sections toggling
-  document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+  // Navigation sections toggling (sidebar & mobile bottom nav bar)
+  document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
       e.preventDefault();
       
-      document.querySelectorAll('.sidebar-nav .nav-item').forEach(b => {
-        b.classList.remove('active-view');
-      });
-      item.classList.add('active-view');
-      
       const section = item.dataset.section;
+      if (!section) return;
+
+      document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(b => {
+        b.classList.toggle('active-view', b.dataset.section === section);
+      });
+      
       const boardHeader = document.querySelector('.board-header');
       
       document.querySelectorAll('.view-container').forEach(v => {
@@ -1340,11 +1341,9 @@ function restorePersistedState() {
   const savedSection = localStorage.getItem('sidebarSection');
   if (!savedSection) return;
 
-  const navItem = document.querySelector(`.sidebar-nav .nav-item[data-section="${savedSection}"]`);
-  if (!navItem) return;
-
-  document.querySelectorAll('.sidebar-nav .nav-item').forEach(b => b.classList.remove('active-view'));
-  navItem.classList.add('active-view');
+  document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(b => {
+    b.classList.toggle('active-view', b.dataset.section === savedSection);
+  });
 
   const boardHeader = document.querySelector('.board-header');
 
