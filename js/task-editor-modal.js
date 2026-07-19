@@ -1,4 +1,5 @@
 import { MOCK_DATA, TEAM_MEMBERS, updateTask, deleteTask, addActivityLogEntry } from './data.js';
+import { showConfirmDialog } from './ui.js';
 
 /**
  * Task Editor Side Peek Component
@@ -100,6 +101,11 @@ function createSidePeekHTML() {
         </div>
       </div>
 
+      <div class="task-editor-delete-row">
+        <div class="task-editor-shortcuts-hint">
+          <kbd>Esc</kbd> close &middot; <kbd>Cmd</kbd>+<kbd>Enter</kbd> save
+        </div>
+      </div>
       <div class="task-editor-side-peek-footer">
         <div class="task-editor-footer-left">
           <button class="task-editor-btn-danger" id="task-editor-delete-btn" aria-label="Delete task">
@@ -110,9 +116,6 @@ function createSidePeekHTML() {
           </button>
         </div>
         <div class="task-editor-footer-right">
-          <div class="task-editor-shortcuts-hint">
-            <kbd>Esc</kbd> close &middot; <kbd>Cmd</kbd>+<kbd>Enter</kbd> save
-          </div>
           <button class="task-editor-btn-secondary" id="task-editor-cancel-btn">Cancel</button>
           <button class="task-editor-btn-primary" id="task-editor-save-btn" aria-label="Save changes">
             <svg class="task-editor-btn-icon-svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -771,11 +774,10 @@ export function openTaskEditor(taskId) {
 /**
  * Closes the side-peek.
  */
-export function closeSidePeek() {
+export async function closeSidePeek() {
   if (hasUnsavedChanges) {
-    if (!confirm('You have unsaved changes. Are you sure you want to close?')) {
-      return;
-    }
+    const confirmed = await showConfirmDialog('You have unsaved changes. Are you sure you want to close?');
+    if (!confirmed) return;
   }
 
   const sidePeek = document.getElementById('task-editor-side-peek');
