@@ -274,8 +274,7 @@
     width: 100% !important;
   }
 
-  /* ── Phase 5: Calendar Tablet & Mobile Responsive Flow ── */
-  /* Move Day Details Panel BELOW the Calendar Grid on Tablet & Mobile */
+  /* Calendar Tablet & Mobile Responsive Flow */
   .calendar-wrapper {
     padding: var(--space-sm) var(--space-md);
     overflow-y: auto;
@@ -334,7 +333,6 @@
     margin-bottom: 2px !important;
   }
 
-  /* Selected Day Task Panel positioned BELOW the Calendar Grid */
   .calendar-day-panel {
     width: 100% !important;
     position: static !important;
@@ -468,7 +466,7 @@
   .team-grid {
     display: flex !important;
     flex-direction: column !important;
-    gap: var(--space-md) !important;
+    gap: var(--space-sm) !important;
     width: 100% !important;
   }
 
@@ -477,17 +475,18 @@
     max-width: 100% !important;
     box-sizing: border-box;
     padding: var(--space-md) !important;
-    gap: var(--space-sm) !important;
+    gap: var(--space-xs) !important;
+    border-radius: var(--radius-lg) !important;
   }
 
   .team-card-avatar {
-    width: 52px !important;
-    height: 52px !important;
-    font-size: 1.125rem !important;
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 1rem !important;
   }
 
   .team-card-name {
-    font-size: 0.9375rem !important;
+    font-size: 0.875rem !important;
   }
 
   .team-card-role {
@@ -504,7 +503,7 @@
   }
 }
 
-/* ── Mobile Devices (<= 480px) Bottom Tab Bar & Mobile Calendar ── */
+/* ── Mobile Devices (<= 480px) Polish & Refinements ── */
 @media (max-width: 480px) {
   /* Hide sidebar, sidebar backdrop, and header hamburger menu on Mobile <= 480px */
   .sidebar {
@@ -621,28 +620,55 @@
     font-size: 0.75rem;
   }
 
-  /* Dashboard Overview Metrics Single Column on Mobile */
+  /* Step 2: Team Header & Manage Team Button Polish */
+  .team-header {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: var(--space-sm) !important;
+    gap: var(--space-xs) !important;
+  }
+
+  .team-header h2 {
+    font-size: 1.125rem !important;
+    margin: 0 !important;
+    font-weight: 700 !important;
+  }
+
+  #manage-team-btn {
+    width: auto !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 0.625rem !important;
+    font-size: 0.75rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Dashboard Overview Metrics Grid on Mobile */
   .metrics-grid {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-md);
+    gap: var(--space-xs) !important;
+    padding: var(--space-xs) var(--space-sm);
   }
 
   .metric-card,
   .dashboard-view .metric-card {
-    padding: var(--space-sm);
-    min-height: 80px;
+    padding: var(--space-sm) !important;
+    min-height: 72px !important;
+    border-radius: var(--radius-md) !important;
   }
 
   .metric-label,
   .dashboard-view .metric-card .metric-label {
-    font-size: 0.6875rem;
+    font-size: 0.625rem !important;
+    margin-bottom: 2px !important;
   }
 
   .metric-value,
   .dashboard-view .metric-card .metric-value {
-    font-size: clamp(1.25rem, 5vw, 1.625rem);
+    font-size: clamp(1.125rem, 4.5vw, 1.5rem) !important;
   }
 
   /* Kanban Board Readable Card Columns on Mobile */
@@ -665,6 +691,26 @@
 
   .task-card {
     padding: var(--space-sm) var(--space-md);
+  }
+
+  /* Step 5: Table View Mobile Touch Scroll Polish */
+  .table-wrapper {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: var(--radius-md) !important;
+  }
+
+  .task-table {
+    min-width: 640px !important;
+    width: 100% !important;
+  }
+
+  .task-table th,
+  .task-table td {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.75rem !important;
+    white-space: nowrap !important;
   }
 
   /* Calendar Mobile Grid Adaptation (7-Column Month Grid Preserved) */
@@ -728,18 +774,6 @@
   .sidebar-collapse-btn {
     min-height: 48px;
     min-width: 48px;
-  }
-
-  .task-table th:nth-child(3),
-  .task-table td:nth-child(3),
-  .task-table th:nth-child(5),
-  .task-table td:nth-child(5) {
-    display: none;
-  }
-
-  #manage-team-btn {
-    width: 100%;
-    justify-content: center;
   }
 
   .command-palette {
