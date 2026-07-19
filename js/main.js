@@ -1110,6 +1110,7 @@ function wireEventListeners() {
 
     if (hasError) return;
 
+    // Use the exposed createTask function from data.js
     const newTask = createTask({
       title,
       description: desc,
