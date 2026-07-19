@@ -109,6 +109,23 @@
           </svg>
           <input type="text" class="search-input" id="search-input" placeholder="Search tasks..." aria-label="Search tasks">
         </div>
+        <div class="board-filters" style="display: flex; gap: 8px; margin-left: 16px;">
+          <select id="board-filter-assignee" class="filter-select" style="height: 36px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem;">
+            <option value="">All Assignees</option>
+          </select>
+          <select id="board-filter-priority" class="filter-select" style="height: 36px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem;">
+            <option value="">All Priorities</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+          <select id="board-filter-deadline" class="filter-select" style="height: 36px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem;">
+            <option value="">All Deadlines</option>
+            <option value="overdue">Overdue</option>
+            <option value="today">Due Today</option>
+            <option value="week">Due This Week</option>
+          </select>
+        </div>
         <div class="header-right">
           <!-- Dynamically populated team avatars list in header -->
           <div id="header-team-group" class="header-team-group flex-center" style="margin-right: 4px;"></div>

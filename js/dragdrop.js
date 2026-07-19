@@ -1,4 +1,4 @@
-import { MOCK_DATA, addActivityLogEntry } from './data.js';
+import { MOCK_DATA, addActivityLogEntry, updateTask } from './data.js';
 
 let dragSource = null;
 
@@ -54,26 +54,20 @@ function initDragDrop() {
       const columnTitle = column.querySelector('.column-title')?.textContent || 'Unknown Column';
 
       const sourceColumn = MOCK_DATA.columns.find(col => col.taskIds.includes(taskId));
-      const targetColumn = MOCK_DATA.columns.find(col => col.id === targetColumnId);
 
-      if (sourceColumn && targetColumn && sourceColumn.id !== targetColumnId) {
-        // Move task in model
-        sourceColumn.taskIds = sourceColumn.taskIds.filter(id => id !== taskId);
-        targetColumn.taskIds.push(taskId);
-
-        if (MOCK_DATA.tasks[taskId]) {
-          MOCK_DATA.tasks[taskId].status = targetColumnId;
-        }
-
+      if (sourceColumn && sourceColumn.id !== targetColumnId) {
+        // Strip 'col-' prefix if it exists to pass the raw status key
+        const newStatus = targetColumnId.startsWith('col-') ? targetColumnId.slice(4) : targetColumnId;
+        
+        // updateTask handles state mutation, column reassignment, persistence, and event dispatching
+        updateTask(taskId, { status: newStatus });
+        
         // Log task movement
         addActivityLogEntry('Sankalp Tiwari', `moved '${taskTitle}' to ${columnTitle}`, 'moved', 'Board');
 
-        // Dispatch event to re-render all views
+        // Render board via window event
         window.dispatchEvent(new CustomEvent('boardStateChanged'));
       }
-      
-      // Dispatch event to sync state
-      document.dispatchEvent(new CustomEvent('app:board-mutated'));
     }
 
     document.querySelectorAll('.task-list').forEach(el => el.classList.remove('drag-over'));

@@ -418,6 +418,24 @@ export function populateAssigneeSelects(members) {
     }
   }
 
+  // Populate the board header filter select
+  const boardFilterAssignee = document.getElementById('board-filter-assignee');
+  if (boardFilterAssignee) {
+    const currentValue = boardFilterAssignee.value;
+    boardFilterAssignee.innerHTML = '<option value="">All Assignees</option>';
+    members.forEach(member => {
+      const option = document.createElement('option');
+      option.value = member.id;
+      option.textContent = member.name;
+      boardFilterAssignee.appendChild(option);
+    });
+    if (members.some(m => m.id === currentValue)) {
+      boardFilterAssignee.value = currentValue;
+    } else {
+      boardFilterAssignee.value = '';
+    }
+  }
+
   // Populate side peek assignee selects
   const peekSelects = document.querySelectorAll('#side-peek select');
   let peekAssigneeSelect = null;
@@ -702,6 +720,7 @@ export function renderTable(data) {
       const progress = getSubtaskProgress(task.subtasks);
       const subtaskDisplay = progress ? `${progress.completed}/${progress.total}` : '-';
       const tr = document.createElement('tr');
+      tr.dataset.taskId = task.id;
       tr.innerHTML = `
         <td><strong>${task.title}</strong></td>
         <td>${col.title}</td>
@@ -726,6 +745,7 @@ export function renderList(data) {
       if (!task) return;
       const div = document.createElement('div');
       div.className = 'list-item';
+      div.dataset.taskId = task.id;
       div.innerHTML = `
         <div class="list-item-priority ${getPriorityClass(task.priority)}"></div>
         <div class="list-item-content">

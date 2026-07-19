@@ -1206,26 +1206,75 @@ function wireEventListeners() {
     }
   });
 
-  // Search input filtering for tasks, tables, lists
-  document.getElementById('search-input')?.addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase().trim();
-    document.querySelectorAll('.task-card').forEach(card => {
-      const title = card.querySelector('.task-title')?.textContent.toLowerCase() || '';
-      const desc = card.querySelector('.task-description')?.textContent.toLowerCase() || '';
-      if (!query || title.includes(query) || desc.includes(query)) {
-        card.style.display = '';
-      } else {
-        card.style.display = 'none';
+  // Compound Filtering Engine for Tasks, Tables, Lists
+  function applyCompoundFilters() {
+    const query = (document.getElementById('search-input')?.value || '').toLowerCase().trim();
+    const assigneeFilter = document.getElementById('board-filter-assignee')?.value || '';
+    const priorityFilter = document.getElementById('board-filter-priority')?.value || '';
+    const deadlineFilter = document.getElementById('board-filter-deadline')?.value || '';
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endOfWeek = new Date(today);
+    endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
+
+    const checkTask = (taskId) => {
+      if (!taskId) return false; // fallback for non-task elements
+      const task = MOCK_DATA.tasks[taskId];
+      if (!task) return false;
+
+      // 1. Search Query
+      if (query && !task.title.toLowerCase().includes(query) && !task.description.toLowerCase().includes(query)) {
+        return false;
       }
+      // 2. Assignee
+      if (assigneeFilter && task.assignee !== assigneeFilter) {
+        return false;
+      }
+      // 3. Priority
+      if (priorityFilter && task.priority !== priorityFilter) {
+        return false;
+      }
+      // 4. Deadline
+      if (deadlineFilter && task.dueDate) {
+        const dueDate = new Date(task.dueDate);
+        dueDate.setHours(0, 0, 0, 0);
+        if (deadlineFilter === 'overdue' && dueDate >= today) return false;
+        if (deadlineFilter === 'today' && dueDate.getTime() !== today.getTime()) return false;
+        if (deadlineFilter === 'week' && (dueDate < today || dueDate > endOfWeek)) return false;
+      } else if (deadlineFilter && !task.dueDate) {
+        return false; // if filtering by deadline but no deadline set
+      }
+
+      return true;
+    };
+
+    // Apply to Board Cards
+    document.querySelectorAll('.task-card').forEach(card => {
+      card.style.display = checkTask(card.dataset.taskId) ? '' : 'none';
     });
+    
+    // Apply to Table Rows (assuming they have dataset.taskId)
     document.querySelectorAll('.task-table tbody tr').forEach(row => {
-      const text = row.textContent.toLowerCase();
-      row.style.display = (!query || text.includes(query)) ? '' : 'none';
+      row.style.display = checkTask(row.dataset.taskId) ? '' : 'none';
     });
+    
+    // Apply to List Items
     document.querySelectorAll('.list-item').forEach(item => {
-      const text = item.textContent.toLowerCase();
-      item.style.display = (!query || text.includes(query)) ? '' : 'none';
+      item.style.display = checkTask(item.dataset.taskId) ? '' : 'none';
     });
+  }
+
+  // Bind UI events
+  document.getElementById('search-input')?.addEventListener('input', applyCompoundFilters);
+  document.getElementById('board-filter-assignee')?.addEventListener('change', applyCompoundFilters);
+  document.getElementById('board-filter-priority')?.addEventListener('change', applyCompoundFilters);
+  document.getElementById('board-filter-deadline')?.addEventListener('change', applyCompoundFilters);
+
+  // Hook into state changes so filtering persists after dragged/edited tasks
+  window.addEventListener('boardStateChanged', () => {
+    // slight delay to let UI render before applying filters
+    setTimeout(applyCompoundFilters, 50);
   });
 
   document.addEventListener('dblclick', (e) => {
