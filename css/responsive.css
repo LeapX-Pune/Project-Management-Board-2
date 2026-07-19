@@ -118,7 +118,7 @@
   .analytics-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--space-md);
+    gap: var(--space-sm);
   }
 
   .analytics-header-right {
@@ -208,8 +208,10 @@
   }
 
   .dashboard-split {
+    display: flex !important;
+    flex-direction: column !important;
     padding: var(--space-md);
-    gap: var(--space-sm);
+    gap: var(--space-md);
   }
 
   /* Kanban Board Horizontal Scroll Container on Tablet */
@@ -352,7 +354,9 @@
 
   /* Analytics Charts Stacking */
   .charts-grid {
-    grid-template-columns: 1fr;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: var(--space-md) !important;
   }
 
   .header-team-group {
@@ -592,7 +596,7 @@
     transform: translateY(-1px);
   }
 
-  /* Ensure content padding clears the fixed bottom nav bar */
+  /* Content area clearance for fixed bottom nav bar */
   .main-content,
   .main-area,
   .view-container,
@@ -620,7 +624,206 @@
     font-size: 0.75rem;
   }
 
-  /* Step 2: Team Header & Manage Team Button Polish */
+  /* ── Analytics Mobile Header & Filter Polish ── */
+  .analytics-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: var(--space-xs) !important;
+    margin-bottom: var(--space-md) !important;
+    padding: 0 !important;
+  }
+
+  .analytics-header-left {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+
+  .analytics-title {
+    font-size: clamp(1.25rem, 5vw, 1.5rem) !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+    color: var(--text-main) !important;
+    margin: 0 !important;
+  }
+
+  .analytics-subtitle {
+    font-size: 0.8125rem !important;
+    color: var(--text-muted) !important;
+    line-height: 1.35 !important;
+    margin: 0 !important;
+  }
+
+  .analytics-header-right {
+    width: 100% !important;
+    margin-top: var(--space-xs) !important;
+  }
+
+  .analytics-filters {
+    display: flex !important;
+    flex-direction: row !important;
+    width: 100% !important;
+    gap: var(--space-xs) !important;
+  }
+
+  .analytics-filters select {
+    flex: 1 !important;
+    min-width: 0 !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 0.625rem !important;
+    font-size: 0.75rem !important;
+    border-radius: var(--radius-md) !important;
+    border: 1px solid var(--border-subtle) !important;
+    background: var(--bg-surface) !important;
+  }
+
+  .analytics-view .dashboard-card {
+    padding: var(--space-md) !important;
+    border-radius: var(--radius-lg) !important;
+    overflow: hidden !important;
+  }
+
+  .analytics-view .chart-svg {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 220px !important;
+    display: block !important;
+  }
+
+  /* ── Dashboard Mobile Polish ── */
+  .metrics-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: var(--space-xs) !important;
+    padding: 0 !important;
+    margin-bottom: var(--space-md) !important;
+  }
+
+  .metric-card,
+  .dashboard-view .metric-card {
+    padding: var(--space-sm) var(--space-md) !important;
+    min-height: 76px !important;
+    border-radius: var(--radius-md) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    box-shadow: var(--shadow-card) !important;
+  }
+
+  .metric-label,
+  .dashboard-view .metric-card .metric-label {
+    font-size: 0.6875rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: var(--text-muted) !important;
+    margin-bottom: 2px !important;
+  }
+
+  .metric-value,
+  .dashboard-view .metric-card .metric-value {
+    font-size: clamp(1.25rem, 5vw, 1.625rem) !important;
+    font-weight: 700 !important;
+    color: var(--text-main) !important;
+    line-height: 1.1 !important;
+  }
+
+  .dashboard-split {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: var(--space-md) !important;
+    padding: 0 !important;
+  }
+
+  #dashboard-weekly-completion {
+    padding: var(--space-md) !important;
+    border-radius: var(--radius-lg) !important;
+    overflow: hidden !important;
+  }
+
+  #dashboard-weekly-completion .chart-svg {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 160px !important;
+    max-height: 220px !important;
+    display: block !important;
+  }
+
+  #dashboard-recent-activity {
+    padding: var(--space-md) !important;
+    border-radius: var(--radius-lg) !important;
+  }
+
+  .dashboard-view .recent-activity-list {
+    padding-left: 20px !important;
+  }
+
+  .dashboard-view .recent-activity-list::before {
+    left: 7px !important;
+  }
+
+  .dashboard-view .recent-activity-item {
+    padding: var(--space-xs) 0 !important;
+    margin: 0 !important;
+    gap: var(--space-sm) !important;
+    flex-wrap: wrap !important;
+  }
+
+  .dashboard-view .recent-activity-dot {
+    left: -17px !important;
+    top: 12px !important;
+    width: 8px !important;
+    height: 8px !important;
+  }
+
+  .dashboard-view .recent-activity-avatar {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .dashboard-view .recent-activity-text {
+    font-size: 0.8125rem !important;
+    line-height: 1.35 !important;
+    -webkit-line-clamp: 3 !important;
+  }
+
+  .dashboard-view .recent-activity-time {
+    font-size: 0.6875rem !important;
+    padding-top: 0 !important;
+    min-width: auto !important;
+    margin-left: auto !important;
+  }
+
+  .kpi-section {
+    margin-top: var(--space-md) !important;
+  }
+
+  .kpi-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: var(--space-xs) !important;
+  }
+
+  .kpi-card {
+    padding: var(--space-sm) !important;
+    min-height: 64px !important;
+    border-radius: var(--radius-md) !important;
+  }
+
+  .kpi-value {
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+  }
+
+  .kpi-label {
+    font-size: 0.625rem !important;
+  }
+
+  /* Team Header & Manage Team Button Polish */
   .team-header {
     display: flex !important;
     flex-direction: row !important;
@@ -645,32 +848,6 @@
     flex-shrink: 0 !important;
   }
 
-  /* Dashboard Overview Metrics Grid on Mobile */
-  .metrics-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: var(--space-xs) !important;
-    padding: var(--space-xs) var(--space-sm);
-  }
-
-  .metric-card,
-  .dashboard-view .metric-card {
-    padding: var(--space-sm) !important;
-    min-height: 72px !important;
-    border-radius: var(--radius-md) !important;
-  }
-
-  .metric-label,
-  .dashboard-view .metric-card .metric-label {
-    font-size: 0.625rem !important;
-    margin-bottom: 2px !important;
-  }
-
-  .metric-value,
-  .dashboard-view .metric-card .metric-value {
-    font-size: clamp(1.125rem, 4.5vw, 1.5rem) !important;
-  }
-
   /* Kanban Board Readable Card Columns on Mobile */
   .board {
     padding: var(--space-sm);
@@ -693,7 +870,7 @@
     padding: var(--space-sm) var(--space-md);
   }
 
-  /* Step 5: Table View Mobile Touch Scroll Polish */
+  /* Table View Mobile Touch Scroll Polish */
   .table-wrapper {
     width: 100% !important;
     overflow-x: auto !important;
@@ -713,7 +890,7 @@
     white-space: nowrap !important;
   }
 
-  /* Calendar Mobile Grid Adaptation (7-Column Month Grid Preserved) */
+  /* Calendar Mobile Grid Adaptation */
   .calendar-header {
     padding: var(--space-xs) var(--space-sm);
     flex-wrap: wrap;
@@ -746,7 +923,6 @@
     font-weight: 600 !important;
   }
 
-  /* Priority indicator dots for monthly calendar view on mobile */
   .calendar-event {
     width: 8px !important;
     height: 8px !important;
@@ -766,7 +942,7 @@
   .calendar-event.medium { background: var(--priority-medium-text) !important; }
   .calendar-event.low { background: var(--priority-low-text) !important; }
 
-  /* Touch Target Enhancements (Minimum 48px) */
+  /* Touch Target Enhancements */
   .btn,
   .btn-icon,
   .modal-close,
