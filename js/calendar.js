@@ -412,6 +412,13 @@ function selectDay(dateKey) {
   const dayEl = document.querySelector(`[data-date-key="${dateKey}"]`);
   if (dayEl) dayEl.classList.add('selected');
   updateDayPanel(dateKey);
+
+  if (window.innerWidth <= 768) {
+    const panel = document.getElementById('calendar-day-panel');
+    if (panel) {
+      panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
 }
 
 function clearDayPanel() {
@@ -421,7 +428,15 @@ function clearDayPanel() {
   });
   const panel = document.getElementById('calendar-day-panel');
   if (panel) {
-    panel.innerHTML = '<div class="calendar-day-panel-empty">Click a day to see tasks</div>';
+    panel.innerHTML = `
+      <div class="calendar-day-panel-empty flex-center" style="flex-direction: column; gap: var(--space-xs); padding: var(--space-xl) var(--space-sm);">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--color-text-subtle); opacity: 0.7;">
+          <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor"/>
+          <path d="M16 2v4M8 2v4M3 10h18"/>
+        </svg>
+        <div style="font-weight: 600; color: var(--color-text); font-size: 0.875rem;">Tap a day to see tasks</div>
+      </div>
+    `;
   }
 }
 
@@ -442,13 +457,24 @@ function updateDayPanel(dateKey) {
            (b.priority === 'high' ? 0 : b.priority === 'medium' ? 1 : 2);
   });
 
+  const emptyStateHtml = `
+    <div class="calendar-day-panel-empty flex-center" style="flex-direction: column; gap: var(--space-xs); padding: var(--space-lg) var(--space-sm);">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--color-text-subtle); opacity: 0.7;">
+        <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor"/>
+        <path d="M16 2v4M8 2v4M3 10h18"/>
+      </svg>
+      <div style="font-weight: 600; color: var(--color-text); font-size: 0.875rem;">No tasks scheduled</div>
+      <div style="font-size: 0.75rem; color: var(--color-text-muted); text-align: center;">Tap the button below to add a new task for this day.</div>
+    </div>
+  `;
+
   panel.innerHTML = `
     <div class="calendar-day-panel-header">
       <span class="calendar-day-panel-date">${dateLabel}</span>
       <span class="calendar-day-panel-count">${tasks.length} task${tasks.length !== 1 ? 's' : ''}</span>
     </div>
     <div class="calendar-day-panel-tasks">
-      ${sorted.length > 0 ? sorted.map(task => renderPanelTaskItem(task)).join('') : '<div class="calendar-day-panel-empty">No tasks due on this day</div>'}
+      ${sorted.length > 0 ? sorted.map(task => renderPanelTaskItem(task)).join('') : emptyStateHtml}
     </div>
     <button class="calendar-day-panel-add-btn" id="calendar-day-add-btn">+ Add Task for This Day</button>
   `;

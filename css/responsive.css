@@ -2,7 +2,7 @@
 
 /* ── Root & Global Responsive Tokens ── */
 :root {
-  --touch-target-min: 44px;
+  --touch-target-min: 48px;
 }
 
 /* Dynamic Viewport & Safe Area Adaptation */
@@ -113,7 +113,7 @@
   }
 }
 
-/* ── Tablet Viewports (768px - 1023px, including 820px) ── */
+/* ── Tablet Viewports (481px - 768px, including 820px) ── */
 @media (max-width: 1023px) {
   .analytics-header {
     flex-direction: column;
@@ -274,6 +274,84 @@
     width: 100% !important;
   }
 
+  /* ── Phase 5: Calendar Tablet & Mobile Responsive Flow ── */
+  /* Move Day Details Panel BELOW the Calendar Grid on Tablet & Mobile */
+  .calendar-wrapper {
+    padding: var(--space-sm) var(--space-md);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .calendar-header {
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-sm);
+  }
+
+  .calendar-nav-btn {
+    min-width: 48px !important;
+    min-height: 48px !important;
+  }
+
+  .calendar-today-btn {
+    min-height: 48px !important;
+    padding: 0 16px !important;
+  }
+
+  .calendar-view-toggles .view-toggle-btn {
+    min-height: 48px !important;
+    padding: 0 14px !important;
+  }
+
+  .calendar-body {
+    flex-direction: column !important;
+    gap: var(--space-md) !important;
+    overflow: visible !important;
+  }
+
+  .calendar-content {
+    width: 100% !important;
+    flex: none !important;
+  }
+
+  .calendar-month-grid {
+    grid-auto-rows: minmax(56px, auto) !important;
+    min-height: auto !important;
+  }
+
+  .calendar-day {
+    min-height: 56px !important;
+    padding: 4px 2px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  .calendar-day-number {
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    margin-bottom: 2px !important;
+  }
+
+  /* Selected Day Task Panel positioned BELOW the Calendar Grid */
+  .calendar-day-panel {
+    width: 100% !important;
+    position: static !important;
+    height: auto !important;
+    max-height: none !important;
+    flex: none !important;
+    border-radius: var(--radius-lg) !important;
+    padding: var(--space-md) !important;
+    margin-top: var(--space-sm) !important;
+    box-sizing: border-box !important;
+  }
+
+  .calendar-day-panel-add-btn {
+    min-height: 48px !important;
+    margin-top: var(--space-md) !important;
+  }
+
   /* Analytics Charts Stacking */
   .charts-grid {
     grid-template-columns: 1fr;
@@ -426,7 +504,7 @@
   }
 }
 
-/* ── Phase 4 — Mobile Devices (<= 480px) Bottom Tab Bar Adaptation ── */
+/* ── Mobile Devices (<= 480px) Bottom Tab Bar & Mobile Calendar ── */
 @media (max-width: 480px) {
   /* Hide sidebar, sidebar backdrop, and header hamburger menu on Mobile <= 480px */
   .sidebar {
@@ -589,62 +667,58 @@
     padding: var(--space-sm) var(--space-md);
   }
 
-  /* Calendar Mobile Grid Adaptation (Month Grid Preserved) */
+  /* Calendar Mobile Grid Adaptation (7-Column Month Grid Preserved) */
   .calendar-header {
     padding: var(--space-xs) var(--space-sm);
     flex-wrap: wrap;
     gap: var(--space-xs);
   }
 
-  .calendar-title {
-    font-size: 1rem;
+  .calendar-month-label {
+    font-size: 1rem !important;
+    margin-left: 0 !important;
   }
 
-  .calendar-grid {
+  .calendar-month-grid {
     gap: 1px;
   }
 
-  .calendar-day-header {
-    font-size: 0.6875rem;
-    padding: 4px 2px;
+  .calendar-weekday {
+    font-size: 0.6875rem !important;
+    padding: 4px 2px !important;
     text-transform: uppercase;
   }
 
   .calendar-day {
-    min-height: 52px;
-    padding: 3px;
+    min-height: 52px !important;
+    padding: 4px 2px !important;
   }
 
   .calendar-day-number {
-    font-size: 0.6875rem;
-    margin-bottom: 2px;
-    font-weight: 600;
+    font-size: 0.75rem !important;
+    margin-bottom: 2px !important;
+    font-weight: 600 !important;
   }
 
-  /* Accessible priority dots for monthly calendar view on mobile */
-  .calendar-events {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px;
-  }
-
+  /* Priority indicator dots for monthly calendar view on mobile */
   .calendar-event {
-    width: 8px;
-    height: 8px;
-    padding: 0;
-    margin: 1px;
-    display: inline-block;
-    border: none;
-    border-radius: 50%;
-    color: transparent;
-    overflow: hidden;
-    white-space: nowrap;
-    text-indent: -9999px;
+    width: 8px !important;
+    height: 8px !important;
+    min-height: 8px !important;
+    padding: 0 !important;
+    margin: 1px !important;
+    display: inline-block !important;
+    border: none !important;
+    border-radius: 50% !important;
+    color: transparent !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-indent: -9999px !important;
   }
 
-  .calendar-event.high { background: var(--priority-high-text); }
-  .calendar-event.medium { background: var(--priority-medium-text); }
-  .calendar-event.low { background: var(--priority-low-text); }
+  .calendar-event.high { background: var(--priority-high-text) !important; }
+  .calendar-event.medium { background: var(--priority-medium-text) !important; }
+  .calendar-event.low { background: var(--priority-low-text) !important; }
 
   /* Touch Target Enhancements (Minimum 48px) */
   .btn,
