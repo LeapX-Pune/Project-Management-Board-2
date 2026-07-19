@@ -74,6 +74,10 @@
     display: none;
   }
 
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+
   .sidebar.open {
     display: flex;
     position: fixed;

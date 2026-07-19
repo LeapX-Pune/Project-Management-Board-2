@@ -609,6 +609,10 @@ function wireEventListeners() {
     document.getElementById('sidebar').classList.toggle('collapsed');
   });
 
+  document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('open');
+  });
+
   // Sidebar navigation sections toggling
   document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
