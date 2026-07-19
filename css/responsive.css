@@ -1,6 +1,38 @@
-/* Responsive Adaptation Styles */
+/* Responsive Adaptation Styles — Complete End-to-End Implementation */
 
-/* ── Small Laptop (1366px) ── */
+/* ── Root & Global Responsive Tokens ── */
+:root {
+  --touch-target-min: 44px;
+}
+
+/* Dynamic Viewport & Safe Area Adaptation */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .modal-container,
+  .task-editor-side-peek,
+  .activity-panel {
+    padding-bottom: max(var(--space-md), env(safe-area-inset-bottom));
+  }
+}
+
+/* Sidebar Backdrop for Mobile Drawer Overlay */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay, rgba(3, 46, 99, 0.45));
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 99;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Small Laptop Viewports (1280px - 1366px) ── */
 @media (max-width: 1366px) {
   .app-header {
     padding: 0 var(--space-md);
@@ -12,18 +44,20 @@
 
   .board {
     padding: var(--space-md);
+    gap: var(--space-md);
   }
 
   .metrics-grid,
   .team-metrics-grid,
   .charts-grid {
-    gap: var(--space-sm);
+    gap: var(--space-md);
   }
 }
 
 @media (max-width: 1200px) {
-  .side-peek-content {
-    width: 420px;
+  .side-peek-content,
+  .task-editor-side-peek {
+    width: 400px;
   }
 
   .command-palette {
@@ -31,6 +65,7 @@
   }
 }
 
+/* ── Laptop / Mid-sized Screens (1024px - 1100px) ── */
 @media (max-width: 1100px) {
   .metrics-grid,
   .team-metrics-grid {
@@ -44,57 +79,98 @@
   .dashboard-split {
     grid-template-columns: 1fr;
   }
+
+  .team-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
 }
 
 @media (max-width: 1024px) {
   .app-header .search-bar {
-    max-width: 240px;
+    max-width: 220px;
   }
 
   .view-btn span {
     display: none;
   }
 
-  .activity-panel {
-    max-height: 50vh;
+  .view-btn {
+    padding: 0.5rem;
+    min-width: 38px;
+    justify-content: center;
   }
 
-  .side-peek-content {
+  .activity-panel {
+    max-height: 60vh;
+    width: 360px;
+  }
+
+  .side-peek-content,
+  .task-editor-side-peek {
     width: 380px;
   }
 }
 
-/* ── Tablet (768px) ── */
+/* ── Tablet Viewports (768px - 1023px, including 820px) ── */
+@media (max-width: 1023px) {
+  .analytics-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+
+  .analytics-header-right {
+    width: 100%;
+  }
+
+  .analytics-filters {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
+
 @media (max-width: 768px) {
   .app {
     grid-template-columns: 1fr;
   }
 
+  /* Off-canvas mobile sidebar drawer */
   .sidebar {
-    display: none;
-  }
-
-  .mobile-menu-btn {
-    display: flex !important;
-  }
-
-  .sidebar.open {
-    display: flex;
     position: fixed;
     top: 0;
     left: 0;
     bottom: 0;
     width: 280px;
-    z-index: 30;
+    max-width: 85vw;
+    z-index: 100;
     box-shadow: var(--shadow-lg);
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex !important;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .mobile-menu-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
   }
 
   .activity-panel {
     left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   }
 
   .app-header {
-    padding: var(--space-sm) var(--space-md);
+    padding: var(--space-xs) var(--space-md);
     gap: var(--space-sm);
   }
 
@@ -104,51 +180,39 @@
 
   .search-bar {
     max-width: none;
+    flex: 1;
     min-width: 0;
   }
 
   .board-view-controls {
+    display: flex;
+    gap: 2px;
+  }
+
+  .board-view-controls .view-btn span {
     display: none;
   }
 
   .btn-primary span {
-    display: none;
+    display: inline-block;
   }
 
-  /* Kanban Board Horizontal Scroll */
+  /* Kanban Board Horizontal Scroll Container on Tablet */
   .board {
     padding: var(--space-md);
-    gap: var(--space-sm);
+    gap: var(--space-md);
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
     padding-bottom: var(--space-lg);
   }
 
   .column {
+    flex: 0 0 280px;
     min-width: 280px;
     width: 280px;
-    scroll-snap-align: center;
-  }
-
-  .side-peek-content {
-    width: 100vw;
-  }
-
-  .command-palette {
-    width: calc(100vw - 2rem);
-  }
-
-  .command-palette-overlay {
-    padding-top: 10vh;
-  }
-
-  .peek-title-input {
-    font-size: clamp(1.125rem, 4vw, 1.25rem);
-  }
-
-  .peek-meta {
-    grid-template-columns: 1fr;
+    scroll-snap-align: start;
   }
 
   .task-table th:nth-child(4),
@@ -179,72 +243,239 @@
   .header-team-group .avatar-group {
     display: none !important;
   }
-  
-  /* Modal Tablet Size */
+
+  /* Modal Tablet Sizing */
   .modal-container {
     width: 90%;
-    max-width: 90%;
+    max-width: 600px;
   }
 }
 
-/* ── Mobile (480px) ── */
-@media (max-width: 480px) {
-  .app-header {
-    padding: var(--space-xs) var(--space-sm);
+/* ── Mobile Viewports Bottom Sheet (<= 640px) ── */
+@media (max-width: 640px) {
+  /* Task Editor Side Peek Adaptation */
+  .task-editor-side-peek,
+  .side-peek {
+    position: fixed !important;
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 90dvh !important;
+    max-height: 90dvh !important;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25) !important;
+    transform: translateY(100%) !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    z-index: 1000 !important;
   }
 
-  .header-right .btn {
-    padding: 0.375rem 0.5rem;
+  .task-editor-side-peek.open,
+  .side-peek.open {
+    transform: translateY(0) !important;
   }
 
-  /* Kanban Board larger cards on mobile */
-  .column {
-    min-width: 85vw;
-    width: 85vw;
+  .task-editor-side-peek-header,
+  .side-peek-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-sm) var(--space-md);
   }
 
-  /* Nearly Full-screen Modals */
-  .modal-container, .side-peek-content {
-    width: 100vw;
-    max-width: 100vw;
-    max-height: 100dvh;
-    height: 100dvh;
-    border-radius: 0;
-    border: none;
-    margin: 0;
-    transform: translateY(100%);
-    animation: bottomSheetEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  .task-editor-side-peek-footer,
+  .side-peek-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    padding: var(--space-sm) var(--space-md) max(var(--space-md), env(safe-area-inset-bottom));
   }
-  
-  .modal-overlay, .side-peek {
+
+  .task-editor-side-peek-body,
+  .side-peek-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: var(--space-md);
+  }
+
+  .task-editor-meta-row,
+  .task-editor-field-row {
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+  }
+
+  /* Member Modal Bottom Sheet Adaptation */
+  .modal-overlay {
     align-items: flex-end;
   }
 
-  @keyframes bottomSheetEnter {
-    from { transform: translateY(100%); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+  .modal-container {
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 90dvh;
+    height: 90dvh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    margin: 0;
+    border: none;
+    transform: translateY(100%);
+    animation: bottomSheetEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
-  .modal-overlay:not(.active) .modal-container,
-  .side-peek:not(.open) .side-peek-content {
+  .modal-overlay:not(.active) .modal-container {
     animation: bottomSheetExit 0.2s ease-in forwards;
   }
 
-  @keyframes bottomSheetExit {
-    from { transform: translateY(0); opacity: 1; }
-    to { transform: translateY(100%); opacity: 0; }
+  .member-manager {
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
   }
 
-  .modal-body {
-    padding: var(--space-md);
+  .member-list-pane {
+    max-height: 200px;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-sm);
+  }
+}
+
+/* ── Mobile Devices (320px - 480px, including 414px, 390px, 375px, 360px, 320px) ── */
+@media (max-width: 480px) {
+  .app-header {
+    padding: 6px var(--space-sm);
   }
 
-  .modal-header {
-    padding: var(--space-md);
+  .header-left {
+    gap: var(--space-xs);
   }
 
-  .side-peek-body {
-    padding: var(--space-md);
+  .header-right {
+    gap: 4px;
+  }
+
+  #add-task-btn span {
+    font-size: 0.75rem;
+  }
+
+  /* Overview Metrics 2x2 Grid on Mobile */
+  .metrics-grid,
+  .team-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .metric-card,
+  .dashboard-view .metric-card {
+    padding: var(--space-sm);
+    min-height: 80px;
+  }
+
+  .metric-label,
+  .dashboard-view .metric-card .metric-label {
+    font-size: 0.6875rem;
+  }
+
+  .metric-value,
+  .dashboard-view .metric-card .metric-value {
+    font-size: clamp(1.25rem, 5vw, 1.625rem);
+  }
+
+  /* Kanban Board Readable Card Columns on Mobile */
+  .board {
+    padding: var(--space-sm);
+    gap: var(--space-sm);
+    padding-bottom: var(--space-xl);
+  }
+
+  .column {
+    flex: 0 0 calc(100vw - 44px);
+    min-width: calc(100vw - 44px);
+    width: calc(100vw - 44px);
+    max-width: 340px;
+    scroll-snap-align: center;
+  }
+
+  .column-header {
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  .task-card {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  /* Calendar Mobile Grid Adaptation */
+  .calendar-header {
+    padding: var(--space-xs) var(--space-sm);
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+  }
+
+  .calendar-title {
+    font-size: 1rem;
+  }
+
+  .calendar-grid {
+    gap: 1px;
+  }
+
+  .calendar-day-header {
+    font-size: 0.6875rem;
+    padding: 4px 2px;
+    text-transform: uppercase;
+  }
+
+  .calendar-day {
+    min-height: 52px;
+    padding: 3px;
+  }
+
+  .calendar-day-number {
+    font-size: 0.6875rem;
+    margin-bottom: 2px;
+    font-weight: 600;
+  }
+
+  /* Accessible priority dots for monthly calendar view on mobile */
+  .calendar-events {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+
+  .calendar-event {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    margin: 1px;
+    display: inline-block;
+    border: none;
+    border-radius: 50%;
+    color: transparent;
+    overflow: hidden;
+    white-space: nowrap;
+    text-indent: -9999px;
+  }
+
+  .calendar-event.high { background: var(--priority-high-text); }
+  .calendar-event.medium { background: var(--priority-medium-text); }
+  .calendar-event.low { background: var(--priority-low-text); }
+
+  /* Touch Target Enhancements (Minimum 44px) */
+  .btn,
+  .btn-icon,
+  .modal-close,
+  .nav-item,
+  .view-btn,
+  .sidebar-collapse-btn {
+    min-height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
   }
 
   .task-table th:nth-child(3),
@@ -254,50 +485,74 @@
     display: none;
   }
 
-  .metrics-grid,
-  .team-metrics-grid {
-    grid-template-columns: 1fr;
-  }
-
   #manage-team-btn {
     width: 100%;
     justify-content: center;
   }
-  
-  /* Touch Target Enhancements */
-  .btn, .btn-icon, .modal-close, .nav-item {
-    min-height: 44px;
-    min-width: 44px;
+
+  .command-palette {
+    width: calc(100vw - 20px);
+    max-height: 85dvh;
+    margin: 10px auto;
   }
-  
-  /* Calendar Mobile Enhancements */
-  .calendar-day {
-    min-height: 60px;
-    padding: 4px;
-  }
-  
-  .calendar-day-number {
-    font-size: 0.75rem;
-    margin-bottom: 2px;
-  }
-  
-  .calendar-event {
-    width: 8px;
-    height: 8px;
-    padding: 0;
-    margin: 2px;
-    display: inline-block;
-    border: none;
-    border-radius: 50%;
-    color: transparent;
-    overflow: hidden;
-  }
-  
-  .calendar-event.high { background: var(--priority-high-text); }
-  .calendar-event.medium { background: var(--priority-medium-text); }
-  .calendar-event.low { background: var(--priority-low-text); }
 }
 
+/* ── Micro Mobile Viewports (320px - 360px) ── */
+@media (max-width: 360px) {
+  .app-header {
+    padding: 4px;
+    gap: 4px;
+  }
+
+  #add-task-btn span {
+    display: none;
+  }
+
+  #add-task-btn {
+    padding: 0 0.5rem;
+    min-width: 38px;
+  }
+
+  .column {
+    flex: 0 0 calc(100vw - 32px);
+    min-width: calc(100vw - 32px);
+    width: calc(100vw - 32px);
+  }
+
+  .board-title {
+    font-size: 1.125rem;
+  }
+
+  .metrics-grid,
+  .team-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Keyframe Animations for Mobile Bottom Sheets */
+@keyframes bottomSheetEnter {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bottomSheetExit {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+/* Accessibility Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
