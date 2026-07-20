@@ -676,13 +676,23 @@
   }
 
   /* ── Body: NO independent overflow — it is just a flex child that
-     grows to fill available height. The drawer parent scrolls it. */
+     flows naturally. flex:none (not flex:1) is critical here: if the
+     body uses flex:1 it expands to fill the remaining 90dvh, which
+     pushes delete-row + footer outside the scroll boundary in some
+     browsers. With flex:none, all items stack at natural height and
+     the parent overflow-y:auto scrolls through everything.          */
   .task-editor-side-peek-body,
   .side-peek-body {
-    flex: 1 !important;
-    overflow: visible !important;    /* was overflow-y:auto — the second scroll culprit */
+    flex: none !important;           /* was flex:1 — that trapped footer below */
+    overflow: visible !important;
     padding: var(--space-md) !important;
     min-height: 0 !important;
+  }
+
+  /* ── Delete row: flows in the normal scroll — not anchored          */
+  .task-editor-delete-row {
+    position: relative !important;
+    flex-shrink: 0 !important;
   }
 
   .task-editor-meta-row,
