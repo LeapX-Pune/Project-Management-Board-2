@@ -136,7 +136,7 @@ function openMemberProfileDrawer(member) {
             <span style="font-weight: 600;">${member.tasksCompleted}/${totalTasks} tasks (${pct}%)</span>
           </div>
           <div class="progress-bar" style="height: 8px; background: var(--color-border);">
-            <div class="progress-bar-fill" style="width: ${pct}%; background: var(--color-accent);"></div>
+            <div class="progress-bar-fill" style="transform: scaleX(${pct / 100}); background: var(--color-accent);"></div>
           </div>
         </div>
       </div>
@@ -605,21 +605,37 @@ function wireEventListeners() {
     });
   });
 
+  const sidebarEl = document.getElementById('sidebar');
+  const sidebarBackdropEl = document.getElementById('sidebar-backdrop');
+  
+  const closeMobileSidebar = () => {
+    sidebarEl?.classList.remove('open');
+    sidebarBackdropEl?.classList.remove('active');
+  };
+
   document.getElementById('sidebar-collapse')?.addEventListener('click', () => {
-    document.getElementById('sidebar').classList.toggle('collapsed');
+    sidebarEl?.classList.toggle('collapsed');
   });
 
-  // Sidebar navigation sections toggling
-  document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+  document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
+    const isOpen = sidebarEl?.classList.toggle('open');
+    sidebarBackdropEl?.classList.toggle('active', !!isOpen);
+  });
+
+  sidebarBackdropEl?.addEventListener('click', closeMobileSidebar);
+
+  // Navigation sections toggling (sidebar & mobile bottom nav bar)
+  document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
       e.preventDefault();
       
-      document.querySelectorAll('.sidebar-nav .nav-item').forEach(b => {
-        b.classList.remove('active-view');
-      });
-      item.classList.add('active-view');
-      
       const section = item.dataset.section;
+      if (!section) return;
+
+      document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(b => {
+        b.classList.toggle('active-view', b.dataset.section === section);
+      });
+      
       const boardHeader = document.querySelector('.board-header');
       
       document.querySelectorAll('.view-container').forEach(v => {
@@ -632,12 +648,18 @@ function wireEventListeners() {
         const activeSubView = activeSubViewBtn ? activeSubViewBtn.dataset.view : 'board';
         const subViewEl = document.getElementById(`${activeSubView}-view`);
         if (subViewEl) subViewEl.classList.add('active');
+        document.getElementById('add-column-fab')?.classList.add('is-board-view');
       } else {
         if (boardHeader) boardHeader.style.display = 'none';
         const viewEl = document.getElementById(`${section}-view`);
         if (viewEl) viewEl.classList.add('active');
+        document.getElementById('add-column-fab')?.classList.remove('is-board-view');
       }
       localStorage.setItem('sidebarSection', section);
+
+      if (window.innerWidth <= 768) {
+        closeMobileSidebar();
+      }
     });
   });
 
@@ -944,6 +966,18 @@ function wireEventListeners() {
     }
   });
 
+  // Tap / double-tap a card body to open the editor (mobile-friendly).
+  // The dedicated edit icon still works; this gives a larger hit target.
+  // Drag uses native HTML5 drag (dragstart), which does not fire click,
+  // so a tap that begins a drag won't accidentally open the editor.
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-action]')) return;
+    const card = e.target.closest('.task-card, tr[data-task-id], .list-item[data-task-id]');
+    if (card) {
+      openSidePeek(card);
+    }
+  });
+
   // Event delegation for subtask additions
   document.addEventListener('click', (e) => {
     const addSubtaskBtn = e.target.closest('#peek-add-subtask-btn');
@@ -1159,50 +1193,95 @@ function wireEventListeners() {
     }
   });
 
+  // #12 Dropdown Arrow Rotation — toggle .select-open on the filter
+  // <select> wrappers so the chevron rotates 180° when the menu opens.
+  document.querySelectorAll('.select-wrap select').forEach(sel => {
+    const wrap = sel.closest('.select-wrap');
+    if (!wrap) return;
+    sel.addEventListener('focus', () => wrap.classList.add('select-open'));
+    sel.addEventListener('blur', () => wrap.classList.remove('select-open'));
+    sel.addEventListener('change', () => wrap.classList.remove('select-open'));
+  });
+
+  // ── Add Column ────────────────────────────────────────────────
+  // Shared logic: create a column object, push it, and re-render via the
+  // canonical path so rename/delete handlers + counts stay wired.
+  function addColumnFromTitle(title) {
+    if (!title || !title.trim()) return false;
+    title = title.trim();
+    let colId = 'col-' + title.toLowerCase().replace(/\s+/g, '-');
+    if (MOCK_DATA.columns.some(c => c.id === colId)) {
+      let n = 2;
+      while (MOCK_DATA.columns.some(c => c.id === `${colId}-${n}`)) n++;
+      colId = `${colId}-${n}`;
+    }
+    MOCK_DATA.columns.push({ id: colId, title, taskIds: [] });
+    saveMockData();
+    renderBoard(MOCK_DATA);
+    renderTable(MOCK_DATA);
+    renderList(MOCK_DATA);
+    return true;
+  }
+
+  // Desktop in-strip "Add Column" control (kept for >=769px).
+  document.getElementById('add-column-btn')?.addEventListener('click', () => {
+    const placeholder = document.getElementById('add-column-placeholder');
+    if (placeholder) {
+      placeholder.querySelector('.add-column-btn')?.classList.add('hidden');
+      placeholder.querySelector('.add-column-input')?.classList.remove('hidden');
+      document.getElementById('new-column-input')?.focus();
+    }
+  });
   document.getElementById('confirm-add-column')?.addEventListener('click', () => {
     const input = document.getElementById('new-column-input');
-    const board = document.getElementById('board-container');
     const placeholder = document.getElementById('add-column-placeholder');
-    if (input && input.value.trim() && board && placeholder) {
-      const colId = 'col-' + input.value.trim().toLowerCase().replace(/\s+/g, '-');
-      const newCol = document.createElement('article');
-      newCol.className = 'column';
-      newCol.dataset.columnId = colId;
-      newCol.style.animation = 'slideUp 0.3s ease';
-      newCol.innerHTML = `
-        <div class="column-header">
-          <div class="column-header-left">
-            <h2 class="column-title">${input.value.trim()}</h2>
-            <span class="column-count">0</span>
-            <input type="text" class="column-title-input hidden" value="${input.value.trim()}">
-          </div>
-          <div class="column-options">
-            <button class="column-option-btn" data-action="rename" aria-label="Rename column">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M10 1.5L12.5 4L4.5 12H2V9.5L10 1.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-            </button>
-            <button class="column-option-btn destructive" data-action="delete" aria-label="Delete column">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3.5H12M5 3.5V2C5 1.72386 5.22386 1.5 5.5 1.5H8.5C8.77614 1.5 9 1.72386 9 2V3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-          </div>
-        </div>
-        <ul class="task-list"></ul>
-      `;
-      board.insertBefore(newCol, placeholder);
+    if (input && input.value.trim() && placeholder) {
+      addColumnFromTitle(input.value);
       input.value = '';
       placeholder.querySelector('.add-column-btn')?.classList.remove('hidden');
       placeholder.querySelector('.add-column-input')?.classList.add('hidden');
-      syncBoardDOMToState();
-      renderTable(MOCK_DATA);
-      renderList(MOCK_DATA);
     }
   });
-
   document.getElementById('cancel-add-column')?.addEventListener('click', () => {
     const placeholder = document.getElementById('add-column-placeholder');
     if (placeholder) {
       placeholder.querySelector('.add-column-btn')?.classList.remove('hidden');
       placeholder.querySelector('.add-column-input')?.classList.add('hidden');
       document.getElementById('new-column-input').value = '';
+    }
+  });
+
+  // #6 Mobile: FAB opens the bottom-sheet add-column UI (the in-strip
+  // control is hidden on mobile via CSS).
+  const addColumnSheet = document.getElementById('add-column-sheet');
+  const addColumnSheetInput = document.getElementById('add-column-sheet-input');
+  function openAddColumnSheet() {
+    if (!addColumnSheet) return;
+    addColumnSheet.classList.add('active');
+    addColumnSheetInput.value = '';
+    setTimeout(() => addColumnSheetInput.focus(), 50);
+  }
+  function closeAddColumnSheet() {
+    addColumnSheet?.classList.remove('active');
+  }
+  document.getElementById('add-column-fab')?.addEventListener('click', openAddColumnSheet);
+  document.getElementById('add-column-sheet-close')?.addEventListener('click', closeAddColumnSheet);
+  document.getElementById('add-column-sheet-cancel')?.addEventListener('click', closeAddColumnSheet);
+  addColumnSheet?.addEventListener('click', (e) => {
+    if (e.target === addColumnSheet) closeAddColumnSheet();
+  });
+  document.getElementById('add-column-sheet-confirm')?.addEventListener('click', () => {
+    if (addColumnFromTitle(addColumnSheetInput.value)) {
+      closeAddColumnSheet();
+    } else {
+      addColumnSheetInput.focus();
+    }
+  });
+  addColumnSheetInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      if (addColumnFromTitle(addColumnSheetInput.value)) closeAddColumnSheet();
+    } else if (e.key === 'Escape') {
+      closeAddColumnSheet();
     }
   });
 
@@ -1355,7 +1434,7 @@ function updateSubtaskProgress() {
   const checked = list.querySelectorAll('.peek-subtask-item input[type="checkbox"]:checked').length;
   const pct = total > 0 ? Math.round((checked / total) * 100) : 0;
   progressText.textContent = `${checked}/${total}`;
-  progressFill.style.width = `${pct}%`;
+  progressFill.style.transform = `scaleX(${pct / 100})`;
 }
 
 function updateBoardColumnCounts() {
@@ -1367,14 +1446,11 @@ function updateBoardColumnCounts() {
 }
 
 function restorePersistedState() {
-  const savedSection = localStorage.getItem('sidebarSection');
-  if (!savedSection) return;
+  const savedSection = localStorage.getItem('sidebarSection') || 'board';
 
-  const navItem = document.querySelector(`.sidebar-nav .nav-item[data-section="${savedSection}"]`);
-  if (!navItem) return;
-
-  document.querySelectorAll('.sidebar-nav .nav-item').forEach(b => b.classList.remove('active-view'));
-  navItem.classList.add('active-view');
+  document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(b => {
+    b.classList.toggle('active-view', b.dataset.section === savedSection);
+  });
 
   const boardHeader = document.querySelector('.board-header');
 
@@ -1390,10 +1466,12 @@ function restorePersistedState() {
     });
     const subViewEl = document.getElementById(`${savedSubView}-view`);
     if (subViewEl) subViewEl.classList.add('active');
+    document.getElementById('add-column-fab')?.classList.add('is-board-view');
   } else {
     if (boardHeader) boardHeader.style.display = 'none';
     const viewEl = document.getElementById(`${savedSection}-view`);
     if (viewEl) viewEl.classList.add('active');
+    document.getElementById('add-column-fab')?.classList.remove('is-board-view');
   }
 }
 

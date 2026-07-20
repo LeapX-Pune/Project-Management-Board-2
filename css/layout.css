@@ -7,8 +7,8 @@
 }
 
 .sidebar {
-  width: 240px;
-  background: var(--bg-sidebar);
+  width: var(--sidebar-width);
+  background: var(--color-surface);
   border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
@@ -17,7 +17,8 @@
   position: sticky;
   top: 0;
   height: 100dvh;
-  z-index: 20;
+  z-index: var(--z-sidebar);
+  will-change: width;
 }
 
 .sidebar.collapsed {
@@ -35,14 +36,13 @@
 }
 
 .sidebar-logo {
-   display: flex;
-   align-items: center;
-   gap: var(--space-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
   overflow-y: auto;
-   width: auto;
-   height: auto;
-   transition: width 0.25s var(--ease-out-quart), height 0.25s var(--ease-out-quart), opacity 0.2s var(--ease-out-quart);
-   will-change: width, height, opacity;
+  width: auto;
+  height: auto;
+  transition: opacity 0.2s var(--ease-out-quart);
 }
 
 .sidebar-title {
@@ -51,8 +51,7 @@
   letter-spacing: -0.02em;
   white-space: nowrap;
   color: var(--color-foreground);
-  transition: opacity 0.2s var(--ease-out-quart), width 0.2s var(--ease-out-quart);
-  will-change: opacity, width;
+  transition: opacity 0.2s var(--ease-out-quart);
 }
 
 .sidebar.collapsed .sidebar-logo {
@@ -292,7 +291,7 @@
   border-bottom: 1px solid var(--border-subtle);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: var(--z-sticky);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -312,7 +311,8 @@ body.dark-theme .app-header {
 .board-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: var(--space-sm);
   padding: var(--space-sm) var(--space-lg);
   background: var(--bg-canvas);
   border-bottom: 1px solid var(--border-subtle);
@@ -325,9 +325,12 @@ body.dark-theme .app-header {
   margin: 0;
 }
 
+/* Push the view-toggle group to the right edge while the title +
+   filter controls stay grouped on the left. */
 .board-view-controls {
   display: flex;
   gap: var(--space-xs);
+  margin-left: auto;
 }
 
 @media (max-width: 480px) {
@@ -506,10 +509,12 @@ body.dark-theme .app-header {
   animation: viewExit 150ms var(--ease-out-quart);
 }
 
+/* #14 Slide-in-from-right — new view slides in from the right,
+   old view exits to the left (forward navigation feel). */
 @keyframes viewEnter {
   from {
     opacity: 0;
-    transform: translateX(8px);
+    transform: translateX(24px);
   }
   to {
     opacity: 1;
@@ -524,7 +529,7 @@ body.dark-theme .app-header {
   }
   to {
     opacity: 0;
-    transform: translateX(-8px);
+    transform: translateX(-24px);
   }
 }
 
@@ -533,7 +538,7 @@ body.dark-theme .app-header {
   bottom: 0;
   right: 0;
   left: 240px;
-  z-index: 30;
+  z-index: var(--z-panel);
   display: flex;
   flex-direction: column;
   height: 0;
@@ -564,15 +569,37 @@ body.dark-theme .app-header {
 }
 
 .activity-resizer {
-  height: 4px;
+  height: 8px;
   cursor: ns-resize;
-  background: var(--border-subtle);
+  background: transparent;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.activity-resizer::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background: var(--color-border);
+  border-radius: 1px;
   transition: background 120ms var(--ease-out-quart);
 }
 
-.activity-resizer:hover,
-.activity-resizer:active {
+.activity-resizer::after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 0;
+  right: 0;
+  bottom: -8px;
+}
+
+.activity-resizer:hover::before,
+.activity-resizer:active::before {
   background: var(--color-accent);
 }
 
@@ -774,7 +801,7 @@ body.dark-theme .app-header {
   top: 0;
   right: 0;
   bottom: 0;
-  z-index: 50;
+  z-index: var(--z-peek);
   display: none;
 }
 
@@ -977,7 +1004,7 @@ body.dark-theme .app-header {
   align-items: flex-start;
   justify-content: center;
   padding-top: 15vh;
-  z-index: 100;
+  z-index: var(--z-dropdown);
   opacity: 0;
   transition: opacity 200ms var(--ease-out-quart);
 }
@@ -1147,6 +1174,24 @@ body.dark-theme .app-header {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border-subtle);
   font-size: 0.875rem;
+  /* Allow fixed-layout cells to shrink and wrap instead of overflowing
+     into neighbouring columns. */
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Title column: keep long task titles on one line, clipped with an
+   ellipsis so they never bleed into the next column. */
+.task-table td:first-child {
+  width: 30%;
+}
+
+.task-table td:first-child strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .task-table tr:last-child td {

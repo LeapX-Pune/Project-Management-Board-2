@@ -12,7 +12,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
   opacity: 0;
   pointer-events: none;
   transition: opacity 200ms var(--ease-out-quart);
@@ -30,7 +30,7 @@
   max-width: 680px;
   max-height: 85vh;
   box-shadow: var(--shadow-lg);
-  transform: scale(0.96) translateY(8px);
+  transform: scale(0.9) translateY(8px);
   opacity: 0;
   animation: modalEnter 200ms var(--ease-out-quart) forwards;
   display: flex;
@@ -46,7 +46,7 @@
 
 @keyframes modalEnter {
   from {
-    transform: scale(0.96) translateY(8px);
+    transform: scale(0.9) translateY(8px);
     opacity: 0;
   }
   to {
@@ -61,7 +61,7 @@
     opacity: 1;
   }
   to {
-    transform: scale(0.96) translateY(-8px);
+    transform: scale(0.9) translateY(-8px);
     opacity: 0;
   }
 }
@@ -275,7 +275,7 @@
   position: fixed;
   bottom: 24px;
   right: 24px;
-  z-index: 1100;
+  z-index: var(--z-toast);
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);

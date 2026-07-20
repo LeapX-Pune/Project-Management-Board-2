@@ -15,7 +15,8 @@
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-lg);
     width: 240px;
-    z-index: 500;
+    max-width: calc(100vw - 32px);
+    z-index: var(--z-dropdown);
     padding: var(--spacing-xs);
     display: flex;
     flex-direction: column;
@@ -101,4 +102,20 @@
 .dropdown--right {
     left: auto;
     right: 0;
+}
+
+/* Mobile: ensure dropdown doesn't overflow viewport */
+@media (max-width: 480px) {
+    .dropdown {
+        max-width: calc(100vw - 24px);
+        position: fixed;
+        left: 12px;
+        right: 12px;
+        width: auto;
+    }
+
+    .dropdown--right {
+        left: auto;
+        right: 12px;
+    }
 }

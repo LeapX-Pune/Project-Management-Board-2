@@ -500,7 +500,7 @@ function createSubtaskBar(subtasks) {
   if (!progress) return '';
   return `
     <div class="task-subtask-bar" title="${progress.completed}/${progress.total} subtasks">
-      <div class="task-subtask-bar-fill" style="width:${progress.pct}%"></div>
+      <div class="task-subtask-bar-fill" style="transform: scaleX(${progress.pct / 100})"></div>
       <span class="task-subtask-text">${progress.completed}/${progress.total}</span>
     </div>
   `;
@@ -721,6 +721,7 @@ export function renderTable(data) {
       const subtaskDisplay = progress ? `${progress.completed}/${progress.total}` : '-';
       const tr = document.createElement('tr');
       tr.dataset.taskId = task.id;
+      tr.style.cursor = 'pointer';
       tr.innerHTML = `
         <td><strong>${task.title}</strong></td>
         <td>${col.title}</td>
@@ -746,6 +747,7 @@ export function renderList(data) {
       const div = document.createElement('div');
       div.className = 'list-item';
       div.dataset.taskId = task.id;
+      div.style.cursor = 'pointer';
       div.innerHTML = `
         <div class="list-item-priority ${getPriorityClass(task.priority)}"></div>
         <div class="list-item-content">
@@ -812,15 +814,11 @@ export function renderTeam(members) {
   metricsContainer.className = 'metrics-grid team-metrics-grid';
   metricsContainer.style.padding = '0';
   metricsContainer.style.marginBottom = 'var(--space-lg)';
-  metricsContainer.style.display = 'grid';
-  metricsContainer.style.gridTemplateColumns = 'repeat(auto-fit, minmax(200px, 1fr))';
   metricsContainer.style.gap = 'var(--space-md)';
   container.appendChild(metricsContainer);
 
-  const cols = Math.ceil(members.length / 2);
   const grid = document.createElement('div');
   grid.className = 'team-grid';
-  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
   container.appendChild(grid);
 
   function updateFilteredView() {
@@ -937,7 +935,7 @@ export function renderTeam(members) {
                 <span class="team-card-stat-value" style="font-weight: 600; color: var(--color-text-muted);">${member.tasksCompleted}/${totalTasks} completed</span>
             </div>
             <div class="progress-bar" style="height: 6px; width: 100%; background: var(--color-border);">
-              <div class="progress-bar-fill" style="width: ${pct}%; background: var(--color-accent);"></div>
+              <div class="progress-bar-fill" style="transform: scaleX(${pct / 100}); background: var(--color-accent);"></div>
             </div>
           </div>
         </div>
@@ -953,18 +951,6 @@ export function renderTeam(members) {
 
       grid.appendChild(card);
     });
-
-    const remainder = filtered.length % cols;
-    if (remainder > 0) {
-      const fillers = cols - remainder;
-      for (let i = 0; i < fillers; i++) {
-        const filler = document.createElement('div');
-        filler.style.visibility = 'hidden';
-        filler.style.height = '0';
-        filler.style.overflow = 'hidden';
-        grid.appendChild(filler);
-      }
-    }
   }
 
   setTimeout(() => {
@@ -1453,7 +1439,7 @@ export function renderMemberWorkload(data) {
         <span class="member-bar-count">${count} task${count !== 1 ? 's' : ''}</span>
       </div>
       <div class="member-bar-track">
-        <div class="member-bar-fill" style="width:${pct}%;background:hsl(${hue},65%,50%)"></div>
+        <div class="member-bar-fill" style="transform: scaleX(${pct / 100});background:hsl(${hue},65%,50%)"></div>
       </div>`;
     container.appendChild(row);
   });
@@ -1537,7 +1523,7 @@ export function renderMemberStatsTable(data) {
         <td>
           <div class="member-stats-progress-cell">
             <div class="member-stats-progress-track">
-              <div class="member-stats-progress-fill" style="width:${pct}%;background:${color}"></div>
+              <div class="member-stats-progress-fill" style="transform: scaleX(${pct / 100});background:${color}"></div>
             </div>
             <span class="member-stats-pct">${pct}%</span>
           </div>

@@ -6,7 +6,7 @@
   <title>Project Management Board</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
   
   <!-- Core styles -->
   <link rel="stylesheet" href="css/style.css">
@@ -23,9 +23,13 @@
   
   <!-- Responsive overrides -->
   <link rel="stylesheet" href="css/responsive.css">
+  
+  <!-- Animations -->
+  <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
   <div class="app">
+    <div class="sidebar-backdrop" id="sidebar-backdrop" aria-hidden="true"></div>
     <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
       <div class="sidebar-header">
         <div class="sidebar-logo">
@@ -98,6 +102,11 @@
     <div class="main-content">
       <header class="app-header" role="banner">
         <div class="header-left">
+          <button class="btn-icon mobile-menu-btn" id="mobile-menu-btn" aria-label="Open menu" style="display: none;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
           <div class="breadcrumb">
             <span>Workspace</span>
           </div>
@@ -108,23 +117,6 @@
             <path d="M12 12L16 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
           <input type="text" class="search-input" id="search-input" placeholder="Search tasks..." aria-label="Search tasks">
-        </div>
-        <div class="board-filters" style="display: flex; gap: 8px; margin-left: 16px;">
-          <select id="board-filter-assignee" class="filter-select" style="height: 36px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem;">
-            <option value="">All Assignees</option>
-          </select>
-          <select id="board-filter-priority" class="filter-select" style="height: 36px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem;">
-            <option value="">All Priorities</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-          </select>
-          <select id="board-filter-deadline" class="filter-select" style="height: 36px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem;">
-            <option value="">All Deadlines</option>
-            <option value="overdue">Overdue</option>
-            <option value="today">Due Today</option>
-            <option value="week">Due This Week</option>
-          </select>
         </div>
         <div class="header-right">
           <!-- Dynamically populated team avatars list in header -->
@@ -166,6 +158,23 @@
       <div class="main-area">
         <div class="board-header">
           <h1 class="board-title">Project Management Board</h1>
+          <div class="board-filters" style="display: flex; gap: 8px; margin-left: 16px;">
+            <select id="board-filter-assignee" class="filter-select" style="height: 36px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem;">
+              <option value="">All Assignees</option>
+            </select>
+            <select id="board-filter-priority" class="filter-select" style="height: 36px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem;">
+              <option value="">All Priorities</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <select id="board-filter-deadline" class="filter-select" style="height: 36px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem;">
+              <option value="">All Deadlines</option>
+              <option value="overdue">Overdue</option>
+              <option value="today">Due Today</option>
+              <option value="week">Due This Week</option>
+            </select>
+          </div>
           <div class="board-view-controls" role="tablist" aria-label="View selector">
             <button class="view-btn active" data-view="board" role="tab" aria-selected="true" aria-label="Board view">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -309,11 +318,11 @@
           </div>
         </section>
 
-        <!-- Board sub-views -->
-        <section class="view-container board-view active" id="board-view" role="region" aria-label="Board view">
-          <div class="board" id="board-container">
-          </div>
-        </section>
+         <!-- Board sub-views -->
+         <section class="view-container board-view active" id="board-view" role="region" aria-label="Board view">
+           <div class="board" id="board-container">
+           </div>
+         </section>
 
         <section class="view-container table-view" id="table-view" role="region" aria-label="Table view">
           <div class="table-wrapper">
@@ -397,15 +406,25 @@
               </div>
               <div class="analytics-header-right">
                 <div class="analytics-filters">
-                  <select id="filter-status" aria-label="Filter by column status">
-                    <option value="all">All Columns</option>
-                  </select>
-                  <select id="filter-priority" aria-label="Filter by priority">
-                    <option value="all">All Priorities</option>
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
-                  </select>
+                  <div class="select-wrap">
+                    <select id="filter-status" aria-label="Filter by column status">
+                      <option value="all">All Columns</option>
+                    </select>
+                    <span class="select-chevron" aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5L7 9L11 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                  </div>
+                  <div class="select-wrap">
+                    <select id="filter-priority" aria-label="Filter by priority">
+                      <option value="all">All Priorities</option>
+                      <option value="high">High</option>
+                      <option value="medium">Medium</option>
+                      <option value="low">Low</option>
+                    </select>
+                    <span class="select-chevron" aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5L7 9L11 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -791,8 +810,86 @@
     </div>
   </div>
 
-  <!-- App Toast Alerts container -->
-  <div id="toast-container" class="toast-container"></div>
+  <!-- Mobile Add Column FAB -->
+  <button class="add-column-fab" id="add-column-fab" aria-label="Add new column" title="Add column">
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M10 4V16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <span class="add-column-fab-text">Add Column</span>
+  </button>
+
+  <!-- Mobile Add Column Bottom Sheet (replaces in-strip control on mobile) -->
+  <div class="modal-overlay add-column-overlay" id="add-column-sheet" role="dialog" aria-modal="true" aria-label="Add new column">
+    <div class="modal add-column-sheet-modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Add Column</h2>
+        <button class="modal-close" id="add-column-sheet-close" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path d="M4.5 4.5L13.5 13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M13.5 4.5L4.5 13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <label class="add-column-sheet-label" for="add-column-sheet-input">Column name</label>
+        <input type="text" class="add-column-sheet-input" id="add-column-sheet-input" placeholder="e.g. In Review" autocomplete="off">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="add-column-sheet-cancel">Cancel</button>
+        <button class="btn btn-primary" id="add-column-sheet-confirm">Add Column</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Navigation Bar (<=480px) -->
+  <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Mobile Navigation Bar">
+    <a href="#" class="mobile-nav-item" data-section="dashboard" aria-label="Dashboard">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+        <rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+        <rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+        <rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+      </svg>
+      <span class="mobile-nav-label">Dashboard</span>
+    </a>
+    <a href="#" class="mobile-nav-item active-view" data-section="board" aria-label="Board">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <rect x="2" y="3" width="4" height="14" rx="1" stroke="currentColor" stroke-width="1.5"/>
+        <rect x="8" y="3" width="4" height="10" rx="1" stroke="currentColor" stroke-width="1.5"/>
+        <rect x="14" y="3" width="4" height="12" rx="1" stroke="currentColor" stroke-width="1.5"/>
+      </svg>
+      <span class="mobile-nav-label">Board</span>
+    </a>
+    <a href="#" class="mobile-nav-item" data-section="calendar" aria-label="Calendar">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <rect x="2" y="3" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M2 7H18" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M6 1V5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M14 1V5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span class="mobile-nav-label">Calendar</span>
+    </a>
+    <a href="#" class="mobile-nav-item" data-section="analytics" aria-label="Analytics">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M2 18H18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M5 18V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M10 18V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M15 18V2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span class="mobile-nav-label">Analytics</span>
+    </a>
+    <a href="#" class="mobile-nav-item" data-section="team" aria-label="Team">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <circle cx="7" cy="6" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="13" cy="6" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M2 17C2 13.5 4 11 7 11C8.5 11 9.5 11.5 10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M18 17C18 13.5 16 11 13 11C11.5 11 10.5 11.5 10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M10 12C10 12 10 15 10 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span class="mobile-nav-label">Team</span>
+    </a>
+  </nav>
 
   <script type="module" src="js/main.js"></script>
 </body>
