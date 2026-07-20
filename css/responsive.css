@@ -381,40 +381,22 @@
     display: none !important;
   }
 
-  /* ── Mobile Table View: Truncate long task names to prevent          */
-  /*    overflow into the Status column (< 768px only).                */
+  /* ── Mobile Table View: Truncate long task titles (< 768px only).   */
+  /*    Horizontal scrolling is intentionally preserved — the table    */
+  /*    remains full-width with auto layout so every column keeps its  */
+  /*    natural width. Only the Task column title is shortened via the  */
+  /*    <strong> block element inside the first <td>.                  */
   /*    Desktop and tablet display full titles as before.              */
-  /*    The original task data is untouched — only visual display.     */
-  .table-view .task-table {
-    table-layout: fixed !important;
-    min-width: 0 !important;
-    width: 100% !important;
-  }
 
-  /* Task column (1st): constrained width + ellipsis truncation */
-  .table-view .task-table th:first-child,
-  .table-view .task-table td:first-child {
-    width: 35% !important;
-    max-width: 35% !important;
-    overflow: hidden !important;
-    white-space: nowrap !important;
-    text-overflow: ellipsis !important;
-  }
-
-  /* <strong> inside the task cell must also clip, not expand */
+  /* <strong> inside the task cell clips the title with ellipsis.
+     display:block + max-width work inside auto table-layout because
+     the cell width is determined by the colgroup (28%) in the HTML.  */
   .table-view .task-table td:first-child strong {
     display: block !important;
     overflow: hidden !important;
     white-space: nowrap !important;
     text-overflow: ellipsis !important;
-    max-width: 100% !important;
-  }
-
-  /* Status column (2nd): always fully readable */
-  .table-view .task-table th:nth-child(2),
-  .table-view .task-table td:nth-child(2) {
-    white-space: nowrap !important;
-    overflow: visible !important;
+    max-width: 140px !important;   /* cap keeps title compact, not full-cell */
   }
 
   /* ═══════════════════════════════════════════════════════════════════
@@ -1085,11 +1067,8 @@
     width: 100% !important;
   }
 
-  /* Table View: keep fixed layout / truncation — do NOT force min-width */
-  .table-view .task-table {
-    min-width: 0 !important;
-    table-layout: fixed !important;
-  }
+  /* Table View: auto layout retained (horizontal scroll active).      *
+   * Truncation is handled via <strong> max-width, not table-layout.   */
 
   .task-table th,
   .task-table td {
