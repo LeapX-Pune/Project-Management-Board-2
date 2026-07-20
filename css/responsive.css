@@ -556,6 +556,56 @@
     text-indent: -9999px !important;
     flex-shrink: 0 !important;
   }
+
+  /* ── Mobile Member Performance Card (< 768px) ─────────────────────
+     The card uses full available width with breathing room on both
+     sides. The inner <table> is given a fixed min-width so columns
+     keep their natural proportions and don't compress — horizontal
+     swipe reveals any columns that exceed the viewport width.
+     Desktop and tablet layouts are completely unaffected.
+  ─────────────────────────────────────────────────────────────────── */
+
+  /* Card: full-width, comfortable margin, clean border-radius */
+  .member-stats-table {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    /* Override the base overflow:hidden that was clipping the table */
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: var(--radius-lg) !important;
+    /* Flex:1 from base is fine on desktop but can cause narrow width
+       on mobile — reset to block so it fills its parent naturally.  */
+    flex: none !important;
+  }
+
+  /* Inner table: minimum width so 4 columns don't get squashed.
+     480 px gives each of 4 columns ~120 px — comfortable and clear. */
+  .member-stats-table table {
+    min-width: 480px !important;
+    width: 100% !important;
+  }
+
+  /* Cells: tighter padding on mobile saves horizontal space */
+  .member-stats-table th,
+  .member-stats-table td {
+    padding: 0.625rem 0.75rem !important;
+    font-size: 0.75rem !important;
+    white-space: nowrap !important;
+  }
+
+  /* Progress track: narrower on mobile so the Progress column stays
+     readable without dominating the row.                            */
+  .member-stats-progress-track {
+    max-width: 80px !important;
+    min-width: 48px !important;
+  }
+
+  /* Percentage label: keep its fixed width to avoid jitter */
+  .member-stats-pct {
+    min-width: 2.25rem !important;
+    font-size: 0.6875rem !important;
+  }
 }
 
 /* ── Mobile Viewports Bottom Sheet (<= 640px) ── */
