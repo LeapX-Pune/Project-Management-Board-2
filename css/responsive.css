@@ -610,7 +610,6 @@
 
 /* ── Mobile Viewports Bottom Sheet (<= 640px) ── */
 @media (max-width: 640px) {
-  /* Task Editor Side Peek Adaptation to Mobile Bottom Sheet */
   .task-editor-side-peek,
   .side-peek {
     position: fixed !important;
@@ -627,6 +626,14 @@
     transform: translateY(100%) !important;
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
     z-index: 1000 !important;
+    /* ── Unified scroll: the drawer itself is the ONE scroll parent.
+       All children (header, meta, body, footer) scroll together.   */
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    /* Must be flex-column so children stack vertically */
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   .task-editor-side-peek.open,
@@ -634,32 +641,48 @@
     transform: translateY(0) !important;
   }
 
+  /* ── Header: part of the natural flow — scrolls with content.
+     Remove sticky so there is no independent scroll region above. */
   .task-editor-side-peek-header,
   .side-peek-header {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: var(--color-surface);
-    border-bottom: 1px solid var(--color-border);
-    padding: var(--space-sm) var(--space-md);
+    position: relative !important;   /* was sticky — the nested-scroll culprit */
+    top: auto !important;
+    z-index: auto !important;
+    background: var(--color-surface) !important;
+    border-bottom: 1px solid var(--color-border) !important;
+    padding: var(--space-sm) var(--space-md) !important;
+    flex-shrink: 0 !important;       /* still doesn't collapse, just scrolls */
   }
 
+  /* ── Meta section (Status / Priority / Assignee / Due Date):
+     Allow it to participate in unified scroll — not flex-shrink:0
+     locking it above the scroll boundary.                         */
+  .task-editor-side-peek-meta {
+    flex-shrink: 0 !important;       /* keeps natural height, flows in scroll */
+    overflow: visible !important;
+  }
+
+  /* ── Footer: part of the natural flow — scrolls to bottom.
+     Remove sticky so it doesn't create a second anchor region.   */
   .task-editor-side-peek-footer,
   .side-peek-footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
-    background: var(--color-surface);
-    border-top: 1px solid var(--color-border);
-    padding: var(--space-sm) var(--space-md) max(var(--space-md), env(safe-area-inset-bottom));
+    position: relative !important;   /* was sticky — removed */
+    bottom: auto !important;
+    z-index: auto !important;
+    background: var(--color-surface) !important;
+    border-top: 1px solid var(--color-border) !important;
+    padding: var(--space-sm) var(--space-md) max(var(--space-md), env(safe-area-inset-bottom)) !important;
+    flex-shrink: 0 !important;
   }
 
+  /* ── Body: NO independent overflow — it is just a flex child that
+     grows to fill available height. The drawer parent scrolls it. */
   .task-editor-side-peek-body,
   .side-peek-body {
-    flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: var(--space-md);
+    flex: 1 !important;
+    overflow: visible !important;    /* was overflow-y:auto — the second scroll culprit */
+    padding: var(--space-md) !important;
+    min-height: 0 !important;
   }
 
   .task-editor-meta-row,
