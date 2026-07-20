@@ -136,7 +136,7 @@ function openMemberProfileDrawer(member) {
             <span style="font-weight: 600;">${member.tasksCompleted}/${totalTasks} tasks (${pct}%)</span>
           </div>
           <div class="progress-bar" style="height: 8px; background: var(--color-border);">
-            <div class="progress-bar-fill" style="width: ${pct}%; background: var(--color-accent);"></div>
+            <div class="progress-bar-fill" style="transform: scaleX(${pct / 100}); background: var(--color-accent);"></div>
           </div>
         </div>
       </div>
@@ -964,6 +964,18 @@ function wireEventListeners() {
     }
   });
 
+  // Tap / double-tap a card body to open the editor (mobile-friendly).
+  // The dedicated edit icon still works; this gives a larger hit target.
+  // Drag uses native HTML5 drag (dragstart), which does not fire click,
+  // so a tap that begins a drag won't accidentally open the editor.
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-action]')) return;
+    const card = e.target.closest('.task-card, tr[data-task-id], .list-item[data-task-id]');
+    if (card) {
+      openSidePeek(card);
+    }
+  });
+
   // Event delegation for subtask additions
   document.addEventListener('click', (e) => {
     const addSubtaskBtn = e.target.closest('#peek-add-subtask-btn');
@@ -1179,39 +1191,47 @@ function wireEventListeners() {
     }
   });
 
+  // Mobile FAB reuses the same add-column flow (see #6 in
+  // project-docs/mobile-ui-improvements.md).
+  document.getElementById('add-column-fab')?.addEventListener('click', () => {
+    const placeholder = document.getElementById('add-column-placeholder');
+    if (placeholder) {
+      placeholder.querySelector('.add-column-btn')?.classList.add('hidden');
+      placeholder.querySelector('.add-column-input')?.classList.remove('hidden');
+      document.getElementById('new-column-input')?.focus();
+    }
+  });
+
+  // #12 Dropdown Arrow Rotation — toggle .select-open on the filter
+  // <select> wrappers so the chevron rotates 180° when the menu opens.
+  document.querySelectorAll('.select-wrap select').forEach(sel => {
+    const wrap = sel.closest('.select-wrap');
+    if (!wrap) return;
+    sel.addEventListener('focus', () => wrap.classList.add('select-open'));
+    sel.addEventListener('blur', () => wrap.classList.remove('select-open'));
+    sel.addEventListener('change', () => wrap.classList.remove('select-open'));
+  });
+
   document.getElementById('confirm-add-column')?.addEventListener('click', () => {
     const input = document.getElementById('new-column-input');
-    const board = document.getElementById('board-container');
     const placeholder = document.getElementById('add-column-placeholder');
-    if (input && input.value.trim() && board && placeholder) {
-      const colId = 'col-' + input.value.trim().toLowerCase().replace(/\s+/g, '-');
-      const newCol = document.createElement('article');
-      newCol.className = 'column';
-      newCol.dataset.columnId = colId;
-      newCol.style.animation = 'slideUp 0.3s ease';
-      newCol.innerHTML = `
-        <div class="column-header">
-          <div class="column-header-left">
-            <h2 class="column-title">${input.value.trim()}</h2>
-            <span class="column-count">0</span>
-            <input type="text" class="column-title-input hidden" value="${input.value.trim()}">
-          </div>
-          <div class="column-options">
-            <button class="column-option-btn" data-action="rename" aria-label="Rename column">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M10 1.5L12.5 4L4.5 12H2V9.5L10 1.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-            </button>
-            <button class="column-option-btn destructive" data-action="delete" aria-label="Delete column">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3.5H12M5 3.5V2C5 1.72386 5.22386 1.5 5.5 1.5H8.5C8.77614 1.5 9 1.72386 9 2V3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-          </div>
-        </div>
-        <ul class="task-list"></ul>
-      `;
-      board.insertBefore(newCol, placeholder);
+    if (input && input.value.trim() && placeholder) {
+      const title = input.value.trim();
+      let colId = 'col-' + title.toLowerCase().replace(/\s+/g, '-');
+      // Avoid duplicate ids (e.g. re-adding a column with the same name).
+      if (MOCK_DATA.columns.some(c => c.id === colId)) {
+        let n = 2;
+        while (MOCK_DATA.columns.some(c => c.id === `${colId}-${n}`)) n++;
+        colId = `${colId}-${n}`;
+      }
+      MOCK_DATA.columns.push({ id: colId, title, taskIds: [] });
+      saveMockData();
       input.value = '';
       placeholder.querySelector('.add-column-btn')?.classList.remove('hidden');
       placeholder.querySelector('.add-column-input')?.classList.add('hidden');
-      syncBoardDOMToState();
+      // Re-render via the canonical path so the new column is fully wired
+      // (rename/delete handlers, counts) and consistent with table/list.
+      renderBoard(MOCK_DATA);
       renderTable(MOCK_DATA);
       renderList(MOCK_DATA);
     }
@@ -1226,26 +1246,75 @@ function wireEventListeners() {
     }
   });
 
-  // Search input filtering for tasks, tables, lists
-  document.getElementById('search-input')?.addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase().trim();
-    document.querySelectorAll('.task-card').forEach(card => {
-      const title = card.querySelector('.task-title')?.textContent.toLowerCase() || '';
-      const desc = card.querySelector('.task-description')?.textContent.toLowerCase() || '';
-      if (!query || title.includes(query) || desc.includes(query)) {
-        card.style.display = '';
-      } else {
-        card.style.display = 'none';
+  // Compound Filtering Engine for Tasks, Tables, Lists
+  function applyCompoundFilters() {
+    const query = (document.getElementById('search-input')?.value || '').toLowerCase().trim();
+    const assigneeFilter = document.getElementById('board-filter-assignee')?.value || '';
+    const priorityFilter = document.getElementById('board-filter-priority')?.value || '';
+    const deadlineFilter = document.getElementById('board-filter-deadline')?.value || '';
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endOfWeek = new Date(today);
+    endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
+
+    const checkTask = (taskId) => {
+      if (!taskId) return false; // fallback for non-task elements
+      const task = MOCK_DATA.tasks[taskId];
+      if (!task) return false;
+
+      // 1. Search Query
+      if (query && !task.title.toLowerCase().includes(query) && !task.description.toLowerCase().includes(query)) {
+        return false;
       }
+      // 2. Assignee
+      if (assigneeFilter && task.assignee !== assigneeFilter) {
+        return false;
+      }
+      // 3. Priority
+      if (priorityFilter && task.priority !== priorityFilter) {
+        return false;
+      }
+      // 4. Deadline
+      if (deadlineFilter && task.dueDate) {
+        const dueDate = new Date(task.dueDate);
+        dueDate.setHours(0, 0, 0, 0);
+        if (deadlineFilter === 'overdue' && dueDate >= today) return false;
+        if (deadlineFilter === 'today' && dueDate.getTime() !== today.getTime()) return false;
+        if (deadlineFilter === 'week' && (dueDate < today || dueDate > endOfWeek)) return false;
+      } else if (deadlineFilter && !task.dueDate) {
+        return false; // if filtering by deadline but no deadline set
+      }
+
+      return true;
+    };
+
+    // Apply to Board Cards
+    document.querySelectorAll('.task-card').forEach(card => {
+      card.style.display = checkTask(card.dataset.taskId) ? '' : 'none';
     });
+    
+    // Apply to Table Rows (assuming they have dataset.taskId)
     document.querySelectorAll('.task-table tbody tr').forEach(row => {
-      const text = row.textContent.toLowerCase();
-      row.style.display = (!query || text.includes(query)) ? '' : 'none';
+      row.style.display = checkTask(row.dataset.taskId) ? '' : 'none';
     });
+    
+    // Apply to List Items
     document.querySelectorAll('.list-item').forEach(item => {
-      const text = item.textContent.toLowerCase();
-      item.style.display = (!query || text.includes(query)) ? '' : 'none';
+      item.style.display = checkTask(item.dataset.taskId) ? '' : 'none';
     });
+  }
+
+  // Bind UI events
+  document.getElementById('search-input')?.addEventListener('input', applyCompoundFilters);
+  document.getElementById('board-filter-assignee')?.addEventListener('change', applyCompoundFilters);
+  document.getElementById('board-filter-priority')?.addEventListener('change', applyCompoundFilters);
+  document.getElementById('board-filter-deadline')?.addEventListener('change', applyCompoundFilters);
+
+  // Hook into state changes so filtering persists after dragged/edited tasks
+  window.addEventListener('boardStateChanged', () => {
+    // slight delay to let UI render before applying filters
+    setTimeout(applyCompoundFilters, 50);
   });
 
   document.addEventListener('dblclick', (e) => {
@@ -1326,7 +1395,7 @@ function updateSubtaskProgress() {
   const checked = list.querySelectorAll('.peek-subtask-item input[type="checkbox"]:checked').length;
   const pct = total > 0 ? Math.round((checked / total) * 100) : 0;
   progressText.textContent = `${checked}/${total}`;
-  progressFill.style.width = `${pct}%`;
+  progressFill.style.transform = `scaleX(${pct / 100})`;
 }
 
 function updateBoardColumnCounts() {

@@ -9,7 +9,7 @@
 :root {
   color-scheme: light;
 
-  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Inter Tight', system-ui, -apple-system, sans-serif;
   --font-mono: 'Geist Mono', 'JetBrains Mono', monospace;
 
   /* Brand scale derived from #83b9fc */
@@ -33,7 +33,9 @@
   --color-sidebar: #DAE8F8;
   --color-header: var(--color-sidebar);
 
-  /* Column status backgrounds (light theme: darker shades) */
+  /* Column status backgrounds — tuned per status (not derived from brand scale)
+     so each column gets a distinct hue matching its workflow stage.
+     If the status palette changes, update these manually. */
   --col-backlog-bg: #DDDCD8;
   --col-todo-bg: #E5DEBC;
   --col-in-progress-bg: #C2D9EE;
@@ -94,6 +96,17 @@
   --priority-low-bg: rgba(16, 185, 129, 0.08);
   --priority-low-text: #059669;
 
+  /* KPI card semantic tokens */
+  --kpi-success-color: #10B981;
+  --kpi-success-bg: rgba(16, 185, 129, 0.1);
+  --kpi-success-gradient: linear-gradient(90deg, #10B981, #34D399);
+  --kpi-warning-color: #F59E0B;
+  --kpi-warning-bg: rgba(245, 158, 11, 0.1);
+  --kpi-warning-gradient: linear-gradient(90deg, #F59E0B, #FBBF24);
+  --kpi-info-color: #6366F1;
+  --kpi-info-bg: rgba(99, 102, 241, 0.1);
+  --kpi-info-gradient: linear-gradient(90deg, #6366F1, #818CF8);
+
   /* Shadow aliases */
   --shadow-card: 0px 1px 2px rgba(3, 46, 99, 0.06), 0px 1px 1px rgba(3, 46, 99, 0.04);
   --shadow-card-hover: 0px 4px 12px -2px rgba(3, 46, 99, 0.08), 0px 2px 4px -2px rgba(3, 46, 99, 0.06);
@@ -143,6 +156,20 @@
   --anim-scale-in: scaleIn var(--duration-fast) var(--ease-out-quart);
   --anim-scale-out: scaleOut var(--duration-fast) var(--ease-in-out-quart);
   --anim-bounce-in: bounceIn var(--duration-entrance) var(--ease-spring);
+
+  /* Z-index scale — single source of truth */
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-tooltip: 20;
+  --z-sidebar: 30;
+  --z-panel: 40;
+  --z-peek: 50;
+  --z-dropdown: 100;
+  --z-mobile-nav: 200;
+  --z-task-editor: 300;
+  --z-modal: 400;
+  --z-confirm: 500;
+  --z-toast: 600;
 }
 
 html {
@@ -284,7 +311,7 @@ body.dark-theme {
   --color-sidebar: var(--color-surface-3);
   --color-header: var(--color-sidebar);
 
-  /* Column status backgrounds (dark theme: lighter for visibility) */
+  /* Column status backgrounds (dark theme: lighter base for visibility) */
   --col-backlog-bg: #333333;
   --col-todo-bg: #423C2C;
   --col-in-progress-bg: #2D4355;
@@ -353,6 +380,17 @@ body.dark-theme {
   --shadow-md: var(--shadow-card-hover);
   --shadow-lg: var(--shadow-floating);
   --shadow-peek: -10px 0 30px rgba(0, 0, 0, 0.4);
+
+  /* KPI card dark mode tokens */
+  --kpi-success-color: #6EE7B7;
+  --kpi-success-bg: rgba(110, 231, 183, 0.15);
+  --kpi-success-gradient: linear-gradient(90deg, #6EE7B7, #A7F3D0);
+  --kpi-warning-color: #FCD34D;
+  --kpi-warning-bg: rgba(252, 211, 77, 0.15);
+  --kpi-warning-gradient: linear-gradient(90deg, #FCD34D, #FDE68A);
+  --kpi-info-color: #818CF8;
+  --kpi-info-bg: rgba(129, 140, 248, 0.15);
+  --kpi-info-gradient: linear-gradient(90deg, #818CF8, #A5B4FC);
 }
 
 body.dark-theme .task-priority.high {

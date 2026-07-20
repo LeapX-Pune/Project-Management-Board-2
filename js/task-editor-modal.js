@@ -84,7 +84,7 @@ function createSidePeekHTML() {
             <span class="task-editor-subtask-count" id="task-editor-subtask-count">0/0</span>
           </div>
           <div class="task-editor-progress-bar">
-            <div class="task-editor-progress-fill" id="task-editor-progress-fill" style="width: 0%"></div>
+            <div class="task-editor-progress-fill" id="task-editor-progress-fill" style="transform: scaleX(0)"></div>
           </div>
           <div class="task-editor-subtask-list" id="task-editor-subtask-list"></div>
           <div class="task-editor-add-subtask">
@@ -289,7 +289,7 @@ function updateSubtaskProgress() {
   const percentage = total > 0 ? Math.round((checked / total) * 100) : 0;
 
   countEl.textContent = `${checked}/${total}`;
-  progressFill.style.width = `${percentage}%`;
+  progressFill.style.transform = `scaleX(${percentage / 100})`;
 }
 
 /**
@@ -751,16 +751,32 @@ export function openTaskEditor(taskId) {
 
   let sidePeek = document.getElementById('task-editor-side-peek');
   if (!sidePeek) {
-    sidePeek = document.createElement('div');
-    sidePeek.innerHTML = createSidePeekHTML();
-    document.body.appendChild(sidePeek.firstElementChild);
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = createSidePeekHTML();
+    sidePeek = wrapper.firstElementChild;
+    document.body.appendChild(sidePeek);
     bindEventListeners();
   }
 
   populateAssigneeDropdown();
   populateSidePeek(taskId);
 
+  // Retrigger stagger animation on body children
+  const body = sidePeek.querySelector('.task-editor-side-peek-body');
+  if (body) {
+    [...body.children].forEach(child => {
+      child.style.animation = 'none';
+      child.style.opacity = '0';
+    });
+    void body.offsetHeight;
+  }
   sidePeek.classList.add('open');
+  if (body) {
+    [...body.children].forEach(child => {
+      child.style.animation = '';
+      child.style.opacity = '';
+    });
+  }
 
   setTimeout(() => {
     const titleInput = document.getElementById('task-editor-title');

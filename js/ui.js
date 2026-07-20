@@ -418,6 +418,24 @@ export function populateAssigneeSelects(members) {
     }
   }
 
+  // Populate the board header filter select
+  const boardFilterAssignee = document.getElementById('board-filter-assignee');
+  if (boardFilterAssignee) {
+    const currentValue = boardFilterAssignee.value;
+    boardFilterAssignee.innerHTML = '<option value="">All Assignees</option>';
+    members.forEach(member => {
+      const option = document.createElement('option');
+      option.value = member.id;
+      option.textContent = member.name;
+      boardFilterAssignee.appendChild(option);
+    });
+    if (members.some(m => m.id === currentValue)) {
+      boardFilterAssignee.value = currentValue;
+    } else {
+      boardFilterAssignee.value = '';
+    }
+  }
+
   // Populate side peek assignee selects
   const peekSelects = document.querySelectorAll('#side-peek select');
   let peekAssigneeSelect = null;
@@ -482,7 +500,7 @@ function createSubtaskBar(subtasks) {
   if (!progress) return '';
   return `
     <div class="task-subtask-bar" title="${progress.completed}/${progress.total} subtasks">
-      <div class="task-subtask-bar-fill" style="width:${progress.pct}%"></div>
+      <div class="task-subtask-bar-fill" style="transform: scaleX(${progress.pct / 100})"></div>
       <span class="task-subtask-text">${progress.completed}/${progress.total}</span>
     </div>
   `;
@@ -702,6 +720,8 @@ export function renderTable(data) {
       const progress = getSubtaskProgress(task.subtasks);
       const subtaskDisplay = progress ? `${progress.completed}/${progress.total}` : '-';
       const tr = document.createElement('tr');
+      tr.dataset.taskId = task.id;
+      tr.style.cursor = 'pointer';
       tr.innerHTML = `
         <td><strong>${task.title}</strong></td>
         <td>${col.title}</td>
@@ -726,6 +746,8 @@ export function renderList(data) {
       if (!task) return;
       const div = document.createElement('div');
       div.className = 'list-item';
+      div.dataset.taskId = task.id;
+      div.style.cursor = 'pointer';
       div.innerHTML = `
         <div class="list-item-priority ${getPriorityClass(task.priority)}"></div>
         <div class="list-item-content">
@@ -913,7 +935,7 @@ export function renderTeam(members) {
                 <span class="team-card-stat-value" style="font-weight: 600; color: var(--color-text-muted);">${member.tasksCompleted}/${totalTasks} completed</span>
             </div>
             <div class="progress-bar" style="height: 6px; width: 100%; background: var(--color-border);">
-              <div class="progress-bar-fill" style="width: ${pct}%; background: var(--color-accent);"></div>
+              <div class="progress-bar-fill" style="transform: scaleX(${pct / 100}); background: var(--color-accent);"></div>
             </div>
           </div>
         </div>
@@ -1417,7 +1439,7 @@ export function renderMemberWorkload(data) {
         <span class="member-bar-count">${count} task${count !== 1 ? 's' : ''}</span>
       </div>
       <div class="member-bar-track">
-        <div class="member-bar-fill" style="width:${pct}%;background:hsl(${hue},65%,50%)"></div>
+        <div class="member-bar-fill" style="transform: scaleX(${pct / 100});background:hsl(${hue},65%,50%)"></div>
       </div>`;
     container.appendChild(row);
   });
@@ -1501,7 +1523,7 @@ export function renderMemberStatsTable(data) {
         <td>
           <div class="member-stats-progress-cell">
             <div class="member-stats-progress-track">
-              <div class="member-stats-progress-fill" style="width:${pct}%;background:${color}"></div>
+              <div class="member-stats-progress-fill" style="transform: scaleX(${pct / 100});background:${color}"></div>
             </div>
             <span class="member-stats-pct">${pct}%</span>
           </div>

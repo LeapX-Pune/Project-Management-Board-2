@@ -248,6 +248,7 @@
 .calendar-content {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -256,13 +257,15 @@
 .calendar-month-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  grid-auto-rows: minmax(80px, 1fr);
+  grid-auto-rows: minmax(0, 1fr);
   border: 1px solid var(--border-subtle);
   background: var(--bg-surface);
   border-radius: var(--radius-lg);
   overflow: hidden;
   flex: 1;
   min-height: 0;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .calendar-header {
@@ -327,14 +330,15 @@
 }
 
 .calendar-day {
-  min-height: 80px;
-  padding: var(--space-xs) var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
   border-right: 1px solid var(--border-subtle);
   border-bottom: 1px solid var(--border-subtle);
   background: var(--bg-surface);
   transition: background var(--transition-fast);
   position: relative;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
 }
 
 .calendar-day:nth-child(7n) {
@@ -355,9 +359,23 @@
   opacity: 0.5;
 }
 
+.calendar-day.today .calendar-day-number::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  margin-left: 4px;
+  vertical-align: super;
+}
+
 .calendar-day.selected {
   background: var(--color-accent-light);
-  box-shadow: inset 0 0 0 2px var(--color-accent);
+}
+
+.calendar-day.selected:hover {
+  background: var(--color-accent-light);
 }
 
 .calendar-day-column.selected {
@@ -365,32 +383,62 @@
   border-radius: var(--radius-lg);
 }
 
-.calendar-day.today {
-  box-shadow: inset 0 0 0 2px var(--color-accent);
-}
-
-.calendar-day.today:hover {
-  background: var(--color-accent-light);
-}
-
 .calendar-day-number {
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--text-main);
   text-align: right;
-  margin-bottom: var(--space-xs);
+  flex-shrink: 0;
+}
+
+.calendar-day-events {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.calendar-event-capsule {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.calendar-event-capsule.high {
+  background: var(--priority-high-text);
+}
+
+.calendar-event-capsule.medium {
+  background: var(--priority-medium-text);
+}
+
+.calendar-event-capsule.low {
+  background: var(--priority-low-text);
+}
+
+.calendar-event-capsule:hover {
+  transform: scale(1.4);
+}
+
+.calendar-event-more {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  line-height: 1;
 }
 
 .calendar-event {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 6px;
+  padding: 4px 10px;
   margin-bottom: 2px;
-  border-radius: 4px;
+  border-radius: 12px;
   cursor: pointer;
   transition: var(--transition-fast);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   color: var(--text-main);
   white-space: nowrap;
   overflow: hidden;
@@ -468,7 +516,7 @@
 }
 
 .analytics-filters select {
-  padding: 0.4375rem 0.8125rem;
+  padding: 0.4375rem 1.75rem 0.4375rem 0.8125rem;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   background: var(--bg-surface);
@@ -476,6 +524,34 @@
   font-size: 0.8125rem;
   cursor: pointer;
   min-height: 34px;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* #12 Dropdown Arrow Rotation — chevron rotates 180° when the
+   native select is focused/open. */
+.select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.select-chevron {
+  position: absolute;
+  right: 0.625rem;
+  display: inline-flex;
+  pointer-events: none;
+  color: var(--text-muted);
+  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.analytics-filters select:focus ~ .select-chevron,
+.select-wrap:focus-within .select-chevron,
+.select-wrap.select-open .select-chevron,
+.select-wrap select:focus ~ .select-chevron,
+.select-wrap select:active ~ .select-chevron {
+  transform: rotate(180deg);
+  color: var(--color-accent);
 }
 
 .analytics-filters select:focus {
@@ -532,8 +608,10 @@
 
 .member-bar-fill {
   height: 100%;
+  width: 100%;
   border-radius: 999px;
-  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @media (max-width: 600px) {
@@ -808,8 +886,10 @@
 
 .member-stats-progress-fill {
   height: 100%;
+  width: 100%;
   border-radius: 999px;
-  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .member-stats-pct {
@@ -837,8 +917,10 @@
 
 .progress-bar-fill {
   height: 100%;
+  width: 100%;
   border-radius: 999px;
-  transition: width var(--transition-base);
+  transform-origin: left;
+  transition: transform var(--transition-base);
 }
 
 .view-container.active.team-view {
@@ -1081,42 +1163,42 @@
 
 /* Card variants */
 .dashboard-view .kpi-card--tasks-done {
-  border-left: 3px solid #10B981;
+  border-left: 3px solid var(--kpi-success-color);
 }
 
 .dashboard-view .kpi-card--tasks-done::before {
-  background: linear-gradient(90deg, #10B981, #34D399);
+  background: var(--kpi-success-gradient);
 }
 
 .dashboard-view .kpi-card--tasks-done .kpi-icon-wrap {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10B981;
+  background: var(--kpi-success-bg);
+  color: var(--kpi-success-color);
 }
 
 .dashboard-view .kpi-card--due-soon {
-  border-left: 3px solid #F59E0B;
+  border-left: 3px solid var(--kpi-warning-color);
 }
 
 .dashboard-view .kpi-card--due-soon::before {
-  background: linear-gradient(90deg, #F59E0B, #FBBF24);
+  background: var(--kpi-warning-gradient);
 }
 
 .dashboard-view .kpi-card--due-soon .kpi-icon-wrap {
-  background: rgba(245, 158, 11, 0.1);
-  color: #F59E0B;
+  background: var(--kpi-warning-bg);
+  color: var(--kpi-warning-color);
 }
 
 .dashboard-view .kpi-card--avg-time {
-  border-left: 3px solid #6366F1;
+  border-left: 3px solid var(--kpi-info-color);
 }
 
 .dashboard-view .kpi-card--avg-time::before {
-  background: linear-gradient(90deg, #6366F1, #818CF8);
+  background: var(--kpi-info-gradient);
 }
 
 .dashboard-view .kpi-card--avg-time .kpi-icon-wrap {
-  background: rgba(99, 102, 241, 0.1);
-  color: #6366F1;
+  background: var(--kpi-info-bg);
+  color: var(--kpi-info-color);
 }
 
 /* KPI Card Components */
@@ -1197,18 +1279,7 @@
   color: var(--text-muted);
 }
 
-/* Dark mode adjustments */
-body.dark-theme .dashboard-view .kpi-card--tasks-done .kpi-icon-wrap {
-  background: rgba(16, 185, 129, 0.15);
-}
 
-body.dark-theme .dashboard-view .kpi-card--due-soon .kpi-icon-wrap {
-  background: rgba(245, 158, 11, 0.15);
-}
-
-body.dark-theme .dashboard-view .kpi-card--avg-time .kpi-icon-wrap {
-  background: rgba(99, 102, 241, 0.15);
-}
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -1698,12 +1769,4 @@ body.dark-theme .dashboard-view .kpi-card--avg-time .kpi-icon-wrap {
 }
 .calendar-day-panel-add-btn:hover {
   opacity: 0.9;
-}
-
-/* === CALENDAR EVENT MORE === */
-.calendar-event-more {
-  font-size: 0.6875rem;
-  color: var(--text-muted);
-  padding: 1px 6px;
-  cursor: pointer;
 }

@@ -24,17 +24,21 @@
 
 .task-card:hover {
   border-color: var(--color-accent);
-  transform: none;
+  /* #1 Card Hover Lift — translateY(-4px) + expanding shadow */
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
 }
 
 .task-card:active {
   cursor: grabbing;
-  transform: none;
+  /* #2 Card Press Depression — scale(0.97) + tighter shadow */
+  transform: scale(0.97);
+  box-shadow: var(--shadow-sm);
   transition-duration: 0.05s;
 }
 
 .task-card.dragging {
-  opacity: 0.45;
+  opacity: 0.2;
   transform: rotate(1.5deg) scale(1.015);
   box-shadow: var(--shadow-lg);
   border-style: dashed;
@@ -228,7 +232,7 @@
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
   pointer-events: none;
   opacity: 0;
   transition: opacity 200ms var(--ease-out-quart);
@@ -250,7 +254,7 @@
   max-width: calc(100vw - 2rem);
   max-height: calc(100dvh - 2rem);
   overflow-y: auto;
-  transform: scale(0.96) translateY(8px);
+  transform: scale(0.9) translateY(8px);
   opacity: 0;
   animation: modalEnter 200ms var(--ease-out-quart) forwards;
   border: none;
@@ -260,7 +264,7 @@
 
 @keyframes modalEnter {
   from {
-    transform: scale(0.96) translateY(8px);
+    transform: scale(0.9) translateY(8px);
     opacity: 0;
   }
   to {
@@ -279,7 +283,7 @@
     opacity: 1;
   }
   to {
-    transform: scale(0.96) translateY(-8px);
+    transform: scale(0.9) translateY(-8px);
     opacity: 0;
   }
 }
@@ -390,9 +394,11 @@
 
 .task-subtask-bar-fill {
   height: 100%;
+  width: 100%;
   background: var(--color-accent);
   border-radius: 999px;
-  transition: width var(--transition-base);
+  transform-origin: left;
+  transition: transform var(--transition-base);
 }
 
 .task-subtask-text {
@@ -473,6 +479,17 @@
   height: 16px;
   accent-color: var(--color-accent);
   cursor: pointer;
+  /* #8 Checkbox Check Draw — subtle draw/pop on toggle */
+  transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.peek-subtask-checkbox input[type="checkbox"]:checked {
+  animation: checkPop 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes checkPop {
+  from { transform: scale(0.7); }
+  to   { transform: scale(1); }
 }
 
 .peek-subtask-text {

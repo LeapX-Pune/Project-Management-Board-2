@@ -6,7 +6,7 @@
   <title>Project Management Board</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
   
   <!-- Core styles -->
   <link rel="stylesheet" href="css/style.css">
@@ -23,6 +23,9 @@
   
   <!-- Responsive overrides -->
   <link rel="stylesheet" href="css/responsive.css">
+  
+  <!-- Animations -->
+  <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
   <div class="app">
@@ -114,6 +117,23 @@
             <path d="M12 12L16 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
           <input type="text" class="search-input" id="search-input" placeholder="Search tasks..." aria-label="Search tasks">
+        </div>
+        <div class="board-filters" style="display: flex; gap: 8px; margin-left: 16px;">
+          <select id="board-filter-assignee" class="filter-select" style="height: 36px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem;">
+            <option value="">All Assignees</option>
+          </select>
+          <select id="board-filter-priority" class="filter-select" style="height: 36px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem;">
+            <option value="">All Priorities</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+          <select id="board-filter-deadline" class="filter-select" style="height: 36px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem;">
+            <option value="">All Deadlines</option>
+            <option value="overdue">Overdue</option>
+            <option value="today">Due Today</option>
+            <option value="week">Due This Week</option>
+          </select>
         </div>
         <div class="header-right">
           <!-- Dynamically populated team avatars list in header -->
@@ -298,11 +318,18 @@
           </div>
         </section>
 
-        <!-- Board sub-views -->
-        <section class="view-container board-view active" id="board-view" role="region" aria-label="Board view">
-          <div class="board" id="board-container">
-          </div>
-        </section>
+         <!-- Board sub-views -->
+         <section class="view-container board-view active" id="board-view" role="region" aria-label="Board view">
+           <div class="board" id="board-container">
+           </div>
+            <button class="add-column-fab" id="add-column-fab" aria-label="Add new column" title="Add column">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M10 4V16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span class="add-column-fab-text">Add Column</span>
+            </button>
+         </section>
 
         <section class="view-container table-view" id="table-view" role="region" aria-label="Table view">
           <div class="table-wrapper">
@@ -386,15 +413,25 @@
               </div>
               <div class="analytics-header-right">
                 <div class="analytics-filters">
-                  <select id="filter-status" aria-label="Filter by column status">
-                    <option value="all">All Columns</option>
-                  </select>
-                  <select id="filter-priority" aria-label="Filter by priority">
-                    <option value="all">All Priorities</option>
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
-                  </select>
+                  <div class="select-wrap">
+                    <select id="filter-status" aria-label="Filter by column status">
+                      <option value="all">All Columns</option>
+                    </select>
+                    <span class="select-chevron" aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5L7 9L11 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                  </div>
+                  <div class="select-wrap">
+                    <select id="filter-priority" aria-label="Filter by priority">
+                      <option value="all">All Priorities</option>
+                      <option value="high">High</option>
+                      <option value="medium">Medium</option>
+                      <option value="low">Low</option>
+                    </select>
+                    <span class="select-chevron" aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5L7 9L11 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

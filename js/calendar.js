@@ -229,19 +229,15 @@ function renderMonthView() {
     const todayClass = dateKey === todayKey ? ' today' : '';
     const otherClass = otherMonth ? ' other-month' : '';
     const tasksOnDay = tasksByDate[dateKey] || [];
-    const MAX_VISIBLE = 3;
-    const eventHtml = tasksOnDay.slice(0, MAX_VISIBLE).map(t => {
-      const title = t.title.length > 18 ? t.title.substring(0, 16) + '…' : t.title;
-      return `<div class="calendar-event ${getTaskPriorityClass(t)}" data-task-id="${t.id}">${title}</div>`;
+    const eventHtml = tasksOnDay.map(t => {
+      return `<div class="calendar-event-capsule ${getTaskPriorityClass(t)}" data-task-id="${t.id}"></div>`;
     }).join('');
-    const moreCount = tasksOnDay.length - MAX_VISIBLE;
-    const moreHtml = moreCount > 0 ? `<div class="calendar-event-more">+${moreCount} more</div>` : '';
-    const selectedClass = dateKey === selectedDateKey ? ' selected' : '';
+    const moreHtml = tasksOnDay.length > 6 ? `<div class="calendar-event-more">+${tasksOnDay.length - 6}</div>` : '';
 
     return `
-      <div class="calendar-day${todayClass}${otherClass}${selectedClass}" data-date-key="${dateKey}">
+      <div class="calendar-day${todayClass}${otherClass}" data-date-key="${dateKey}">
         <div class="calendar-day-number">${day}</div>
-        ${eventHtml}${moreHtml}
+        <div class="calendar-day-events">${eventHtml}${moreHtml}</div>
       </div>
     `;
   }).join('');
