@@ -372,6 +372,14 @@
     width: 85%;
     max-width: 640px;
   }
+
+  /* ── Mobile UX: Hide Quick Metrics section on mobile (< 768px) ── */
+  /* Quick Metrics duplicates info already visible in the dashboard    */
+  /* on small screens and adds unnecessary vertical scroll.            */
+  /* Desktop and tablet layouts are unaffected.                        */
+  .kpi-section {
+    display: none !important;
+  }
 }
 
 /* ── Mobile Viewports Bottom Sheet (<= 640px) ── */
