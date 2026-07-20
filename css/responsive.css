@@ -416,6 +416,164 @@
     white-space: nowrap !important;
     overflow: visible !important;
   }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     Mobile Calendar – Week View UX Refinement (< 768px)
+     Goal: Google/Apple-inspired compact week cards with clear hierarchy.
+     Row 1 → [← Prev | Today | Next →]           [Month | Week | Day]
+     Row 2 → July 20 – July 26, 2026  (prominent date-range heading)
+     Row 3 → Compact 7-column week cards (horizontally scrollable)
+     Row 4 → Day panel (tasks for selected day)
+     All changes are scoped to mobile. Desktop / tablet unchanged.
+  ═══════════════════════════════════════════════════════════════════ */
+
+  /* 1. Header: two-row layout on mobile
+        Top row  → nav arrows + Today on left, view toggles on right
+        The date-range label lives inside calendar-content-week, so
+        the header row itself only needs to hold nav + toggles.        */
+  .calendar-view .calendar-header {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    grid-template-rows: auto !important;
+    align-items: center !important;
+    gap: var(--space-xs) var(--space-sm) !important;
+    margin-bottom: var(--space-xs) !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .calendar-view .calendar-nav {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-wrap: nowrap !important;
+  }
+
+  /* Nav arrow buttons: compact but touch-friendly (44×44) */
+  .calendar-view .calendar-nav-btn {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 44px !important;
+    border-radius: var(--radius-md) !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Today button: stays inline with arrows, neat pill */
+  .calendar-view .calendar-today-btn {
+    font-size: 0.75rem !important;
+    padding: 0 12px !important;
+    min-height: 44px !important;
+    min-width: 56px !important;
+    margin-left: 0 !important;
+    border-radius: var(--radius-md) !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* View toggles (Month/Week/Day): right-aligned on same row as nav */
+  .calendar-view .calendar-view-toggles {
+    display: flex !important;
+    gap: 3px !important;
+    justify-content: flex-end !important;
+    flex-shrink: 0 !important;
+  }
+
+  .calendar-view .calendar-view-toggles .view-toggle-btn {
+    font-size: 0.6875rem !important;
+    padding: 0 10px !important;
+    min-height: 44px !important;
+    min-width: 44px !important;
+    border-radius: var(--radius-sm) !important;
+  }
+
+  /* 2. Week view date-range label: prominent full-width heading
+        The label is rendered by JS as #calendar-week-label with class
+        calendar-month-label, appended inside #calendar-content-week.
+        On mobile we elevate it to a primary heading.                  */
+  #calendar-week-label {
+    font-size: 1.0625rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+    color: var(--text-main) !important;
+    margin: 0 0 var(--space-sm) 0 !important;
+    margin-left: 0 !important;
+    min-width: unset !important;
+    padding: var(--space-xs) 0 !important;
+    border-bottom: 1px solid var(--border-subtle) !important;
+    width: 100% !important;
+    display: block !important;
+  }
+
+  /* 3. Week grid: compact, horizontally scrollable on tight screens   */
+  .calendar-week-grid {
+    display: grid !important;
+    grid-template-columns: repeat(7, minmax(44px, 1fr)) !important;
+    gap: 4px !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 4px !important;  /* space for scrollbar */
+    min-width: 0 !important;
+  }
+
+  /* 4. Week day cards: compact height – no wasted vertical space      */
+  .calendar-week-day {
+    min-height: 72px !important;   /* was 120px on desktop */
+    padding: 6px 4px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 2px !important;
+    border-radius: var(--radius-md) !important;
+  }
+
+  /* Day header: tighter, centred above the event dots */
+  .calendar-week-day-header {
+    flex-direction: column !important;
+    align-items: center !important;
+    margin-bottom: 4px !important;
+    gap: 1px !important;
+  }
+
+  .calendar-week-day-name {
+    font-size: 0.5625rem !important;  /* e.g. "Mon" — tiny but legible */
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase !important;
+    line-height: 1 !important;
+  }
+
+  .calendar-week-day-number {
+    font-size: 0.9375rem !important;
+    font-weight: 700 !important;
+    line-height: 1.1 !important;
+  }
+
+  /* Event area: shrink, show dot-indicators instead of text labels    */
+  .calendar-week-day-events {
+    flex: 1 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 2px !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    align-content: flex-start !important;
+  }
+
+  /* Events in week cards → dot indicators (matching month view style) */
+  .calendar-week-day-events .calendar-event {
+    width: 7px !important;
+    height: 7px !important;
+    min-height: 7px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 50% !important;
+    border: none !important;
+    display: inline-block !important;
+    color: transparent !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-indent: -9999px !important;
+    flex-shrink: 0 !important;
+  }
 }
 
 /* ── Mobile Viewports Bottom Sheet (<= 640px) ── */
