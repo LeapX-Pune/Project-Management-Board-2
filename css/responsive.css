@@ -380,6 +380,42 @@
   .kpi-section {
     display: none !important;
   }
+
+  /* ── Mobile Table View: Truncate long task names to prevent          */
+  /*    overflow into the Status column (< 768px only).                */
+  /*    Desktop and tablet display full titles as before.              */
+  /*    The original task data is untouched — only visual display.     */
+  .table-view .task-table {
+    table-layout: fixed !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Task column (1st): constrained width + ellipsis truncation */
+  .table-view .task-table th:first-child,
+  .table-view .task-table td:first-child {
+    width: 35% !important;
+    max-width: 35% !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* <strong> inside the task cell must also clip, not expand */
+  .table-view .task-table td:first-child strong {
+    display: block !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+  }
+
+  /* Status column (2nd): always fully readable */
+  .table-view .task-table th:nth-child(2),
+  .table-view .task-table td:nth-child(2) {
+    white-space: nowrap !important;
+    overflow: visible !important;
+  }
 }
 
 /* ── Mobile Viewports Bottom Sheet (<= 640px) ── */
@@ -889,6 +925,12 @@
   .task-table {
     min-width: 640px !important;
     width: 100% !important;
+  }
+
+  /* Table View: keep fixed layout / truncation — do NOT force min-width */
+  .table-view .task-table {
+    min-width: 0 !important;
+    table-layout: fixed !important;
   }
 
   .task-table th,
