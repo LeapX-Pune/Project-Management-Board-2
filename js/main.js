@@ -648,10 +648,12 @@ function wireEventListeners() {
         const activeSubView = activeSubViewBtn ? activeSubViewBtn.dataset.view : 'board';
         const subViewEl = document.getElementById(`${activeSubView}-view`);
         if (subViewEl) subViewEl.classList.add('active');
+        document.getElementById('add-column-fab')?.classList.add('is-board-view');
       } else {
         if (boardHeader) boardHeader.style.display = 'none';
         const viewEl = document.getElementById(`${section}-view`);
         if (viewEl) viewEl.classList.add('active');
+        document.getElementById('add-column-fab')?.classList.remove('is-board-view');
       }
       localStorage.setItem('sidebarSection', section);
 
@@ -1191,17 +1193,6 @@ function wireEventListeners() {
     }
   });
 
-  // Mobile FAB reuses the same add-column flow (see #6 in
-  // project-docs/mobile-ui-improvements.md).
-  document.getElementById('add-column-fab')?.addEventListener('click', () => {
-    const placeholder = document.getElementById('add-column-placeholder');
-    if (placeholder) {
-      placeholder.querySelector('.add-column-btn')?.classList.add('hidden');
-      placeholder.querySelector('.add-column-input')?.classList.remove('hidden');
-      document.getElementById('new-column-input')?.focus();
-    }
-  });
-
   // #12 Dropdown Arrow Rotation — toggle .select-open on the filter
   // <select> wrappers so the chevron rotates 180° when the menu opens.
   document.querySelectorAll('.select-wrap select').forEach(sel => {
@@ -1212,37 +1203,85 @@ function wireEventListeners() {
     sel.addEventListener('change', () => wrap.classList.remove('select-open'));
   });
 
+  // ── Add Column ────────────────────────────────────────────────
+  // Shared logic: create a column object, push it, and re-render via the
+  // canonical path so rename/delete handlers + counts stay wired.
+  function addColumnFromTitle(title) {
+    if (!title || !title.trim()) return false;
+    title = title.trim();
+    let colId = 'col-' + title.toLowerCase().replace(/\s+/g, '-');
+    if (MOCK_DATA.columns.some(c => c.id === colId)) {
+      let n = 2;
+      while (MOCK_DATA.columns.some(c => c.id === `${colId}-${n}`)) n++;
+      colId = `${colId}-${n}`;
+    }
+    MOCK_DATA.columns.push({ id: colId, title, taskIds: [] });
+    saveMockData();
+    renderBoard(MOCK_DATA);
+    renderTable(MOCK_DATA);
+    renderList(MOCK_DATA);
+    return true;
+  }
+
+  // Desktop in-strip "Add Column" control (kept for >=769px).
+  document.getElementById('add-column-btn')?.addEventListener('click', () => {
+    const placeholder = document.getElementById('add-column-placeholder');
+    if (placeholder) {
+      placeholder.querySelector('.add-column-btn')?.classList.add('hidden');
+      placeholder.querySelector('.add-column-input')?.classList.remove('hidden');
+      document.getElementById('new-column-input')?.focus();
+    }
+  });
   document.getElementById('confirm-add-column')?.addEventListener('click', () => {
     const input = document.getElementById('new-column-input');
     const placeholder = document.getElementById('add-column-placeholder');
     if (input && input.value.trim() && placeholder) {
-      const title = input.value.trim();
-      let colId = 'col-' + title.toLowerCase().replace(/\s+/g, '-');
-      // Avoid duplicate ids (e.g. re-adding a column with the same name).
-      if (MOCK_DATA.columns.some(c => c.id === colId)) {
-        let n = 2;
-        while (MOCK_DATA.columns.some(c => c.id === `${colId}-${n}`)) n++;
-        colId = `${colId}-${n}`;
-      }
-      MOCK_DATA.columns.push({ id: colId, title, taskIds: [] });
-      saveMockData();
+      addColumnFromTitle(input.value);
       input.value = '';
       placeholder.querySelector('.add-column-btn')?.classList.remove('hidden');
       placeholder.querySelector('.add-column-input')?.classList.add('hidden');
-      // Re-render via the canonical path so the new column is fully wired
-      // (rename/delete handlers, counts) and consistent with table/list.
-      renderBoard(MOCK_DATA);
-      renderTable(MOCK_DATA);
-      renderList(MOCK_DATA);
     }
   });
-
   document.getElementById('cancel-add-column')?.addEventListener('click', () => {
     const placeholder = document.getElementById('add-column-placeholder');
     if (placeholder) {
       placeholder.querySelector('.add-column-btn')?.classList.remove('hidden');
       placeholder.querySelector('.add-column-input')?.classList.add('hidden');
       document.getElementById('new-column-input').value = '';
+    }
+  });
+
+  // #6 Mobile: FAB opens the bottom-sheet add-column UI (the in-strip
+  // control is hidden on mobile via CSS).
+  const addColumnSheet = document.getElementById('add-column-sheet');
+  const addColumnSheetInput = document.getElementById('add-column-sheet-input');
+  function openAddColumnSheet() {
+    if (!addColumnSheet) return;
+    addColumnSheet.classList.add('active');
+    addColumnSheetInput.value = '';
+    setTimeout(() => addColumnSheetInput.focus(), 50);
+  }
+  function closeAddColumnSheet() {
+    addColumnSheet?.classList.remove('active');
+  }
+  document.getElementById('add-column-fab')?.addEventListener('click', openAddColumnSheet);
+  document.getElementById('add-column-sheet-close')?.addEventListener('click', closeAddColumnSheet);
+  document.getElementById('add-column-sheet-cancel')?.addEventListener('click', closeAddColumnSheet);
+  addColumnSheet?.addEventListener('click', (e) => {
+    if (e.target === addColumnSheet) closeAddColumnSheet();
+  });
+  document.getElementById('add-column-sheet-confirm')?.addEventListener('click', () => {
+    if (addColumnFromTitle(addColumnSheetInput.value)) {
+      closeAddColumnSheet();
+    } else {
+      addColumnSheetInput.focus();
+    }
+  });
+  addColumnSheetInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      if (addColumnFromTitle(addColumnSheetInput.value)) closeAddColumnSheet();
+    } else if (e.key === 'Escape') {
+      closeAddColumnSheet();
     }
   });
 
@@ -1407,8 +1446,7 @@ function updateBoardColumnCounts() {
 }
 
 function restorePersistedState() {
-  const savedSection = localStorage.getItem('sidebarSection');
-  if (!savedSection) return;
+  const savedSection = localStorage.getItem('sidebarSection') || 'board';
 
   document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(b => {
     b.classList.toggle('active-view', b.dataset.section === savedSection);
@@ -1428,10 +1466,12 @@ function restorePersistedState() {
     });
     const subViewEl = document.getElementById(`${savedSubView}-view`);
     if (subViewEl) subViewEl.classList.add('active');
+    document.getElementById('add-column-fab')?.classList.add('is-board-view');
   } else {
     if (boardHeader) boardHeader.style.display = 'none';
     const viewEl = document.getElementById(`${savedSection}-view`);
     if (viewEl) viewEl.classList.add('active');
+    document.getElementById('add-column-fab')?.classList.remove('is-board-view');
   }
 }
 

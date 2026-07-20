@@ -118,23 +118,6 @@
           </svg>
           <input type="text" class="search-input" id="search-input" placeholder="Search tasks..." aria-label="Search tasks">
         </div>
-        <div class="board-filters" style="display: flex; gap: 8px; margin-left: 16px;">
-          <select id="board-filter-assignee" class="filter-select" style="height: 36px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem;">
-            <option value="">All Assignees</option>
-          </select>
-          <select id="board-filter-priority" class="filter-select" style="height: 36px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem;">
-            <option value="">All Priorities</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-          </select>
-          <select id="board-filter-deadline" class="filter-select" style="height: 36px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem;">
-            <option value="">All Deadlines</option>
-            <option value="overdue">Overdue</option>
-            <option value="today">Due Today</option>
-            <option value="week">Due This Week</option>
-          </select>
-        </div>
         <div class="header-right">
           <!-- Dynamically populated team avatars list in header -->
           <div id="header-team-group" class="header-team-group flex-center" style="margin-right: 4px;"></div>
@@ -175,6 +158,23 @@
       <div class="main-area">
         <div class="board-header">
           <h1 class="board-title">Project Management Board</h1>
+          <div class="board-filters" style="display: flex; gap: 8px; margin-left: 16px;">
+            <select id="board-filter-assignee" class="filter-select" style="height: 36px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem;">
+              <option value="">All Assignees</option>
+            </select>
+            <select id="board-filter-priority" class="filter-select" style="height: 36px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem;">
+              <option value="">All Priorities</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <select id="board-filter-deadline" class="filter-select" style="height: 36px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem;">
+              <option value="">All Deadlines</option>
+              <option value="overdue">Overdue</option>
+              <option value="today">Due Today</option>
+              <option value="week">Due This Week</option>
+            </select>
+          </div>
           <div class="board-view-controls" role="tablist" aria-label="View selector">
             <button class="view-btn active" data-view="board" role="tab" aria-selected="true" aria-label="Board view">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -322,13 +322,6 @@
          <section class="view-container board-view active" id="board-view" role="region" aria-label="Board view">
            <div class="board" id="board-container">
            </div>
-            <button class="add-column-fab" id="add-column-fab" aria-label="Add new column" title="Add column">
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                <path d="M10 4V16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <path d="M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-              <span class="add-column-fab-text">Add Column</span>
-            </button>
          </section>
 
         <section class="view-container table-view" id="table-view" role="region" aria-label="Table view">
@@ -813,6 +806,38 @@
       <div class="modal-footer">
         <button class="btn btn-ghost" id="confirm-dialog-cancel">Cancel</button>
         <button class="btn btn-primary" id="confirm-dialog-ok" style="background: var(--color-destructive); border-color: var(--color-destructive);">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Add Column FAB -->
+  <button class="add-column-fab" id="add-column-fab" aria-label="Add new column" title="Add column">
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M10 4V16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <span class="add-column-fab-text">Add Column</span>
+  </button>
+
+  <!-- Mobile Add Column Bottom Sheet (replaces in-strip control on mobile) -->
+  <div class="modal-overlay add-column-overlay" id="add-column-sheet" role="dialog" aria-modal="true" aria-label="Add new column">
+    <div class="modal add-column-sheet-modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Add Column</h2>
+        <button class="modal-close" id="add-column-sheet-close" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path d="M4.5 4.5L13.5 13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M13.5 4.5L4.5 13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <label class="add-column-sheet-label" for="add-column-sheet-input">Column name</label>
+        <input type="text" class="add-column-sheet-input" id="add-column-sheet-input" placeholder="e.g. In Review" autocomplete="off">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="add-column-sheet-cancel">Cancel</button>
+        <button class="btn btn-primary" id="add-column-sheet-confirm">Add Column</button>
       </div>
     </div>
   </div>

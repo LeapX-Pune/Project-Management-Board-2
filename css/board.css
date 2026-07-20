@@ -271,48 +271,8 @@
   display: none;
 }
 
-/* Floating Action Button — always visible on board view */
+/* Floating Action Button — hidden on desktop, shown on mobile only */
 .add-column-fab {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 12px;
-  background: var(--color-accent);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: var(--font-sans);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  z-index: 210;
-  cursor: pointer;
-  transition: transform 150ms ease, box-shadow 150ms ease;
-}
-
-.add-column-fab:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
-}
-
-.add-column-fab:active {
-  transform: scale(0.97);
-}
-
-.add-column-fab:focus-visible {
-  outline: 2px solid var(--color-ring);
-  outline-offset: 2px;
-}
-
-.add-column-fab svg {
-  flex-shrink: 0;
-}
-
-/* Hide FAB when board view is not active */
-.board-view:not(.active) .add-column-fab {
   display: none;
 }
 

@@ -311,7 +311,8 @@ body.dark-theme .app-header {
 .board-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: var(--space-sm);
   padding: var(--space-sm) var(--space-lg);
   background: var(--bg-canvas);
   border-bottom: 1px solid var(--border-subtle);
@@ -324,9 +325,12 @@ body.dark-theme .app-header {
   margin: 0;
 }
 
+/* Push the view-toggle group to the right edge while the title +
+   filter controls stay grouped on the left. */
 .board-view-controls {
   display: flex;
   gap: var(--space-xs);
+  margin-left: auto;
 }
 
 @media (max-width: 480px) {
